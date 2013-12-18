@@ -5,18 +5,18 @@
 //Ensemble des fonctions communes a toutes les groupes
 void InitLibrary(char name[50])
 {
-	printf("InitLibrary\n");
-	strcpy(name,"Fabien Picarougne");
+	printf("Initialisation des variables de la librairie\n");
+	strcpy(name,"GUINARD Arnaud et MOUDEN Benjamin");
 }
 
-void StartMatch(const EColor color)
+void StartMatch()
 {
-	printf("StartMatch\n");
+	printf("Début du match\n");
 }
 
-void StartGame(EPiece boardInit[4][10])
+void StartGame(const EColor color,EPiece boardInit[4][10])
 {
-	printf("StartGame\n");
+	printf("Lancement d'une partie\n");
 }
 
 void EndGame()
