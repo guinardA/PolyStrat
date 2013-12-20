@@ -90,9 +90,9 @@ void EndMatch()
 	printf("EndMatch\n");
 }
 
-void NextMove(const SGameState * const gameState, SMove *move)
+SMove NextMove(const SGameState * const gameState)
 {
-	printf("NextMove\n");
+	printf("Deplacement d'un pion\n");
 }
 
 void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
