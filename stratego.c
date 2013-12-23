@@ -72,7 +72,7 @@ SMove move;
 char name[50];
 int game, erreur=0;
 EColor couleurJ1;
-SBox box;
+SBox box, boxStart, boxEnd;
 
 srand(time(NULL));
 int couleur,i,j, pion_erreur;
@@ -93,9 +93,17 @@ do {
 	//INITIALISATION DU CONTEXTE DE JEU
 	for(i=0;i<10;i++){
 		for(j=0;j<10;j++){
-			box.content = ECnone;
-			box.piece = EPnone;
-			gameState.board[i][j] = box;
+			//PLACEMENT DES LACS
+			if((i==4 && j==2) || (i==4 && j==3) || (i==4 && j==6) || (i==4 && j==7) ||(i==5 && j==2) || (i==5 && j==3) || (i==5 && j==6) || (i==5 && j==7)){
+				box.content = EClake;
+				box.piece = EPnone;
+				gameState.board[i][j] = box;
+			}
+			else{
+				box.content = ECnone;
+				box.piece = EPnone;
+				gameState.board[i][j] = box;
+			}
 		}
 	}
 	for(i=0;i<11;i++){
@@ -230,10 +238,43 @@ do {
 			gameStateJ1.blueOut[i] = gameState.blueOut[i];
 		}
 		move = j1NextMove(&gameStateJ1);
-		/*VERIFICATION DU MOUVEMENT, VERIFIER QUE LE PION DEPLACER CORRESPOND A LA MÊME COULEUR QUE LE JOUEUR
-		 * QUE CEST UN PION QUI PEUT CE DEPLACER, SI LA POSITION ARRIVE EST POSSIBLE AVEC CE PION (DISTANCE OU PRESENCE DE LAC)
-		 * QUE LE PION CE DEPLACE A INTERIEUR DU PLATEAU DE JEU
-		 * SINON CREER UNE ERREUR ET REDEMANDER AU JOUEUR DE DÉPLACER CES PIONS*/
+		if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
+			boxStart = gameState.board[move.start.line][move.start.col];
+			//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
+			if(boxStart.content == ECred){
+				//VERIFICATION QUE LE PION SELECTIONNER PEUT ETRE BOUGER
+				if(boxStart.piece!=EPnone && boxStart.piece!=EPbomb && boxStart.piece!=EPflag){
+					if(move.end.line>=0 && move.end.line<=9 && move.end.col>=0 && move.end.col<=9){
+						boxEnd = gameState.board[move.end.line][move.end.col];
+						//VERIFICATION QUE ARRIVE NE CORRESPOND PAS A UN LAC NI A UN DE CES PIONS
+						if(boxEnd.content!=ECred && boxEnd.content!=EClake){
+							//ON VERIFIE QUE LA PIECE DEPLACER CORRESPOND OU PAS UN ECLAIREUR
+							//!!!!! FAIRE LA VERIFICATION QUE L'ÉCLAIREUR NE SAUTE PAS PAR DESSUS UN PIONS
+							if(boxStart.piece == EPscout){
+								if((move.start.line == move.end.line && move.start.col != move.end.col) ||
+								   (move.start.line != move.end.line && move.start.col == move.end.col)){
+									printf("Déplacement réalisé\n");
+								}   
+							}
+							else{
+								if((move.start.line == move.end.line && move.start.col == move.end.col+1) ||
+								   (move.start.line == move.end.line && move.start.col == move.end.col+1) ||
+								   (move.start.line == move.end.line+1 && move.start.col == move.end.col) ||
+								   (move.start.line == move.end.line-1 && move.start.col == move.end.col)){
+									printf("Déplacement réalisé\n");
+								}   
+							}
+							
+						}
+					}
+					
+				}
+			}
+			printf("coucou\n");
+		}
+		/*AJOUTER LES ERREURS
+		 * FACTORISER CETTE PARTIE DE CODE
+		 * FAIRE LES RÈGLES DE SUPERIORITÉ ET INFÉRIORITÉ*/
 		
 		
 		//MOUVEMENT DU JOUEUR2 A LA FIN

@@ -93,6 +93,12 @@ void EndMatch()
 SMove NextMove(const SGameState * const gameState)
 {
 	printf("Deplacement d'un pion\n");
+	SMove move; 
+	move.start.line = 3;
+	move.start.col = 8;
+	move.end.line = 4;
+	move.end.col = 8;
+	return move;
 }
 
 void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
