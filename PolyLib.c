@@ -21,7 +21,6 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 {
 	printf("Lancement d'une partie\n");
 	printf("Placement des pions sur le terrain\n");
-	
 	couleur = color;
 
 	//A modifier avec la strategie de IA
