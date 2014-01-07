@@ -1,4 +1,6 @@
-/* GÉRER LA REGLE DES VA ET VIENS */
+/* VERIFIER POSITION DES JOUEURS PAR RAPPORT A L'INTERFACE GRAPHIQUE IMPORTANT !!!!!!!
+ * MODIFIER LA ROTATION DU JOUEUR 2 EN 180°
+ * GÉRER LA REGLE DES VA ET VIENS */
 
 #include <stdio.h>
 #include <dlfcn.h>
@@ -329,11 +331,11 @@ do {
 	printf("Voulez vous refaire une partie ? 1:oui, 0:non = ");
 	scanf ("%i",&game);
 	
-	/*
+	
 	printf("\n=========================================================\nPLATEAU DE JEU\n");
 	afficheConsole(gameState, couleurJ1, couleurJ2);
 	printf("\n=========================================================\n");
-	*/
+	
 	
 }while(game==1);
 	
