@@ -217,13 +217,20 @@ do {
 			enregistrePion(boardInitJ1, &gameState, couleurJ1, 1);
 			//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
 			enregistrePion(boardInitJ2, &gameState, couleurJ2, 2);
-				
+				printf("AVANT FENETRE");
+				fflush(stdout);
+				interfaceGraphique(gameState);
+				printf("APRES FENETRE");
+					
 			//DEMANDE DE DEPLACEMENT D'UN PION
 			if(couleurJ1 == ECred){
 				do{
 					//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
 					gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
-					move = j1NextMove(&gameStateJ1);
+					//move = j1NextMove(&gameStateJ1);
+					printf("AVANT");
+					move = renvoieCoordonnees();
+					printf("APRES");
 					//VERIFIE QUE LE MOUVEMENT EST VALIDE
 					pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult);
 					
@@ -340,7 +347,6 @@ do {
 	afficheConsole(gameState, couleurJ1, couleurJ2);
 	printf("\n=========================================================\n");
 	*/
-	interfaceGraphique(gameState);
 	
 }while(game==1);
 	
