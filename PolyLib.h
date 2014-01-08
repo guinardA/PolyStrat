@@ -14,15 +14,15 @@ typedef enum
 {
 	EPbomb=0,
 	EPspy,
-	EPscout,
-	EPminer,
-	EPsergeant,
-	EPlieutenant,
-	EPcaptain,
-	EPmajor,
-	EPcolonel,
-	EPgeneral,
-	EPmarshal,
+	EPscout,//2
+	EPminer,//3
+	EPsergeant,//4
+	EPlieutenant,//5
+	EPcaptain,//6
+	EPmajor,//7
+	EPcolonel,//8
+	EPgeneral,//9
+	EPmarshal,//10
 	EPflag,
 	EPnone,
 } EPiece;
