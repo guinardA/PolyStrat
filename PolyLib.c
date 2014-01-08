@@ -183,7 +183,7 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
  */
 void setup(int choix,EPiece boardInit[4][10])
 {
-	if(choix == 1){
+	if(choix == 0){
 		//4ème ligne
 		boardInit[0][0] = EPsergeant;//4
 		boardInit[0][1] = EPscout;//2
@@ -213,7 +213,7 @@ void setup(int choix,EPiece boardInit[4][10])
 		boardInit[2][3] = EPmajor;//7
 		boardInit[2][4] = EPbomb;
 		boardInit[2][5] = EPlieutenant;//5
-		boardInit[2][6] = EPmarshall;//10
+		boardInit[2][6] = EPmarshal;//10
 		boardInit[2][7] = EPmajor;//7
 		boardInit[2][8] = EPlieutenant;//5
 		boardInit[2][9] = EPcolonel;//8
