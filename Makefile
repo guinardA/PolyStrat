@@ -5,10 +5,6 @@
 all: stratego.c clean	
 		gcc -g IGStratego.c stratego.c -o stratego -ldl -lSDLmain -lSDL_image
 
-#création de l'exécutable "stratego" sans l'interface graphique
-old: stratego.c clean	
-		gcc -Wall stratego.c -o stratego -ldl
-
 install: polylib.so
 		sudo mv polylib.so /usr/lib/
 
