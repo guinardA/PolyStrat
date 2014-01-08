@@ -6,9 +6,8 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <time.h>
-#include "PolyLib.h"
 #include "IGStratego.h"
-
+#include "PolyLib.h"
 
 
 
