@@ -99,7 +99,8 @@ SMove NextMove(const SGameState * const gameState)
 	move.end.col = 8;
 	
 	//Vérifie le mouvement renvoie 0 mouvement ok et 1 mouvement pas ok
-	verificationMouvement(move, contextPerso, couleur);
+	if (verificationMouvement(move, contextPerso, couleur)==0)
+		return move;
 	
 	return move;
 }
