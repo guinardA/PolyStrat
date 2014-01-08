@@ -185,48 +185,48 @@ void setup(int choix,EPiece boardInit[4][10])
 {
 	if(choix == 1){
 		//4ème ligne
-		boardInit[0][0] = EPmajor;//7
-		boardInit[0][1] = EPbomb;
-		boardInit[0][2] = EPscout;//2
-		boardInit[0][3] = EPscout;//2
+		boardInit[0][0] = EPsergeant;//4
+		boardInit[0][1] = EPscout;//2
+		boardInit[0][2] = EPminer;//3
+		boardInit[0][3] = EPbomb;
 		boardInit[0][4] = EPsergeant;//4
-		boardInit[0][5] = EPsergeant;//4
-		boardInit[0][6] = EPcaptain;//6
+		boardInit[0][5] = EPminer;//3
+		boardInit[0][6] = EPminer;//3
 		boardInit[0][7] = EPbomb;
 		boardInit[0][8] = EPflag;
 		boardInit[0][9] = EPbomb;
 		//3ème ligne
 		boardInit[1][0] = EPbomb;
-		boardInit[1][1] = EPgeneral;//9
-		boardInit[1][2] = EPmajor;//7
-		boardInit[1][3] = EP;
-		boardInit[1][4] = EPminer;//3
-		boardInit[1][5] = EPlieutenant;//5
-		boardInit[1][6] = EPminer;//3
-		boardInit[1][7] = EPcaptain;//6
+		boardInit[1][1] = EPcaptain;//6
+		boardInit[1][2] = EPspy;
+		boardInit[1][3] = EPmajor;//7
+		boardInit[1][4] = EPlieutenant;//5
+		boardInit[1][5] = EPscout;//2
+		boardInit[1][6] = EPcaptain;//6
+		boardInit[1][7] = EPlieutenant;//5
 		boardInit[1][8] = EPbomb;
-		boardInit[1][9] = EPmajor;//7
+		boardInit[1][9] = EPsergeant;//4
 		//2ème ligne
-		boardInit[2][0] = EPscout;//2
-		boardInit[2][1] = EPlieutenant;//5
+		boardInit[2][0] = EPminer;//3
+		boardInit[2][1] = EPscout;//2
 		boardInit[2][2] = EPcolonel;//8
-		boardInit[2][3] = EPspy;
-		boardInit[2][4] = EPminer;//3
-		boardInit[2][5] = EP;
-		boardInit[2][6] = EPlieutenant;//5
-		boardInit[2][7] = EP;
-		boardInit[2][8] = EPcolonel;//8
-		boardInit[2][9] = EPbomb;
+		boardInit[2][3] = EPmajor;//7
+		boardInit[2][4] = EPbomb;
+		boardInit[2][5] = EPlieutenant;//5
+		boardInit[2][6] = EPmarshall;//10
+		boardInit[2][7] = EPmajor;//7
+		boardInit[2][8] = EPlieutenant;//5
+		boardInit[2][9] = EPcolonel;//8
 		//1ère ligne
-		boardInit[3][0] = EPscout;//2
-		boardInit[3][1] = EPsergeant;//4
-		boardInit[3][2] = EPminer;//3
-		boardInit[3][3] = EPmarshall;//10
-		boardInit[3][4] = EPmajor;//7
+		boardInit[3][0] = EPgeneral;//9
+		boardInit[3][1] = EPcaptain;//6
+		boardInit[3][2] = EPscout;//2
+		boardInit[3][3] = EPsergeant;//4
+		boardInit[3][4] = EPscout;//2
 		boardInit[3][5] = EPscout;//2
-		boardInit[3][6] = EPcaptain;//6
-		boardInit[3][7] = EPcaptain;//6
-		boardInit[3][8] = EPsergean;//4
+		boardInit[3][6] = EPscout;//2
+		boardInit[3][7] = EPminer;//3
+		boardInit[3][8] = EPcaptain;//6
 		boardInit[3][9] = EPscout;//2
 	}
 }
