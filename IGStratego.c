@@ -107,7 +107,7 @@ int interfaceGraphique(SGameState gameState){
 	initBoard(gameState, ecran, pionRouge, pionBleu);	
 
 	SDL_Flip(ecran);
-	
+	/*
 	while (continuer){
 		SDL_WaitEvent(&event);
 		switch(event.type){
@@ -126,13 +126,13 @@ int interfaceGraphique(SGameState gameState){
 				break;
 		}
 		
-	}
-
+	}*/
+	/*
 	SDL_FreeSurface(pionRouge);
 	SDL_FreeSurface(pionBleu);
 	SDL_FreeSurface(imageFond);
 	SDL_Quit(); //on quitte la SDL
-
+*/
 	return EXIT_SUCCESS;
 	
 }
