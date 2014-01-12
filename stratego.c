@@ -1,6 +1,7 @@
 /* VERIFIER POSITION DES JOUEURS PAR RAPPORT A L'INTERFACE GRAPHIQUE IMPORTANT !!!!!!!
  * MODIFIER LA ROTATION DU JOUEUR 2 EN 180°
- * GÉRER LA REGLE DES VA ET VIENS */
+ * GÉRER LA REGLE DES VA ET VIENS 
+ * A LA FIN DU PARTIE PENSÉ A CE QUE IA ET ARBITE RÉNITIALISE LE NOMBRE ERREUR*/
 
 #include <stdio.h>
 #include <dlfcn.h>
@@ -97,7 +98,7 @@ if((j1Penalty=(pfPenalty)dlsym(j1Lib,"Penalty"))==NULL){
 }
 
 //Ouverture fonction librairie 2
-if((j2Lib=dlopen("polylib.so",RTLD_LAZY))==NULL){
+if((j2Lib=dlopen("polylib2.so",RTLD_LAZY))==NULL){
 	printf("Erreur de chargement de la libraire");
 	return(0);
 }
@@ -156,15 +157,14 @@ j2StartMatch();
 
 do {
 	
-	pion_erreur_j1 =1;
-	pion_erreur_j2 =0;
+	pion_erreur_j1 = 1;
+	pion_erreur_j2 = 1;
 	
 	//INITIALISATION DU CONTEXTE DE JEU
 	initialisationContexteJeu(&gameState);
 
 	//DIFINISSION DE LA COULEUR DU JOUEUR ET PLACEMENT DES PIONS PAR LE JOUEURS
 	couleur = (int)rand()%2;
-
 	//ENREGISTREMENT ET VERIFICATION DES PIONS DES JOUEURS
 	do{
 		if(couleur == 0){ //Si c'est égal a 0 alors la librairie 1 sera rouge et la librarie 2 sera bleu sinon inverse
@@ -190,7 +190,6 @@ do {
 				pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
 			}
 		}
-		
 		if(pion_erreur_j1 == 1){
 			fin = finPartie(1,0);
 			j1Penalty();
@@ -217,13 +216,15 @@ do {
 			enregistrePion(boardInitJ1, &gameState, couleurJ1, 1);
 			//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
 			enregistrePion(boardInitJ2, &gameState, couleurJ2, 2);
-				
+			interfaceGraphique(gameState); //On affiche le plateau de jeu après initialisation
 			//DEMANDE DE DEPLACEMENT D'UN PION
 			if(couleurJ1 == ECred){
 				do{
 					//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
 					gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
-					move = j1NextMove(&gameStateJ1);
+					//move = j1NextMove(&gameStateJ1);
+					move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+					//printf("Mouvement clic : \nCase départ : i = %i et j = %i\nCase arrivé : i = %i et j = %i\n", move.start.col, move.start.line, move.end.col, move.end.line);
 					//VERIFIE QUE LE MOUVEMENT EST VALIDE
 					pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult);
 					
@@ -243,7 +244,7 @@ do {
 							j1EndGame();
 							j2EndGame();
 					}
-					
+					interfaceGraphique(gameState); //On affiche le plateau de jeu après le tour du joueur 1
 				}while(pion_erreur_j1 == 1 && fin == 0);
 				
 				if(fin == 0){
@@ -271,6 +272,7 @@ do {
 								j1EndGame();
 								j2EndGame();
 						}
+						interfaceGraphique(gameState); //On affiche le plateau de jeu après le tour du joueur 2
 					}while(pion_erreur_j2 == 1 && fin == 0);
 				}
 			}
@@ -298,7 +300,7 @@ do {
 							j1EndGame();
 							j2EndGame();
 					}
-						
+					interfaceGraphique(gameState); //On affiche le plateau de jeu après le tour du joueur 2	
 				}while(pion_erreur_j2 == 1 && fin == 0);
 				
 				if(fin == 0){
@@ -326,6 +328,7 @@ do {
 							j1EndGame();
 							j2EndGame();
 						}
+						interfaceGraphique(gameState); //On affiche le plateau de jeu après le tour du joueur 1
 					}while(pion_erreur_j1 == 1 && fin == 0);
 				}
 			}
@@ -340,7 +343,6 @@ do {
 	afficheConsole(gameState, couleurJ1, couleurJ2);
 	printf("\n=========================================================\n");
 	*/
-	interfaceGraphique(gameState);
 	
 }while(game==1);
 	
@@ -533,7 +535,6 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 				move.end.line = 9-move.end.line;
 			}
 			boxStart = gameState->board[move.start.line][move.start.col];
-			
 			//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
 			if(boxStart.content == color){
 				//VERIFICATION QUE LE PION SELECTIONNER PEUT ETRE BOUGER
@@ -548,8 +549,8 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 							if(boxStart.piece == EPscout){
 								if((move.start.line == move.end.line && move.start.col != move.end.col) ||
 								   (move.start.line != move.end.line && move.start.col == move.end.col)){
-									   
 									   //ON VERIFIE DANS LE CAS D'UN ÉCLAIREUR SI IL NE SAUTE PAS PAR DESSUS UN LAC OU UN JOUEUR DURANT SONT DÉPLACEMENT
+				//PROBLEME !!!!!!! VERIFIER POUR LE SCOUT !!!!!!!!
 									   while(move.start.line != move.end.line || move.start.col != move.end.col){
 										   if(move.start.line != move.end.line && gameState->board[move.start.line+1][move.end.col].content !=ECnone){
 											  return 1;

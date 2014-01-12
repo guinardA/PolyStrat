@@ -12,7 +12,7 @@ void setup(int choix,EPiece boardInit[4][10]);
 //Ensemble des fonctions communes a toutes les groupes
 void InitLibrary(char name[50])
 {
-	printf("Initialisation des variables de la librairie\n");
+	printf("Initialisation des variables de la librairie 1\n");
 	strcpy(name,"Polylib");
 }
 

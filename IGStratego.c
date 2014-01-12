@@ -2,19 +2,7 @@
 #include <stdio.h>
 #include "PolyLib.h"
 #include "IGStratego.h"
-
-
-
-enum{ RED, BLUE, NONE };
-
-void deplacerPion(int grille[10][10], int xdepart, int ydepart, int xarrivee, int yarrivee){
-	printf("Valeur coordonnées départ: %d/%d\n", xdepart, ydepart);
-	printf("Valeur coordonnées arrivée: %d/%d\n", xarrivee, yarrivee);
-	grille[xarrivee][yarrivee] = grille[xdepart][ydepart];
-	grille[xdepart][ydepart] = NONE;
-
-}
-
+#define TAILLE_CASE 38	//Taille d'une case en pixels
 
 void initBoard(SGameState gameState, SDL_Surface *ecran, SDL_Surface *pionRouge, SDL_Surface *pionBleu ){
 	
@@ -40,6 +28,52 @@ void initBoard(SGameState gameState, SDL_Surface *ecran, SDL_Surface *pionRouge,
 			}
 		}
 	}
+}
+
+SMove renvoieCoordonnees(){
+	
+	SDL_Event event;
+	SPos positionDepart;
+	SPos positionArrivee;
+	SMove mouvementPion;
+	int continuer = 1;
+
+	while(continuer){
+		SDL_WaitEvent(&event);
+		switch(event.type){
+				case SDL_MOUSEBUTTONUP:
+					if(event.button.button == SDL_BUTTON_LEFT){
+						positionDepart.line = (event.button.y)/TAILLE_CASE;
+						positionDepart.col = (event.button.x)/TAILLE_CASE;
+						continuer = 0;
+					}
+					break;
+
+				default:
+					break;
+		}
+	}
+	continuer = 1;
+
+	while(continuer){
+		SDL_WaitEvent(&event);
+		switch(event.type){
+				case SDL_MOUSEBUTTONUP:
+					if(event.button.button == SDL_BUTTON_LEFT){
+						positionArrivee.line = (event.button.y)/TAILLE_CASE;
+						positionArrivee.col = (event.button.x)/TAILLE_CASE;
+						continuer = 0;					
+					}
+					break;
+
+				default:
+					break;
+		}
+	}
+	mouvementPion.start = positionDepart;
+	mouvementPion.end = positionArrivee;
+	
+	return mouvementPion;
 }
 
 int interfaceGraphique(SGameState gameState){
@@ -73,7 +107,7 @@ int interfaceGraphique(SGameState gameState){
 	initBoard(gameState, ecran, pionRouge, pionBleu);	
 
 	SDL_Flip(ecran);
-	
+	/*
 	while (continuer){
 		SDL_WaitEvent(&event);
 		switch(event.type){
@@ -92,13 +126,13 @@ int interfaceGraphique(SGameState gameState){
 				break;
 		}
 		
-	}
-
+	}*/
+	/*
 	SDL_FreeSurface(pionRouge);
 	SDL_FreeSurface(pionBleu);
 	SDL_FreeSurface(imageFond);
 	SDL_Quit(); //on quitte la SDL
-
+*/
 	return EXIT_SUCCESS;
 	
 }
