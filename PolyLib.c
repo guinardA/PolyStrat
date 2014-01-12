@@ -78,6 +78,7 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 void EndGame()
 {
 	printf("EndGame\n");
+	penalite = 0;
 }
 
 void EndMatch()
