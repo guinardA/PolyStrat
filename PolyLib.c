@@ -299,7 +299,7 @@ int peutBouger(int i, int j)
 	return 1;
 }
 
-<<<<<<< HEAD
+
 //mise à jour du contexte perso avec le gameState envoyé par l'arbitre
 void majContextePerso(const SGameState * const gameState)
 {
@@ -309,13 +309,10 @@ void majContextePerso(const SGameState * const gameState)
 	{
 		for(j=0;i<10;i++)
 		{
-			if (contextPerso.board[i][j].content != gameState.board[i][j].content)
+			if(contextPerso.board[i][j].content != gameState.board[i][j].content)
 			{
 				contextPerso.board[i][j] = gameStateboard[i][j];
 			}
 		}
 	}
-
-=======
->>>>>>> 758a13f22c109718440c0ee47485719bf2945029
 }
