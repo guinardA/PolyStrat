@@ -9,6 +9,7 @@ int penalite=0;
 SGameState contextPerso;
 void choixStrategieIA(int choix,EPiece boardInit[4][10]);
 int peutBouger(int i, int j);
+void majContextePerso(const SGameState * const gameState)
 
 //Ensemble des fonctions communes a toutes les groupes
 void InitLibrary(char name[50])
@@ -89,7 +90,9 @@ void EndMatch()
 
 SMove NextMove(const SGameState * const gameState)
 {
-	
+	//Maj du contextePerso
+	majContextePerso(gameState):
+
 	//RÈGLE DE DÉPLACEMENT RECUPERER SUR LE STRATEGO.C
 	//VÉRIFIER DANS LE TABLEAU QUE ENNEMIE EST BON (SELON STRATEGIE)
 	printf("Deplacement d'un pion\n");
@@ -146,8 +149,9 @@ SMove NextMove(const SGameState * const gameState)
 void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 {
 	//REMPLIR TABLEAU SELON LE RESULTAT
-	
 	printf("AttackResult\n");
+	
+
 }
 
 void Penalty()
@@ -271,14 +275,31 @@ void choixStrategieIA(int choix,EPiece boardInit[4][10])
 }
 
 
-//fonction liée à nextMove
+//fonctions liées à nextMove
+
+//Renvoie 0 si les coordonnées passées en paramètres correspondent à un pion de l'ia qui peut bouger
 int peutBouger(int i, int j)
 {
-
-
 	if( (i!=9) && (contextPerso.board[i+1][j].content != EClake) && (contextPerso.board[i+1][j].content != couleur) )
 		return 0;
 	
 	return 1;
+}
+
+//mise à jour du contexte perso avec le gameState envoyé par l'arbitre
+void majContextePerso(const SGameState * const gameState)
+{
+	int i,j;
+
+	for(i=0;i<10;i++)
+	{
+		for(j=0;i<10;i++)
+		{
+			if (contextPerso.board[i][j].content != gameState.board[i][j].content)
+			{
+				contextPerso.board[i][j] = gameStateboard[i][j];
+			}
+		}
+	}
 
 }
