@@ -9,7 +9,7 @@ void majContextePerso(const SGameState * const gameState);
 
 EColor couleur,couleurAdverse;
 //attaque à 0 quand le mouvement réalisé précédement n'est pas une attaque, sinon 1
-int penalite=0,attaque=0, nbrPionRestant = 40;
+int penalite=0,attaque=0, nbrPionRestant = 40, tab[40];
 SPos positionPiece[40];
 SGameState contextPerso;
 
@@ -19,6 +19,7 @@ void InitLibrary(char name[50])
 {
 	printf("Initialisation des variables de la librairie 1\n");
 	strcpy(name,"Polylib");
+		srand(time(NULL));
 }
 
 void StartMatch()
@@ -58,6 +59,7 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 			contextPerso.board[i][j] = box;
 			positionPiece[k].col = i;
 			positionPiece[k].line = j;
+			tab[k] = 0;
 			k++;
 		}
 	}
@@ -108,8 +110,7 @@ SMove NextMove(const SGameState * const gameState)
 	int i;
 	int j;
 	int line, col;
-	
-	srand(time(NULL));
+
 	do
 	{
 		do
@@ -117,7 +118,10 @@ SMove NextMove(const SGameState * const gameState)
 			i = (int)rand()%40;
 			line = positionPiece[i].line;
 			col = positionPiece[i].col;
-			//printf("%i\n", i);
+			if(tab[i] == 0){
+				tab[i] = 1;
+				printf("%i\n", i);
+			}
 			
 		}
 		while(((contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag)));
@@ -129,15 +133,17 @@ SMove NextMove(const SGameState * const gameState)
 			else
 				printf("rouge");
 		*/
+		//printf("%i\n\n TOTO : %i ", i);
+			
 		move.start.line = line;
 		move.start.col = col;
 		
-		if(i<9)
+		if(line<9)
 		{
 			move.end.line = positionPiece[i].line+1;
 			move.end.col = positionPiece[i].col;
 		}
-		else if(j>0)
+		else if(col>0)
 		{
 			move.end.line = positionPiece[i].line;
 			move.end.col = positionPiece[i].col-1;
@@ -154,7 +160,6 @@ SMove NextMove(const SGameState * const gameState)
 			attaque = 0;
 	}
 	while(verificationMouvement(move, *gameState, couleur)!=0);
-	
 	return move;
 }
 
