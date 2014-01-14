@@ -8,6 +8,7 @@ EColor couleur;
 int penalite=0;
 SGameState contextPerso;
 void choixStrategieIA(int choix,EPiece boardInit[4][10]);
+int peutBouger(int i, int j);
 
 //Ensemble des fonctions communes a toutes les groupes
 void InitLibrary(char name[50])
@@ -96,42 +97,49 @@ SMove NextMove(const SGameState * const gameState)
 	SMove move; 
 	int i;
 	int j;
-	srand(time(NULL));
+	
+	//do
+	//{
+		srand(time(NULL));
 
-	//Vérifie le mouvement renvoie 0 mouvement ok et 1 mouvement pas ok
-	/*
-	do
-	{
 		do
 		{
 
 			i = (int)rand()%10;
 			j = (int)rand()%10;
-		}
-		while( (contextPerso.board[i][j].content == couleur) && (contextPerso.board[i][j].piece != EPbomb) && (contextPerso.board[i][j].piece != EPflag));
 
+			
+		}
+		while( (contextPerso.board[i][j].content != couleur) || (peutBouger(i,j) != 0) || ( (contextPerso.board[i][j].piece == EPbomb) || (contextPerso.board[i][j].piece == EPflag) )  );
+		/*	
+			printf("%i %i",i,j);
+			if(couleur==ECblue)
+				printf("bleue");
+			else
+				printf("rouge");
+		*/
 		move.start.line = i;
 		move.start.col = j;
 		
 		if(i<9)
 		{
-			move.end.line = i++;
+			move.end.line = i+1;
 			move.end.col = j;
 		}
-		else if(j<0)
+		else if(j>0)
 		{
 			move.end.line = i;
-			move.end.col = j--;
+			move.end.col = j-1;
 		}
 		else
 		{
 			move.end.line = i;
-			move.end.col = j++;
+			move.end.col = j+1;
 		}
 
-	}
-	while(verificationMouvement(move, contextPerso, couleur)==0);
-	*/
+	//}
+	//while(verificationMouvement(move, contextPerso, couleur)!=0);
+	
 	return move;
 }
 
@@ -140,8 +148,6 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 	//REMPLIR TABLEAU SELON LE RESULTAT
 	
 	printf("AttackResult\n");
-
-
 }
 
 void Penalty()
@@ -262,4 +268,17 @@ void choixStrategieIA(int choix,EPiece boardInit[4][10])
 		boardInit[3][8] = EPcaptain;//6
 		boardInit[3][9] = EPscout;//2
 	}
+}
+
+
+//fonction liée à nextMove
+int peutBouger(int i, int j)
+{
+
+
+	if( (i!=9) && (contextPerso.board[i+1][j].content != EClake) && (contextPerso.board[i+1][j].content != couleur) )
+		return 0;
+	
+	return 1;
+
 }
