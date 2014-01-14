@@ -4,8 +4,8 @@
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_ttf.h>
 
-SMove renvoieCoordonnees();
-void initBoard(SGameState gameState, SDL_Surface *ecran, SDL_Surface *pionsRouges[12], SDL_Surface *pionsBleus[12]);
+SMove renvoieCoordonnees(SDL_Surface *ecran, SGameState gameState);
+void initBoard(SGameState gameState, SDL_Surface *ecran);
 int interfaceGraphique(SGameState gameState);
-void afficheMessage();
+void afficheMessage(char* message);
 void selectionnerPion(SDL_Surface *ecran, SPos selected);

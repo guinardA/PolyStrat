@@ -15,7 +15,7 @@ void selectionnerPion(SDL_Surface *ecran, SPos selected){
 
 void afficheMessage(char* message){
 
-    SDL_Surface *ecran = NULL, *texte = NULL, *fond = NULL;
+    SDL_Surface *ecran = NULL, *texte = NULL;
     SDL_Rect position;
     SDL_Event event;
     TTF_Font *police = NULL;
@@ -67,10 +67,97 @@ void afficheMessage(char* message){
 }
 
 	
-void initBoard(SGameState gameState, SDL_Surface *ecran, SDL_Surface *pionsRouges[12], SDL_Surface *pionsBleus[12] ){
+void initBoard(SGameState gameState, SDL_Surface *ecran){
 	
 	SDL_Rect position;
 	int i=0, j=0;
+
+	SDL_Surface *imageFond = NULL;	//création des variables
+	SDL_Rect positionFond;
+	SDL_Surface *pionsRouges[12] = {NULL};
+	SDL_Surface *pionsBleus[12] = {NULL};
+
+	imageFond = IMG_Load("board.png");
+	
+	//On remplit les deux tableaux avec les images qui vont bien
+	//***************** PIONS ROUGES ***********************
+	pionsRouges[0] = IMG_Load("icons/Bombe0r.png");
+	SDL_SetColorKey(pionsRouges[0], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[0]->format, 255, 255, 255));
+
+	pionsRouges[1] = IMG_Load("icons/spy1r.png");
+	SDL_SetColorKey(pionsRouges[1], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[1]->format, 255, 255, 255));
+
+	pionsRouges[2] = IMG_Load("icons/scout2r.png");
+	SDL_SetColorKey(pionsRouges[2], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[2]->format, 255, 255, 255));
+
+	pionsRouges[3] = IMG_Load("icons/miner3r.png");
+	SDL_SetColorKey(pionsRouges[3], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[3]->format, 255, 255, 255));
+
+	pionsRouges[4] = IMG_Load("icons/sergeant4r.png");
+	SDL_SetColorKey(pionsRouges[4], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[4]->format, 255, 255, 255));
+
+	pionsRouges[5] = IMG_Load("icons/lieutenant5r.png");
+	SDL_SetColorKey(pionsRouges[5], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[5]->format, 255, 255, 255));
+
+	pionsRouges[6] = IMG_Load("icons/captain6r.png");
+	SDL_SetColorKey(pionsRouges[6], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[6]->format, 255, 255, 255));
+
+	pionsRouges[7] = IMG_Load("icons/major7r.png");
+	SDL_SetColorKey(pionsRouges[7], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[7]->format, 255, 255, 255));
+
+	pionsRouges[8] = IMG_Load("icons/colonel8r.png");
+	SDL_SetColorKey(pionsRouges[8], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[8]->format, 255, 255, 255));
+
+	pionsRouges[9] = IMG_Load("icons/general9r.png");
+	SDL_SetColorKey(pionsRouges[9], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[9]->format, 255, 255, 255));
+
+	pionsRouges[10] = IMG_Load("icons/marshal10r.png");
+	SDL_SetColorKey(pionsRouges[10], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[10]->format, 255, 255, 255));
+
+	pionsRouges[11] = IMG_Load("icons/flag11r.png");
+	SDL_SetColorKey(pionsRouges[11], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[11]->format, 255, 255, 255));
+
+	//***************** PIONS BLEUS ***********************
+	pionsBleus[0] = IMG_Load("icons/Bombe0b.png");
+	SDL_SetColorKey(pionsBleus[0], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[0]->format, 255, 255, 255));
+
+	pionsBleus[1] = IMG_Load("icons/spy1b.png");
+	SDL_SetColorKey(pionsBleus[1], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[1]->format, 255, 255, 255));
+
+	pionsBleus[2] = IMG_Load("icons/scout2b.png");
+	SDL_SetColorKey(pionsBleus[2], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[2]->format, 255, 255, 255));
+
+	pionsBleus[3] = IMG_Load("icons/miner3b.png");
+	SDL_SetColorKey(pionsBleus[3], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[3]->format, 255, 255, 255));
+
+	pionsBleus[4] = IMG_Load("icons/sergeant4b.png");
+	SDL_SetColorKey(pionsBleus[4], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[4]->format, 255, 255, 255));
+
+	pionsBleus[5] = IMG_Load("icons/lieutenant5b.png");
+	SDL_SetColorKey(pionsBleus[5], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[5]->format, 255, 255, 255));
+
+	pionsBleus[6] = IMG_Load("icons/captain6b.png");
+	SDL_SetColorKey(pionsBleus[6], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[6]->format, 255, 255, 255));
+
+	pionsBleus[7] = IMG_Load("icons/major7b.png");
+	SDL_SetColorKey(pionsBleus[7], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[7]->format, 255, 255, 255));
+
+	pionsBleus[8] = IMG_Load("icons/colonel8b.png");
+	SDL_SetColorKey(pionsBleus[8], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[8]->format, 255, 255, 255));
+
+	pionsBleus[9] = IMG_Load("icons/general9b.png");
+	SDL_SetColorKey(pionsBleus[9], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[9]->format, 255, 255, 255));
+
+	pionsBleus[10] = IMG_Load("icons/marshal10b.png");
+	SDL_SetColorKey(pionsBleus[10], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[10]->format, 255, 255, 255));
+
+	pionsBleus[11] = IMG_Load("icons/flag11b.png");
+	SDL_SetColorKey(pionsBleus[11], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[11]->format, 255, 255, 255));
+	
+	positionFond.x = 0;
+	positionFond.y = 0;
+
+	SDL_BlitSurface(imageFond, NULL, ecran, &positionFond);
 
 	for(i = 0; i<10; i++){
 		for(j=0; j<10; j++){
@@ -239,11 +326,10 @@ void initBoard(SGameState gameState, SDL_Surface *ecran, SDL_Surface *pionsRouge
 	}*/
 }
 
-SMove renvoieCoordonnees(){
+SMove renvoieCoordonnees(SDL_Surface *ecran, SGameState gameState){
 	
 	SDL_Event event;
-	SPos positionDepart;
-	SPos positionArrivee;
+	SPos positionDepart, positionArrivee;
 	SMove mouvementPion;
 	int continuer = 1;
 
@@ -262,6 +348,10 @@ SMove renvoieCoordonnees(){
 					break;
 		}
 	}
+	if((gameState.board[positionDepart.line][positionDepart.col].content == ECred) || (gameState.board[positionDepart.line][positionDepart.col].content == ECblue)){
+		selectionnerPion(ecran, positionDepart);
+		SDL_Flip(ecran);
+	}
 	continuer = 1;
 
 	while(continuer){
@@ -279,6 +369,10 @@ SMove renvoieCoordonnees(){
 					break;
 		}
 	}
+	
+	SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 255, 255, 255)); //on efface l'ecran
+	initBoard(gameState, ecran);
+
 	mouvementPion.start = positionDepart;
 	mouvementPion.end = positionArrivee;
 	
@@ -289,108 +383,16 @@ int interfaceGraphique(SGameState gameState){
 	
 	
 
-	SDL_Surface *ecran = NULL, *imageFond = NULL, *pionRouge = NULL, *pionBleu = NULL;	//création des variables
-	SDL_Rect positionFond;
-	int continuer = 1;
-	SDL_Event event;
-	SDL_Surface *pionsRouges[12] = {NULL};
-	SDL_Surface *pionsBleus[12] = {NULL};
+	SDL_Surface *ecran = NULL;	//création des variables
+	//int continuer = 1;
+	//SDL_Event event;
 
 	SDL_Init(SDL_INIT_VIDEO);	//initialisation de la SDL
 
 	ecran = SDL_SetVideoMode(380, 377, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);	//chargement des surfaces
 	SDL_WM_SetCaption("Stratego", NULL);
 	
-	imageFond = IMG_Load("board.png");
-	
-	//On remplit les deux tableaux avec les images qui vont bien
-	//***************** PIONS ROUGES ***********************
-	pionsRouges[0] = IMG_Load("icons/Bombe0r.png");
-	SDL_SetColorKey(pionsRouges[0], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[0]->format, 255, 255, 255));
-
-	pionsRouges[1] = IMG_Load("icons/spy1r.png");
-	SDL_SetColorKey(pionsRouges[1], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[1]->format, 255, 255, 255));
-
-	pionsRouges[2] = IMG_Load("icons/scout2r.png");
-	SDL_SetColorKey(pionsRouges[2], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[2]->format, 255, 255, 255));
-
-	pionsRouges[3] = IMG_Load("icons/miner3r.png");
-	SDL_SetColorKey(pionsRouges[3], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[3]->format, 255, 255, 255));
-
-	pionsRouges[4] = IMG_Load("icons/sergeant4r.png");
-	SDL_SetColorKey(pionsRouges[4], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[4]->format, 255, 255, 255));
-
-	pionsRouges[5] = IMG_Load("icons/lieutenant5r.png");
-	SDL_SetColorKey(pionsRouges[5], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[5]->format, 255, 255, 255));
-
-	pionsRouges[6] = IMG_Load("icons/captain6r.png");
-	SDL_SetColorKey(pionsRouges[6], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[6]->format, 255, 255, 255));
-
-	pionsRouges[7] = IMG_Load("icons/major7r.png");
-	SDL_SetColorKey(pionsRouges[7], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[7]->format, 255, 255, 255));
-
-	pionsRouges[8] = IMG_Load("icons/colonel8r.png");
-	SDL_SetColorKey(pionsRouges[8], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[8]->format, 255, 255, 255));
-
-	pionsRouges[9] = IMG_Load("icons/general9r.png");
-	SDL_SetColorKey(pionsRouges[9], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[9]->format, 255, 255, 255));
-
-	pionsRouges[10] = IMG_Load("icons/marshal10r.png");
-	SDL_SetColorKey(pionsRouges[10], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[10]->format, 255, 255, 255));
-
-	pionsRouges[11] = IMG_Load("icons/flag11r.png");
-	SDL_SetColorKey(pionsRouges[11], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[11]->format, 255, 255, 255));
-
-	//***************** PIONS BLEUS ***********************
-	pionsBleus[0] = IMG_Load("icons/Bombe0b.png");
-	SDL_SetColorKey(pionsBleus[0], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[0]->format, 255, 255, 255));
-
-	pionsBleus[1] = IMG_Load("icons/spy1b.png");
-	SDL_SetColorKey(pionsBleus[1], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[1]->format, 255, 255, 255));
-
-	pionsBleus[2] = IMG_Load("icons/scout2b.png");
-	SDL_SetColorKey(pionsBleus[2], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[2]->format, 255, 255, 255));
-
-	pionsBleus[3] = IMG_Load("icons/miner3b.png");
-	SDL_SetColorKey(pionsBleus[3], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[3]->format, 255, 255, 255));
-
-	pionsBleus[4] = IMG_Load("icons/sergeant4b.png");
-	SDL_SetColorKey(pionsBleus[4], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[4]->format, 255, 255, 255));
-
-	pionsBleus[5] = IMG_Load("icons/lieutenant5b.png");
-	SDL_SetColorKey(pionsBleus[5], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[5]->format, 255, 255, 255));
-
-	pionsBleus[6] = IMG_Load("icons/captain6b.png");
-	SDL_SetColorKey(pionsBleus[6], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[6]->format, 255, 255, 255));
-
-	pionsBleus[7] = IMG_Load("icons/major7b.png");
-	SDL_SetColorKey(pionsBleus[7], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[7]->format, 255, 255, 255));
-
-	pionsBleus[8] = IMG_Load("icons/colonel8b.png");
-	SDL_SetColorKey(pionsBleus[8], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[8]->format, 255, 255, 255));
-
-	pionsBleus[9] = IMG_Load("icons/general9b.png");
-	SDL_SetColorKey(pionsBleus[9], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[9]->format, 255, 255, 255));
-
-	pionsBleus[10] = IMG_Load("icons/marshal10b.png");
-	SDL_SetColorKey(pionsBleus[10], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[10]->format, 255, 255, 255));
-
-	pionsBleus[11] = IMG_Load("icons/flag11b.png");
-	SDL_SetColorKey(pionsBleus[11], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[11]->format, 255, 255, 255));
-
-
-	pionRouge = IMG_Load("pionrouge.png");
-	pionBleu = IMG_Load("pionbleu.png");
-	
-	SDL_SetColorKey(pionRouge, SDL_SRCCOLORKEY, SDL_MapRGB(pionRouge->format, 255, 255, 255));
-	SDL_SetColorKey(pionBleu, SDL_SRCCOLORKEY, SDL_MapRGB(pionBleu->format, 255, 255, 255));
-	
-	positionFond.x = 0;
-	positionFond.y = 0;
-	
-	SDL_BlitSurface(imageFond, NULL, ecran, &positionFond);
-	
-	initBoard(gameState, ecran, pionsRouges, pionsBleus);
+	initBoard(gameState, ecran);
 	
 	SDL_Flip(ecran);
 	/*
