@@ -9,7 +9,7 @@ void majContextePerso(const SGameState * const gameState);
 
 EColor couleur,couleurAdverse;
 //attaque à 0 quand le mouvement réalisé précédement n'est pas une attaque, sinon 1
-int penalite=0,attaque=0, nbrPionRestant = 40, tab[40];
+int penalite=0,attaque=0, nbrPionRestant = 40;
 SPos positionPiece[40];
 SGameState contextPerso;
 
@@ -59,7 +59,6 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 			contextPerso.board[i][j] = box;
 			positionPiece[k].line = i;
 			positionPiece[k].col = j;
-			tab[k] = 0;
 			k++;
 		}
 	}
@@ -118,22 +117,18 @@ SMove NextMove(const SGameState * const gameState)
 			i = (int)rand()%40;
 			line = positionPiece[i].line;
 			col = positionPiece[i].col;
-			if(tab[i] == 0){
-				tab[i] = 1;
-				//printf("%i\n", i);
-			}
 			
 		}
-		while(((contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag)));
-		//while( (contextPerso.board[i][j].content != couleur) || (peutBouger(i,j) != 0) || ( (contextPerso.board[i][j].piece == EPbomb) || (contextPerso.board[i][j].piece == EPflag) )  );
-		/*
-			printf("\n\n%i %i\n\n",i,j);
+		while( (contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag) || (line <0));
+		
+	
 			if(couleur==ECblue)
 				printf("bleue");
 			else
 				printf("rouge");
-		*/
-		//printf("%i\n\n TOTO : %i ", i);
+		
+		printf("\n\n TOTO : %i ",(int) i);
+				printf("\n\n%i %i\n\n",line,col);
 			
 		move.start.line = line;
 		move.start.col = col;
@@ -157,9 +152,16 @@ SMove NextMove(const SGameState * const gameState)
 		if(gameState->board[move.end.line][move.end.col].content == couleurAdverse)
 			attaque = 1;
 		else
+		{
 			attaque = 0;
+			positionPiece[i].line = move.end.line;
+			positionPiece[i].col = move.end.col;
+		}
 	}
 	while(verificationMouvement(move, *gameState, couleur)!=0);
+
+
+
 	return move;
 }
 
@@ -170,7 +172,20 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 	EPiece attaquant;
 	EPiece attaquer;
 	SBox newBox;
-	
+	int numPiece;
+	SPos pos;
+
+	for(numPiece=0;numPiece<40;numPiece++)
+	{
+		pos.line = positionPiece[numPiece].line;
+		pos.col = positionPiece[numPiece].col;
+
+		if((armyPos.line == pos.line) && (armyPos.col == pos.col))
+		{
+			break;
+		}
+	}	
+
 	if(attaque == 1)
 	{
 		attaquant = armyPiece;
@@ -194,6 +209,9 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		contextPerso.board[armyPos.line][armyPos.col] = newBox;
 		contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
 		nbrPionRestant --;
+
+		positionPiece[numPiece].line = -1;		
+		
 	}
 	
 	
@@ -211,14 +229,30 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		} else {
 			contextPerso.redOut[attaquer]++;
 		}
-	
-
+		
 		//ON MODIFIE LE CONTEXTE DE JEU
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 	
-		contextPerso.board[enemyPos.line][enemyPos.col] = contextPerso.board[armyPos.line][armyPos.col];
-		contextPerso.board[armyPos.line][armyPos.col] = newBox;		
+
+		if(attaque = 1)
+		{
+			
+			positionPiece[numPiece].line = enemyPos.line;
+			positionPiece[numPiece].col = enemyPos.col;		
+
+			contextPerso.board[enemyPos.line][enemyPos.col] = contextPerso.board[armyPos.line][armyPos.col];
+			contextPerso.board[armyPos.line][armyPos.col] = newBox;	
+		}
+		else
+		{
+			positionPiece[numPiece].line = -1;
+
+			contextPerso.board[armyPos.line][armyPos.col] = contextPerso.board[enemyPos.line][enemyPos.col];
+			contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
+		}
+
+		
 	}	
 	else
 	{
@@ -232,10 +266,19 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 
-		contextPerso.board[armyPos.line][armyPos.col] = contextPerso.board[enemyPos.line][enemyPos.col];
-		contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
+		if(attaque = 1)
+		{
+			positionPiece[numPiece].line = -1;
+			contextPerso.board[armyPos.line][armyPos.col] = newBox;	
+		}
+		else
+		{
+			contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
+		}
+
 	}	
 
+	attaque = 0;
 }
 
 void Penalty()
@@ -303,10 +346,10 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 							}
 							//CAS D'UNE PIÈCE QUI BOUGE ET QUI N'EST PAS UN ÉCLAIREUR
 							else{
-								if((move.start.line == move.end.line && move.start.col == move.end.col+1) ||
-								   (move.start.line == move.end.line && move.start.col == move.end.col+1) ||
-								   (move.start.line == move.end.line+1 && move.start.col == move.end.col) ||
-								   (move.start.line == move.end.line-1 && move.start.col == move.end.col)){
+								if((move.start.line == move.end.line && move.start.col+1 == move.end.col) ||
+								   (move.start.line == move.end.line && move.start.col-1 == move.end.col) ||
+								   (move.start.line+1 == move.end.line && move.start.col == move.end.col) ||
+								   (move.start.line-1 == move.end.line && move.start.col == move.end.col)){
 									   
 									return 0;
 								}   
