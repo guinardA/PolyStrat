@@ -57,8 +57,8 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 			box.content = couleur;
 			box.piece = boardInit[i][j];
 			contextPerso.board[i][j] = box;
-			positionPiece[k].col = i;
-			positionPiece[k].line = j;
+			positionPiece[k].line = i;
+			positionPiece[k].col = j;
 			tab[k] = 0;
 			k++;
 		}
@@ -120,7 +120,7 @@ SMove NextMove(const SGameState * const gameState)
 			col = positionPiece[i].col;
 			if(tab[i] == 0){
 				tab[i] = 1;
-				printf("%i\n", i);
+				//printf("%i\n", i);
 			}
 			
 		}
@@ -283,6 +283,7 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 												(startLine != endLine && startCol == endCol)){
 										   
 										   if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content !=ECnone){
+												printf("\n ERREUR 1");
 												return 1;
 											}
 											else if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content == ECnone){
@@ -290,6 +291,7 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 											}
 											 
 											if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content !=ECnone){
+												 printf("\n ERREUR 2");
 												 return 1;
 											}
 											else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content ==ECnone){
@@ -310,7 +312,7 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 								}   
 							}
 						}
-					}				
+					}		
 				}
 			}
 		}
