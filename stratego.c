@@ -211,12 +211,15 @@ do {
 	}while((pion_erreur_j1 == 1 || pion_erreur_j2 == 1) && fin == 0 );
 	
 	if(fin == 0){
+		
+		//ENREGISTRE LES PIONS DU JOUEUR 1 SUR LE CONTEXTE DE JEU
+		enregistrePion(boardInitJ1, &gameState, couleurJ1, 1);
+		//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
+		enregistrePion(boardInitJ2, &gameState, couleurJ2, 2);
+		interfaceGraphique(gameState); //On affiche le plateau de jeu après initialisation
+		
 		do{ //A METTRE LORSQU'ON AURA UNE VRAI PARTIE
-			//ENREGISTRE LES PIONS DU JOUEUR 1 SUR LE CONTEXTE DE JEU
-			enregistrePion(boardInitJ1, &gameState, couleurJ1, 1);
-			//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
-			enregistrePion(boardInitJ2, &gameState, couleurJ2, 2);
-			interfaceGraphique(gameState); //On affiche le plateau de jeu après initialisation
+			
 			//DEMANDE DE DEPLACEMENT D'UN PION
 			if(couleurJ1 == ECred){
 				do{
@@ -251,6 +254,7 @@ do {
 						//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
 						gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
 						move = j2NextMove(&gameStateJ2);
+						//move = renvoieCoordonnees();
 						
 						//VERIFIE QUE LE MOUVEMENT EST VALIDE
 						pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult);
@@ -527,12 +531,16 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 	
 	SBox boxStart, boxEnd, newBox;
 	
+	
+	
 	if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
 		
 			if(joueur == 2){
 				move.start.line = 9-move.start.line;
 				move.end.line = 9-move.end.line;
 			}
+			
+			printf("\n\nLigne depart : %i arrive : %i\nColonne depart : %i arrive : %i\n\n",move.start.line, move.end.line, move.start.col, move.end.col);
 			boxStart = gameState->board[move.start.line][move.start.col];
 			//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
 			if(boxStart.content == color){

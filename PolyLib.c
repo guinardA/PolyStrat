@@ -138,7 +138,7 @@ SMove NextMove(const SGameState * const gameState)
 		}
 
 	}
-	while(verificationMouvement(move, contextPerso, couleur)!=0);
+	while(verificationMouvement(move, *gameState, couleur)!=0);
 	
 	return move;
 }
