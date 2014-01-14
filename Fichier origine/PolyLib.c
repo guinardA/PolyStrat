@@ -105,10 +105,9 @@ SMove NextMove(const SGameState * const gameState)
 	
 	do
 	{
-		srand(time(NULL));
 		do
 		{
-			
+			srand(time(NULL));
 			i = (int)rand()%10;
 			j = (int)rand()%10;
 		}
@@ -153,19 +152,16 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 {
 	//REMPLIR TABLEAU SELON LE RESULTAT
 	printf("AttackResult\n");
-	EPiece attaquant;
-	EPiece attaquer;
-	SBox newBox;
-	
+
 	if(attaque == 1)
 	{
-		attaquant = armyPiece;
-		attaquer = enemyPiece;
+		EPiece attaquant = armyPiece;
+		EPiece attaquer = enemyPiece;
 	}
 	else
 	{
-		attaquant = enemyPiece;
-		attaquer = armyPiece;
+		EPiece attaquant = enemyPiece;
+		EPiece attaquer = armyPiece;
 	}
 
 	//CAS OU LES 2 PIÈCES SONT DE FORCE ÉQUIVALENTE
@@ -177,8 +173,8 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		//ON MODIFIE LE CONTEXTE DE JEU
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
-		contextPerso.board[armyPos.line][armyPos.col] = newBox;
-		contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
+		contextPerso.board[armyPiece.line][armyPiece.col] = newBox;
+		contextPerso.board[enemyPiece.line][enemyPiece.col] = newBox;
 	}
 	
 	
@@ -202,8 +198,8 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 	
-		contextPerso.board[enemyPos.line][enemyPos.col] = contextPerso.board[armyPos.line][armyPos.col];
-		contextPerso.board[armyPos.line][armyPos.col] = newBox;		
+		contextPerso.board[enemyPiece.line][enemyPiece.col] = contextPerso.board[armyPiece.line][armyPiece.col];
+		contextPerso.board[armyPiece.line][armyPiece.col] = newBox;		
 	}	
 	else
 	{
@@ -217,8 +213,8 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 
-		contextPerso.board[armyPos.line][armyPos.col] = contextPerso.board[enemyPos.line][enemyPos.col];
-		contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
+		contextPerso.board[armyPiece.line][armyPiece.col] = contextPerso.board[ennemyPiece.line][ennemyPiece.col];
+		contextPerso.board[ennemyPiece.line][ennemyPiece.col] = newBox;
 	}	
 
 }
