@@ -549,19 +549,30 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 							if(boxStart.piece == EPscout){
 								if((move.start.line == move.end.line && move.start.col != move.end.col) ||
 								   (move.start.line != move.end.line && move.start.col == move.end.col)){
+									   
+									   int startLine = move.start.line;
+									   int endLine = move.end.line;
+									   int startCol = move.start.col;
+									   int endCol= move.end.col;
+									   
 									   //ON VERIFIE DANS LE CAS D'UN ÉCLAIREUR SI IL NE SAUTE PAS PAR DESSUS UN LAC OU UN JOUEUR DURANT SONT DÉPLACEMENT
-				//PROBLEME !!!!!!! VERIFIER POUR LE SCOUT !!!!!!!!
-									   while(move.start.line != move.end.line || move.start.col != move.end.col){
-										   if(move.start.line != move.end.line && gameState->board[move.start.line+1][move.end.col].content !=ECnone){
-											  return 1;
-											 }
-											 else move.start.line++;
-											 if (move.start.col != move.end.col && gameState->board[move.start.line][move.end.col+1].content !=ECnone){
+									   while((startLine == endLine && startCol != endCol) ||
+												(startLine != endLine && startCol == endCol)){
+										   
+										   if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content !=ECnone){
+												return 1;
+											}
+											else if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content == ECnone){
+												startLine++;
+											}
+											 
+											if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col+1].content !=ECnone){
 												 return 1;
 											}
-											else move.start.col++;
+											else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col+1].content ==ECnone){
+												 startCol++;
+											}
 										}
-									   
 									printf("Déplacement réalisé\n");
 									
 									//ON VÉRIFIE SI LE DÉPLACEMENT ENTRAINE UNE ATTAQUE OU PAS
