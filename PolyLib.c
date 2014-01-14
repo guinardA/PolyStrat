@@ -152,16 +152,19 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 {
 	//REMPLIR TABLEAU SELON LE RESULTAT
 	printf("AttackResult\n");
-
+	EPiece attaquant;
+	EPiece attaquer;
+	SBox newBox;
+	
 	if(attaque == 1)
 	{
-		EPiece attaquant = armyPiece;
-		EPiece attaquer = enemyPiece;
+		attaquant = armyPiece;
+		attaquer = enemyPiece;
 	}
 	else
 	{
-		EPiece attaquant = enemyPiece;
-		EPiece attaquer = armyPiece;
+		attaquant = enemyPiece;
+		attaquer = armyPiece;
 	}
 
 	//CAS OU LES 2 PIÈCES SONT DE FORCE ÉQUIVALENTE
@@ -173,8 +176,8 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		//ON MODIFIE LE CONTEXTE DE JEU
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
-		contextPerso.board[armyPiece.line][armyPiece.col] = newBox;
-		contextPerso.board[enemyPiece.line][enemyPiece.col] = newBox;
+		contextPerso.board[armyPos.line][armyPos.col] = newBox;
+		contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
 	}
 	
 	
@@ -198,8 +201,8 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 	
-		contextPerso.board[enemyPiece.line][enemyPiece.col] = contextPerso.board[armyPiece.line][armyPiece.col];
-		contextPerso.board[armyPiece.line][armyPiece.col] = newBox;		
+		contextPerso.board[enemyPos.line][enemyPos.col] = contextPerso.board[armyPos.line][armyPos.col];
+		contextPerso.board[armyPos.line][armyPos.col] = newBox;		
 	}	
 	else
 	{
@@ -213,8 +216,8 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 
-		contextPerso.board[armyPiece.line][armyPiece.col] = contextPerso.board[ennemyPiece.line][ennemyPiece.col];
-		contextPerso.board[ennemyPiece.line][ennemyPiece.col] = newBox;
+		contextPerso.board[armyPos.line][armyPos.col] = contextPerso.board[enemyPos.line][enemyPos.col];
+		contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
 	}	
 
 }
