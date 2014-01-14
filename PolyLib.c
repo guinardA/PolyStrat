@@ -94,16 +94,21 @@ SMove NextMove(const SGameState * const gameState)
 	printf("Deplacement d'un pion\n");
 	
 	SMove move; 
+	int i;
+	int j;
+	srand(time(NULL));
 
 	//Vérifie le mouvement renvoie 0 mouvement ok et 1 mouvement pas ok
+	/*
 	do
 	{
 		do
 		{
-		int i = (int)rand()%10;
-		int j = (int)rand()%10;
+
+			i = (int)rand()%10;
+			j = (int)rand()%10;
 		}
-		while( (contextPerso.board[i][j].EColor == couleur) && (contextPerso.board[i][j].piece != EPbomb) && (contextPerso.board[i][j].piece != EPflag));
+		while( (contextPerso.board[i][j].content == couleur) && (contextPerso.board[i][j].piece != EPbomb) && (contextPerso.board[i][j].piece != EPflag));
 
 		move.start.line = i;
 		move.start.col = j;
@@ -126,7 +131,7 @@ SMove NextMove(const SGameState * const gameState)
 
 	}
 	while(verificationMouvement(move, contextPerso, couleur)==0);
-	
+	*/
 	return move;
 }
 
