@@ -211,7 +211,7 @@ do {
 	}while((pion_erreur_j1 == 1 || pion_erreur_j2 == 1) && fin == 0 );
 	
 	if(fin == 0){
-		//do{ //A METTRE LORSQU'ON AURA UNE VRAI PARTIE
+		do{ //A METTRE LORSQU'ON AURA UNE VRAI PARTIE
 			//ENREGISTRE LES PIONS DU JOUEUR 1 SUR LE CONTEXTE DE JEU
 			enregistrePion(boardInitJ1, &gameState, couleurJ1, 1);
 			//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
@@ -222,9 +222,8 @@ do {
 				do{
 					//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
 					gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
-					//move = j1NextMove(&gameStateJ1);
-					move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
-					//printf("Mouvement clic : \nCase départ : i = %i et j = %i\nCase arrivé : i = %i et j = %i\n", move.start.col, move.start.line, move.end.col, move.end.line);
+					move = j1NextMove(&gameStateJ1);
+					//move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
 					//VERIFIE QUE LE MOUVEMENT EST VALIDE
 					pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult);
 					
@@ -332,7 +331,7 @@ do {
 					}while(pion_erreur_j1 == 1 && fin == 0);
 				}
 			}
-		//}while(fin == 0);
+		}while(fin == 0);
 	}
 							
 	printf("Voulez vous refaire une partie ? 1:oui, 0:non = ");

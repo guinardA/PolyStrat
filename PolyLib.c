@@ -98,8 +98,8 @@ SMove NextMove(const SGameState * const gameState)
 	int i;
 	int j;
 	
-	//do
-	//{
+	do
+	{
 		srand(time(NULL));
 
 		do
@@ -111,13 +111,13 @@ SMove NextMove(const SGameState * const gameState)
 			
 		}
 		while( (contextPerso.board[i][j].content != couleur) || (peutBouger(i,j) != 0) || ( (contextPerso.board[i][j].piece == EPbomb) || (contextPerso.board[i][j].piece == EPflag) )  );
-		/*	
-			printf("%i %i",i,j);
+		
+			printf("\n\n%i %i\n\n",i,j);
 			if(couleur==ECblue)
 				printf("bleue");
 			else
 				printf("rouge");
-		*/
+		
 		move.start.line = i;
 		move.start.col = j;
 		
@@ -137,8 +137,8 @@ SMove NextMove(const SGameState * const gameState)
 			move.end.col = j+1;
 		}
 
-	//}
-	//while(verificationMouvement(move, contextPerso, couleur)!=0);
+	}
+	while(verificationMouvement(move, contextPerso, couleur)!=0);
 	
 	return move;
 }
@@ -170,31 +170,44 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 	if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
 		
 			boxStart = gameState.board[move.start.line][move.start.col];
-			
 			//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
 			if(boxStart.content == color){
 				//VERIFICATION QUE LE PION SELECTIONNER PEUT ETRE BOUGER
 				if(boxStart.piece!=EPnone && boxStart.piece!=EPbomb && boxStart.piece!=EPflag){
 					if(move.end.line>=0 && move.end.line<=9 && move.end.col>=0 && move.end.col<=9){
+						
 						boxEnd = gameState.board[move.end.line][move.end.col];
+
 						//VERIFICATION QUE ARRIVE NE CORRESPOND PAS A UN LAC NI A UN DE CES PIONS
 						if(boxEnd.content!=color && boxEnd.content!=EClake){
 							//ON VERIFIE QUE LA PIECE DEPLACER CORRESPOND OU PAS UN ECLAIREUR
 							if(boxStart.piece == EPscout){
 								if((move.start.line == move.end.line && move.start.col != move.end.col) ||
 								   (move.start.line != move.end.line && move.start.col == move.end.col)){
+									   
+									   int startLine = move.start.line;
+									   int endLine = move.end.line;
+									   int startCol = move.start.col;
+									   int endCol= move.end.col;
+									   
 									   //ON VERIFIE DANS LE CAS D'UN ÉCLAIREUR SI IL NE SAUTE PAS PAR DESSUS UN LAC OU UN JOUEUR DURANT SONT DÉPLACEMENT
-									   while(move.start.line != move.end.line || move.start.col != move.end.col){
-										   if(move.start.line != move.end.line && gameState.board[move.start.line+1][move.end.col].content !=ECnone){
-											  return 1;
-											 }
-											 else move.start.line++;
-											 if (move.start.col != move.end.col && gameState.board[move.start.line][move.end.col+1].content !=ECnone){
+									   while((startLine == endLine && startCol != endCol) ||
+												(startLine != endLine && startCol == endCol)){
+										   
+										   if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content !=ECnone){
+												return 1;
+											}
+											else if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content == ECnone){
+												startLine++;
+											}
+											 
+											if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content !=ECnone){
 												 return 1;
 											}
-											else move.start.col++;
+											else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content ==ECnone){
+												 startCol++;
+											}
 										}
-
 									return 0;
 								}   
 							}
