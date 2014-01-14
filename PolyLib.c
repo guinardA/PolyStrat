@@ -3,13 +3,15 @@
 #include <string.h>
 
 int verificationMouvement(SMove move, SGameState gameState,EColor color);
-
-EColor couleur;
-int penalite=0;
-SGameState contextPerso;
 void choixStrategieIA(int choix,EPiece boardInit[4][10]);
 int peutBouger(int i, int j);
-void majContextePerso(const SGameState * const gameState)
+void majContextePerso(const SGameState * const gameState);
+
+EColor couleur,couleurAdverse;
+//attaque à 0 quand le mouvement réalisé précédement n'est pas une attaque, sinon 1
+int penalite=0,attaque=0;
+SGameState contextPerso;
+
 
 //Ensemble des fonctions communes a toutes les groupes
 void InitLibrary(char name[50])
@@ -27,14 +29,14 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 {
 		
 	//FAIRE ATTENTION AVEC LA POSITION DE LA COULEUR	
-	int i,j, couleurAdverse;
+	int i,j;
 	SBox box;
 	
 	if(couleur = ECred){
 		couleurAdverse = ECblue;
 	}
 	else{
-		couleurAdverse = ECred;	
+		couleurAdverse = ECred;
 	}
 	
 	printf("Lancement d'une partie\n");
@@ -91,7 +93,7 @@ void EndMatch()
 SMove NextMove(const SGameState * const gameState)
 {
 	//Maj du contextePerso
-	majContextePerso(gameState):
+	majContextePerso(gameState);
 
 	//RÈGLE DE DÉPLACEMENT RECUPERER SUR LE STRATEGO.C
 	//VÉRIFIER DANS LE TABLEAU QUE ENNEMIE EST BON (SELON STRATEGIE)
@@ -103,15 +105,11 @@ SMove NextMove(const SGameState * const gameState)
 	
 	do
 	{
-		srand(time(NULL));
-
 		do
 		{
-
+			srand(time(NULL));
 			i = (int)rand()%10;
 			j = (int)rand()%10;
-
-			
 		}
 		while( (contextPerso.board[i][j].content != couleur) || (peutBouger(i,j) != 0) || ( (contextPerso.board[i][j].piece == EPbomb) || (contextPerso.board[i][j].piece == EPflag) )  );
 		
@@ -140,8 +138,12 @@ SMove NextMove(const SGameState * const gameState)
 			move.end.col = j+1;
 		}
 
+		if(gameState->board[move.end.line][move.end.col].content == couleurAdverse)
+			attaque = 1;
+		else
+			attaque = 0;
 	}
-	while(verificationMouvement(move, contextPerso, couleur)!=0);
+	while(verificationMouvement(move, *gameState, couleur)!=0);
 	
 	return move;
 }
@@ -150,7 +152,70 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 {
 	//REMPLIR TABLEAU SELON LE RESULTAT
 	printf("AttackResult\n");
+
+	if(attaque == 1)
+	{
+		EPiece attaquant = armyPiece;
+		EPiece attaquer = enemyPiece;
+	}
+	else
+	{
+		EPiece attaquant = enemyPiece;
+		EPiece attaquer = armyPiece;
+	}
+
+	//CAS OU LES 2 PIÈCES SONT DE FORCE ÉQUIVALENTE
+	if(attaquant == attaquer){
+		
+		contextPerso.redOut[attaquant]++;
+		contextPerso.blueOut[attaquer]++;		
+			
+		//ON MODIFIE LE CONTEXTE DE JEU
+		newBox.content = ECnone;
+		newBox.piece = EPnone;
+		contextPerso.board[armyPiece.line][armyPiece.col] = newBox;
+		contextPerso.board[enemyPiece.line][enemyPiece.col] = newBox;
+	}
 	
+	
+	/*
+	 * CAS OU LA PIECE ATTAQUANT EST PLUS FORTE QUE LA PIÈCE ATTAQUÉE
+	 * OU CAS OU LA PIECE ATTAQUANT EST UN DÉMINENEUR ET LA PIECE ATTAQUÉE UNE BOMBE
+	 * OU CAS OU LA PIECE ATTAQUANT EST UNE ESPIONNE ET LA PIECE ATTAQUÉE UN MARCHAL
+	 */
+	if((attaquant > attaquer && attaquer!=EPbomb) || 
+	(attaquant == EPminer && attaquer == EPbomb) ||
+	(attaquant == EPspy && attaquer == EPmarshal)){
+		
+		if(couleur == ECred){
+			contextPerso.blueOut[attaquer]++;
+		} else {
+			contextPerso.redOut[attaquer]++;
+		}
+	
+
+		//ON MODIFIE LE CONTEXTE DE JEU
+		newBox.content = ECnone;
+		newBox.piece = EPnone;
+	
+		contextPerso.board[enemyPiece.line][enemyPiece.col] = contextPerso.board[armyPiece.line][armyPiece.col];
+		contextPerso.board[armyPiece.line][armyPiece.col] = newBox;		
+	}	
+	else
+	{
+		if(couleur == ECred){
+			contextPerso.redOut[attaquer]++;
+		} else {
+			contextPerso.blueOut[attaquer]++;
+		}
+	
+		//ON MODIFIE LE CONTEXTE DE JEU
+		newBox.content = ECnone;
+		newBox.piece = EPnone;
+
+		contextPerso.board[armyPiece.line][armyPiece.col] = contextPerso.board[ennemyPiece.line][ennemyPiece.col];
+		contextPerso.board[ennemyPiece.line][ennemyPiece.col] = newBox;
+	}	
 
 }
 
@@ -309,10 +374,8 @@ void majContextePerso(const SGameState * const gameState)
 	{
 		for(j=0;i<10;i++)
 		{
-			if(contextPerso.board[i][j].content != gameState.board[i][j].content)
-			{
-				contextPerso.board[i][j] = gameStateboard[i][j];
-			}
+			if(contextPerso.board[i][j].content != gameState->board[i][j].content)
+				contextPerso.board[i][j] = gameState->board[i][j];
 		}
 	}
 }
