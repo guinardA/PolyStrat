@@ -9,7 +9,8 @@ void majContextePerso(const SGameState * const gameState);
 
 EColor couleur,couleurAdverse;
 //attaque à 0 quand le mouvement réalisé précédement n'est pas une attaque, sinon 1
-int penalite=0,attaque=0;
+int penalite=0,attaque=0, nbrPionRestant = 40;
+SPos positionPiece[40];
 SGameState contextPerso;
 
 
@@ -29,7 +30,7 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 {
 		
 	//FAIRE ATTENTION AVEC LA POSITION DE LA COULEUR	
-	int i,j;
+	int i,j,k;
 	SBox box;
 	
 	if(couleur = ECred){
@@ -49,11 +50,15 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 	choixStrategieIA(choix,boardInit);
 	
 	//Initialisation du contexte de jeu interne
+	k = 0;
 	for(i=0; i<4 ; i++){
 		for(j=0 ; j<10 ; j++){
 			box.content = couleur;
 			box.piece = boardInit[i][j];
 			contextPerso.board[i][j] = box;
+			positionPiece[k].col = i;
+			positionPiece[k].line = j;
+			k++;
 		}
 	}
 	for(i=4; i<6 ; i++){
@@ -108,12 +113,13 @@ SMove NextMove(const SGameState * const gameState)
 		srand(time(NULL));
 		do
 		{
-			
-			i = (int)rand()%10;
-			j = (int)rand()%10;
+			i = (int)rand()%nbrPionRestant;
+			printf("%i \n", i);
+			//j = (int)rand()%nbrPionRestant;
 		}
-		while( (contextPerso.board[i][j].content != couleur) || (peutBouger(i,j) != 0) || ( (contextPerso.board[i][j].piece == EPbomb) || (contextPerso.board[i][j].piece == EPflag) )  );
-		
+		while(( (contextPerso.board[positionPiece[i].line][positionPiece[i].col].piece == EPbomb) || (contextPerso.board[positionPiece[i].line][positionPiece[i].col].piece == EPflag) )  );
+		//while( (contextPerso.board[i][j].content != couleur) || (peutBouger(i,j) != 0) || ( (contextPerso.board[i][j].piece == EPbomb) || (contextPerso.board[i][j].piece == EPflag) )  );
+		/*
 			printf("\n\n%i %i\n\n",i,j);
 			if(couleur==ECblue)
 				printf("bleue");
@@ -122,21 +128,21 @@ SMove NextMove(const SGameState * const gameState)
 		
 		move.start.line = i;
 		move.start.col = j;
-		
+		*/
 		if(i<9)
 		{
-			move.end.line = i+1;
-			move.end.col = j;
+			move.end.line = positionPiece[i].line+1;
+			move.end.col = positionPiece[i].col;
 		}
 		else if(j>0)
 		{
-			move.end.line = i;
-			move.end.col = j-1;
+			move.end.line = positionPiece[i].line;
+			move.end.col = positionPiece[i].col-1;
 		}
 		else
 		{
-			move.end.line = i;
-			move.end.col = j+1;
+			move.end.line = positionPiece[i].line;
+			move.end.col = positionPiece[i].col+1;
 		}
 
 		if(gameState->board[move.end.line][move.end.col].content == couleurAdverse)
@@ -179,6 +185,7 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		newBox.piece = EPnone;
 		contextPerso.board[armyPos.line][armyPos.col] = newBox;
 		contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
+		nbrPionRestant --;
 	}
 	
 	
