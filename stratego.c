@@ -531,8 +531,6 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 	
 	SBox boxStart, boxEnd, newBox;
 	
-	
-	
 	if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
 		
 			if(joueur == 2){
@@ -553,7 +551,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 						//VERIFICATION QUE ARRIVE NE CORRESPOND PAS A UN LAC NI A UN DE CES PIONS
 						if(boxEnd.content!=color && boxEnd.content!=EClake){
 							//ON VERIFIE QUE LA PIECE DEPLACER CORRESPOND OU PAS UN ECLAIREUR
-							if(boxStart.piece == EPscout){
+							/*if(boxStart.piece == EPscout){
 								if((move.start.line == move.end.line && move.start.col != move.end.col) ||
 								   (move.start.line != move.end.line && move.start.col == move.end.col)){
 									   
@@ -565,7 +563,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 									   //ON VERIFIE DANS LE CAS D'UN ÉCLAIREUR SI IL NE SAUTE PAS PAR DESSUS UN LAC OU UN JOUEUR DURANT SONT DÉPLACEMENT
 									   while((startLine == endLine && startCol != endCol) ||
 												(startLine != endLine && startCol == endCol)){
-										   
+										   //VERIFIER LORSQU'ON LE JOUEUR MONTE OU DESCEND
 										   if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content !=ECnone){
 												return 1;
 											}
@@ -597,7 +595,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 								}   
 							}
 							//CAS D'UNE PIÈCE QUI BOUGE ET QUI N'EST PAS UN ÉCLAIREUR
-							else{
+							else{*/
 								if((move.start.line == move.end.line && move.start.col == move.end.col+1) ||
 								   (move.start.line == move.end.line && move.start.col == move.end.col+1) ||
 								   (move.start.line == move.end.line+1 && move.start.col == move.end.col) ||
@@ -616,7 +614,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 									}
 									return 0;
 								}   
-							}
+							//}
 						}
 					}				
 				}
