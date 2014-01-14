@@ -107,17 +107,20 @@ SMove NextMove(const SGameState * const gameState)
 	SMove move; 
 	int i;
 	int j;
+	int line, col;
 	
+	srand(time(NULL));
 	do
 	{
-		srand(time(NULL));
 		do
 		{
-			i = (int)rand()%nbrPionRestant;
-			printf("%i \n", i);
-			//j = (int)rand()%nbrPionRestant;
+			i = (int)rand()%40;
+			line = positionPiece[i].line;
+			col = positionPiece[i].col;
+			//printf("%i\n", i);
+			
 		}
-		while(( (contextPerso.board[positionPiece[i].line][positionPiece[i].col].piece == EPbomb) || (contextPerso.board[positionPiece[i].line][positionPiece[i].col].piece == EPflag) )  );
+		while(((contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag)));
 		//while( (contextPerso.board[i][j].content != couleur) || (peutBouger(i,j) != 0) || ( (contextPerso.board[i][j].piece == EPbomb) || (contextPerso.board[i][j].piece == EPflag) )  );
 		/*
 			printf("\n\n%i %i\n\n",i,j);
@@ -125,10 +128,10 @@ SMove NextMove(const SGameState * const gameState)
 				printf("bleue");
 			else
 				printf("rouge");
-		
-		move.start.line = i;
-		move.start.col = j;
 		*/
+		move.start.line = line;
+		move.start.col = col;
+		
 		if(i<9)
 		{
 			move.end.line = positionPiece[i].line+1;
