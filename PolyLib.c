@@ -7,7 +7,7 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color);
 EColor couleur;
 int penalite=0;
 SGameState contextPerso;
-void setup(int choix,EPiece boardInit[4][10]);
+void choixStrategieIA(int choix,EPiece boardInit[4][10]);
 
 //Ensemble des fonctions communes a toutes les groupes
 void InitLibrary(char name[50])
@@ -42,7 +42,7 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 	//Choix stratégie de départ
 	srand(time(NULL));
 	int choix = (int)rand()%1;
-	setup(choix,boardInit);
+	choixStrategieIA(choix,boardInit);
 	
 	//Initialisation du contexte de jeu interne
 	for(i=0; i<4 ; i++){
@@ -94,14 +94,38 @@ SMove NextMove(const SGameState * const gameState)
 	printf("Deplacement d'un pion\n");
 	
 	SMove move; 
-	move.start.line = 3;
-	move.start.col = 8;
-	move.end.line = 4;
-	move.end.col = 8;
-	
+
 	//Vérifie le mouvement renvoie 0 mouvement ok et 1 mouvement pas ok
-	if (verificationMouvement(move, contextPerso, couleur)==0)
-		return move;
+	do
+	{
+		do
+		{
+		int i = (int)rand()%10;
+		int j = (int)rand()%10;
+		}
+		while( (contextPerso.board[i][j].EColor == couleur) && (contextPerso.board[i][j].piece != EPbomb) && (contextPerso.board[i][j].piece != EPflag));
+
+		move.start.line = i;
+		move.start.col = j;
+		
+		if(i<9)
+		{
+			move.end.line = i++;
+			move.end.col = j;
+		}
+		else if(j<0)
+		{
+			move.end.line = i;
+			move.end.col = j--;
+		}
+		else
+		{
+			move.end.line = i;
+			move.end.col = j++;
+		}
+
+	}
+	while(verificationMouvement(move, contextPerso, couleur)==0);
 	
 	return move;
 }
@@ -111,6 +135,8 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 	//REMPLIR TABLEAU SELON LE RESULTAT
 	
 	printf("AttackResult\n");
+
+
 }
 
 void Penalty()
@@ -183,7 +209,7 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 /*
  *Initialisation des pièces de l'ia
  */
-void setup(int choix,EPiece boardInit[4][10])
+void choixStrategieIA(int choix,EPiece boardInit[4][10])
 {
 	if(choix == 0){
 		//4ème ligne
