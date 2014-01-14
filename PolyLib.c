@@ -105,9 +105,10 @@ SMove NextMove(const SGameState * const gameState)
 	
 	do
 	{
+		srand(time(NULL));
 		do
 		{
-			srand(time(NULL));
+			
 			i = (int)rand()%10;
 			j = (int)rand()%10;
 		}
