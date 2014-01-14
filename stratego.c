@@ -7,6 +7,7 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <time.h>
+//#include <pthread.h>
 #include "PolyLib.h"
 #include "IGStratego.h"
 
@@ -20,10 +21,14 @@ SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int jo
 int verificationMouvement(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece));
 int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece));
 int finPartie(int joueur, int flag);
+static void * quitter(void * p_data);
 
 void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2);
 
+char * message;
+
 int main(int argc, const char * argv[]){
+
 
 //=========================Gestion ouverture de la librarie et des méthodes liés
 
@@ -551,7 +556,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 						//VERIFICATION QUE ARRIVE NE CORRESPOND PAS A UN LAC NI A UN DE CES PIONS
 						if(boxEnd.content!=color && boxEnd.content!=EClake){
 							//ON VERIFIE QUE LA PIECE DEPLACER CORRESPOND OU PAS UN ECLAIREUR
-							/*if(boxStart.piece == EPscout){
+							if(boxStart.piece == EPscout){
 								if((move.start.line == move.end.line && move.start.col != move.end.col) ||
 								   (move.start.line != move.end.line && move.start.col == move.end.col)){
 									   
@@ -564,18 +569,36 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 									   while((startLine == endLine && startCol != endCol) ||
 												(startLine != endLine && startCol == endCol)){
 										   //VERIFIER LORSQU'ON LE JOUEUR MONTE OU DESCEND
-										   if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content !=ECnone){
-												return 1;
+										   
+										   if(startLine < endLine || startCol < endCol){
+											   if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content !=ECnone){
+													return 1;
+												}
+												else if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content == ECnone){
+													startLine++;
+												}
+												 
+												if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col+1].content !=ECnone){
+													 return 1;
+												}
+												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col+1].content ==ECnone){
+													 startCol++;
+												}
 											}
-											else if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content == ECnone){
-												startLine++;
-											}
-											 
-											if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col+1].content !=ECnone){
-												 return 1;
-											}
-											else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col+1].content ==ECnone){
-												 startCol++;
+											else if(startLine > endLine || startCol > endCol){
+												if(startCol == endCol && startLine != endLine && gameState->board[startLine-1][endCol].content !=ECnone){
+													return 1;
+												}
+												else if(startCol == endCol && startLine != endLine && gameState->board[startLine-1][endCol].content == ECnone){
+													startLine--;
+												}
+												 
+												if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col-1].content !=ECnone){
+													 return 1;
+												}
+												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col-1].content ==ECnone){
+													 startCol--;
+												}
 											}
 										}
 									printf("Déplacement réalisé\n");
@@ -595,9 +618,9 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 								}   
 							}
 							//CAS D'UNE PIÈCE QUI BOUGE ET QUI N'EST PAS UN ÉCLAIREUR
-							else{*/
+							else{
 								if((move.start.line == move.end.line && move.start.col == move.end.col+1) ||
-								   (move.start.line == move.end.line && move.start.col == move.end.col+1) ||
+								   (move.start.line == move.end.line && move.start.col == move.end.col-1) ||
 								   (move.start.line == move.end.line+1 && move.start.col == move.end.col) ||
 								   (move.start.line == move.end.line-1 && move.start.col == move.end.col)){
 									   
@@ -614,7 +637,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 									}
 									return 0;
 								}   
-							//}
+							}
 						}
 					}				
 				}
@@ -860,4 +883,38 @@ void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2){
 		}
 		printf("\n");
 	}
+
+
 }
+/*
+static void * quitter(void * p_data){
+	
+	int continuer = 1;
+	SDL_Event event;
+	
+		while (continuer){
+		SDL_WaitEvent(&event);
+		switch(event.type){
+			case SDL_QUIT:
+				continuer = 0;
+				break;
+			case SDL_KEYDOWN:
+				switch(event.key.keysym.sym){
+					case SDLK_ESCAPE:
+						continuer = 0;
+						break;
+					
+					default:
+						break;
+				}
+				break;
+		}
+		
+	}
+	
+	SDL_FreeSurface(pionRouge);
+	SDL_FreeSurface(pionBleu);
+	SDL_FreeSurface(imageFond);
+	SDL_Quit(); //on quitte la SDL
+}
+*/

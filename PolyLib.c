@@ -120,20 +120,10 @@ SMove NextMove(const SGameState * const gameState)
 			col = positionPiece[i].col;
 			if(tab[i] == 0){
 				tab[i] = 1;
-				//printf("%i\n", i);
 			}
 			
 		}
 		while(((contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag)));
-		//while( (contextPerso.board[i][j].content != couleur) || (peutBouger(i,j) != 0) || ( (contextPerso.board[i][j].piece == EPbomb) || (contextPerso.board[i][j].piece == EPflag) )  );
-		/*
-			printf("\n\n%i %i\n\n",i,j);
-			if(couleur==ECblue)
-				printf("bleue");
-			else
-				printf("rouge");
-		*/
-		//printf("%i\n\n TOTO : %i ", i);
 			
 		move.start.line = line;
 		move.start.col = col;
@@ -283,7 +273,6 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 												(startLine != endLine && startCol == endCol)){
 										   
 										   if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content !=ECnone){
-												printf("\n ERREUR 1");
 												return 1;
 											}
 											else if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content == ECnone){
@@ -291,7 +280,6 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 											}
 											 
 											if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content !=ECnone){
-												 printf("\n ERREUR 2");
 												 return 1;
 											}
 											else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content ==ECnone){
