@@ -3,7 +3,7 @@
 
 #création de l'exécutable "stratego"
 all: stratego.c clean	
-		gcc -g IGStratego.c stratego.c -o stratego -ldl -lSDL -lSDLmain -lSDL_image
+		gcc -g IGStratego.c stratego.c -o stratego -ldl -lSDL -lSDLmain -lSDL_image -lSDL_ttf
 
 install: polylib.so polylib2.so
 		sudo mv polylib.so /usr/lib/

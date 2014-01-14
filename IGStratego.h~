@@ -1,7 +1,11 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
+#include <SDL/SDL_ttf.h>
 
-
-
-
-void deplacerPion(int grille[10][10], int xdepart, int ydepart, int xarrivee, int yarrivee);
-void initBoard(SGameState gameState, SDL_Surface *ecran, SDL_Surface *pionRouge, SDL_Surface *pionBleu );
+SMove renvoieCoordonnees();
+void initBoard(SGameState gameState, SDL_Surface *ecran, SDL_Surface *pionsRouges[12], SDL_Surface *pionsBleus[12]);
 int interfaceGraphique(SGameState gameState);
+void afficheMessage();
+void selectionnerPion(SDL_Surface *ecran, SPos selected)
