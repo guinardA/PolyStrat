@@ -391,11 +391,6 @@ int interfaceGraphique(SGameState gameState){
 	SDL_BlitSurface(imageFond, NULL, ecran, &positionFond);
 	
 	initBoard(gameState, ecran, pionsRouges, pionsBleus);
-
-	SPos pos;
-	pos.line = 3;
-	pos.col = 3;
-	selectionnerPion(ecran, pos);
 	
 	SDL_Flip(ecran);
 	/*

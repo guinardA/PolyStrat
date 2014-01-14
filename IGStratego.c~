@@ -6,8 +6,8 @@ void selectionnerPion(SDL_Surface *ecran, SPos selected){
 	SDL_Surface *cursor = NULL;
 	SDL_Rect position;
 	
-	position.x = selected.col;
-	position.y = selected.line;
+	position.x = (selected.col)*TAILLE_CASE;
+	position.y = (selected.line)*TAILLE_CASE;
 
 	cursor = IMG_Load("icons/iconeSelect.png");
 	SDL_BlitSurface(cursor, NULL, ecran, &position);
