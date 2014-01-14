@@ -211,7 +211,7 @@ do {
 	}while((pion_erreur_j1 == 1 || pion_erreur_j2 == 1) && fin == 0 );
 	
 	if(fin == 0){
-		//do{ //A METTRE LORSQU'ON AURA UNE VRAI PARTIE
+		do{ //A METTRE LORSQU'ON AURA UNE VRAI PARTIE
 			//ENREGISTRE LES PIONS DU JOUEUR 1 SUR LE CONTEXTE DE JEU
 			enregistrePion(boardInitJ1, &gameState, couleurJ1, 1);
 			//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
@@ -222,9 +222,8 @@ do {
 				do{
 					//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
 					gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
-					//move = j1NextMove(&gameStateJ1);
-					move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
-					//printf("Mouvement clic : \nCase départ : i = %i et j = %i\nCase arrivé : i = %i et j = %i\n", move.start.col, move.start.line, move.end.col, move.end.line);
+					move = j1NextMove(&gameStateJ1);
+					//move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
 					//VERIFIE QUE LE MOUVEMENT EST VALIDE
 					pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult);
 					
@@ -332,7 +331,7 @@ do {
 					}while(pion_erreur_j1 == 1 && fin == 0);
 				}
 			}
-		//}while(fin == 0);
+		}while(fin == 0);
 	}
 							
 	printf("Voulez vous refaire une partie ? 1:oui, 0:non = ");
@@ -549,19 +548,30 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 							if(boxStart.piece == EPscout){
 								if((move.start.line == move.end.line && move.start.col != move.end.col) ||
 								   (move.start.line != move.end.line && move.start.col == move.end.col)){
+									   
+									   int startLine = move.start.line;
+									   int endLine = move.end.line;
+									   int startCol = move.start.col;
+									   int endCol= move.end.col;
+									   
 									   //ON VERIFIE DANS LE CAS D'UN ÉCLAIREUR SI IL NE SAUTE PAS PAR DESSUS UN LAC OU UN JOUEUR DURANT SONT DÉPLACEMENT
-				//PROBLEME !!!!!!! VERIFIER POUR LE SCOUT !!!!!!!!
-									   while(move.start.line != move.end.line || move.start.col != move.end.col){
-										   if(move.start.line != move.end.line && gameState->board[move.start.line+1][move.end.col].content !=ECnone){
-											  return 1;
-											 }
-											 else move.start.line++;
-											 if (move.start.col != move.end.col && gameState->board[move.start.line][move.end.col+1].content !=ECnone){
+									   while((startLine == endLine && startCol != endCol) ||
+												(startLine != endLine && startCol == endCol)){
+										   
+										   if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content !=ECnone){
+												return 1;
+											}
+											else if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content == ECnone){
+												startLine++;
+											}
+											 
+											if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col+1].content !=ECnone){
 												 return 1;
 											}
-											else move.start.col++;
+											else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col+1].content ==ECnone){
+												 startCol++;
+											}
 										}
-									   
 									printf("Déplacement réalisé\n");
 									
 									//ON VÉRIFIE SI LE DÉPLACEMENT ENTRAINE UNE ATTAQUE OU PAS
