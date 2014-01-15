@@ -4,22 +4,21 @@
 
 int verificationMouvement(SMove move, SGameState gameState,EColor color);
 void choixStrategieIA(int choix,EPiece boardInit[4][10]);
-int peutBouger(int i, int j);
 void majContextePerso(const SGameState * const gameState);
 
 EColor couleur,couleurAdverse;
+
 //attaque à 0 quand le mouvement réalisé précédement n'est pas une attaque, sinon 1
-int penalite=0,attaque=0, nbrPionRestant = 40;
+int penalite=0,attaque=0;
 SPos positionPiece[40];
 SGameState contextPerso;
-
+int var =0;
 
 //Ensemble des fonctions communes a toutes les groupes
 void InitLibrary(char name[50])
 {
 	printf("Initialisation des variables de la librairie 1\n");
 	strcpy(name,"Polylib");
-		srand(time(NULL));
 }
 
 void StartMatch()
@@ -29,39 +28,44 @@ void StartMatch()
 
 void StartGame(const EColor color,EPiece boardInit[4][10])
 {
+	
+	printf("Lancement d'une partie\n");
+	printf("Placement des pions sur le terrain\n");
+	
+	//Initialisation du srand pour les coups de IA	
+	srand(time(NULL));	
 		
 	//FAIRE ATTENTION AVEC LA POSITION DE LA COULEUR	
-	int i,j,k;
+	int i,j,k = 0;
 	SBox box;
 	
-	if(couleur = ECred){
-		couleurAdverse = ECblue;
+	//Définition de la couleur
+	couleur = color;
+	if(couleur == ECred){
+		couleurAdverse = ECblue;	
 	}
 	else{
 		couleurAdverse = ECred;
 	}
-	
-	printf("Lancement d'une partie\n");
-	printf("Placement des pions sur le terrain\n");
-	couleur = color;
 
-	//Choix stratégie de départ
-	srand(time(NULL));
+	//Choix stratégie de placement de pion
+	//Actuellement une seul strategie
 	int choix = (int)rand()%1;
 	choixStrategieIA(choix,boardInit);
-	
+
 	//Initialisation du contexte de jeu interne
-	k = 0;
 	for(i=0; i<4 ; i++){
 		for(j=0 ; j<10 ; j++){
 			box.content = couleur;
 			box.piece = boardInit[i][j];
 			contextPerso.board[i][j] = box;
+			//Mise en place des pions du joueur
 			positionPiece[k].line = i;
 			positionPiece[k].col = j;
 			k++;
 		}
 	}
+	
 	for(i=4; i<6 ; i++){
 		for(j=0 ; j<10 ; j++){
 			if((i==4 && j==2) || (i==4 && j==3) || (i==4 && j==6) || (i==4 && j==7) ||(i==5 && j==2) || (i==5 && j==3) || (i==5 && j==6) || (i==5 && j==7)){
@@ -69,8 +73,15 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 				box.piece = EPnone;
 				contextPerso.board[i][j] = box;
 			} 
+			else{
+				box.content = ECnone;
+				box.piece = EPnone;
+				contextPerso.board[i][j] = box;
+			}
 		}
 	}
+	
+	//Au démarrage on sait qu'il y a 4 lignes de pion adverse mais on connait pas leur force
 	for(i=6; i<10 ; i++){
 		for(j=0 ; j<10 ; j++){
 			box.content = couleurAdverse;
@@ -79,15 +90,29 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 		}
 	}
 	
+	//Nombre de pions détruit
 	for(i= 0; i<11 ; i++){
 		contextPerso.redOut[i] = 0;
 		contextPerso.blueOut[i] = 0;
 	}
+	/*
+	printf("Couleur du joueur : %i\n", couleur);
+	for(i=0; i<10 ; i++){
+		for(j=0 ; j<10 ; j++){
+			printf("%i ", contextPerso.board[i][j].content);
+		}
+		printf("\n");
+	}
+	
+	while(1){
+	}*/
+	
 }
 
 void EndGame()
 {
 	printf("EndGame\n");
+	//On remet les pénalités a 0
 	penalite = 0;
 }
 
@@ -98,101 +123,125 @@ void EndMatch()
 
 SMove NextMove(const SGameState * const gameState)
 {
+	
+	printf("Deplacement d'un pion\n");
 	//Maj du contextePerso
 	majContextePerso(gameState);
 
-	//RÈGLE DE DÉPLACEMENT RECUPERER SUR LE STRATEGO.C
-	//VÉRIFIER DANS LE TABLEAU QUE ENNEMIE EST BON (SELON STRATEGIE)
-	printf("Deplacement d'un pion\n");
-	
 	SMove move; 
-	int i;
-	int j;
-	int line, col;
-
+	int line, col, i, j;
+	SBox board[10][10];
 	do
 	{
+		//On sélectionne la pièce a bouger
 		do
 		{
 			i = (int)rand()%40;
 			line = positionPiece[i].line;
 			col = positionPiece[i].col;
-<<<<<<< HEAD
-			
-		}
-		while( (contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag) || (line <0));
-		
-	
-			if(couleur==ECblue)
-				printf("bleue");
-			else
-				printf("rouge");
-		
-		printf("\n\n TOTO : %i ",(int) i);
-				printf("\n\n%i %i\n\n",line,col);
-=======
-			if(tab[i] == 0){
-				tab[i] = 1;
-			}
-			
-		}
-		while(((contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag)));
->>>>>>> 8f6053b1cde8a20f65d184b86d4ed0c3cfd35fc9
-			
+		}while( (contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag) || (line <0));
+
+		//Position de départ
 		move.start.line = line;
 		move.start.col = col;
 		
+		//Cas ou on se trouve pas a la dernière ligne
 		if(line<9)
 		{
-			move.end.line = positionPiece[i].line+1;
-			move.end.col = positionPiece[i].col;
+			move.end.line = line+1;
+			move.end.col = col;
+			
 		}
+		//Si on est pas a la première colonne alors on recule d'une colonne si on est a la dernière ligne
 		else if(col>0)
 		{
-			move.end.line = positionPiece[i].line;
-			move.end.col = positionPiece[i].col-1;
+			move.end.line = line;
+			move.end.col = col-1;
 		}
+		//Si on est a la première colonne et a la dernière ligne alors on avance d'une colonne
 		else
 		{
-			move.end.line = positionPiece[i].line;
-			move.end.col = positionPiece[i].col+1;
-		}
-
-		if(gameState->board[move.end.line][move.end.col].content == couleurAdverse)
-			attaque = 1;
-		else
-		{
-			attaque = 0;
-			positionPiece[i].line = move.end.line;
-			positionPiece[i].col = move.end.col;
+			move.end.line = line;
+			move.end.col = col+1;
 		}
 	}
 	while(verificationMouvement(move, *gameState, couleur)!=0);
 
-
-
+	//Cas ou le mouvement va entrainer une attaque
+	if(gameState->board[move.end.line][move.end.col].content == couleurAdverse)
+	{
+		attaque = 1;
+	}
+	//Cas ou aucune attaque va se passer
+	else
+	{
+		attaque = 0;
+		//On met a jour le contexte perso
+		contextPerso.board[move.end.line][move.end.col].content = contextPerso.board[line][col].content;
+		contextPerso.board[move.end.line][move.end.col].piece = contextPerso.board[line][col].piece;
+		contextPerso.board[line][col].content = ECnone;
+		contextPerso.board[line][col].piece = EPnone;
+			
+		//On a mis a jour la position du pion déplacer
+		positionPiece[i].line = move.end.line;
+		positionPiece[i].col = move.end.col;
+	}
+	/*
+	 //Affichage du contexte perso a corriger
+	for(i=0; i<10 ; i++){
+		for(j=0 ; j<10 ; j++){
+			printf("%i ", contextPerso.board[i][j].content);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	printf("\n");
+	printf("\n");
+	
+	//Affichage de la position des pions restant selon positionPiece
+	for(i=0; i<10 ; i++){
+		for(j=0 ; j<10 ; j++){
+			board[i][j].piece = EPnone;
+			board[i][j].content = ECnone;
+		}
+	}
+	
+	printf("Couleur du joueur : %i \n\n", couleur);
+	for(i=0; i<40 ; i++){
+		if(positionPiece[i].line != -1){
+			board[positionPiece[i].line][positionPiece[i].col].piece = EPbomb;
+			board[positionPiece[i].line][positionPiece[i].col].content = couleur;
+		}
+	}
+	
+	
+	for(i=0; i<10 ; i++){
+		for(j=0 ; j<10 ; j++){
+			printf("%i ", board[i][j].piece);
+		}
+		printf("\n");
+	}
+	*/
 	return move;
 }
 
 void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 {
+	//SI ATTAQUE = 1 ALORS ON EST ATTAQUANT
+	
 	//REMPLIR TABLEAU SELON LE RESULTAT
-	printf("AttackResult\n");
+	printf("AttackResult IA\n");
 	EPiece attaquant;
 	EPiece attaquer;
 	SBox newBox;
-	int numPiece;
+	int numPiece = 0;
 	SPos pos;
-
-	for(numPiece=0;numPiece<40;numPiece++)
+	
+	while((armyPos.line != pos.line) && (armyPos.col != pos.col))
 	{
 		pos.line = positionPiece[numPiece].line;
 		pos.col = positionPiece[numPiece].col;
-
-		if((armyPos.line == pos.line) && (armyPos.col == pos.col))
-		{
-			break;
-		}
+		numPiece ++;
 	}	
 
 	if(attaque == 1)
@@ -217,12 +266,10 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		newBox.piece = EPnone;
 		contextPerso.board[armyPos.line][armyPos.col] = newBox;
 		contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
-		nbrPionRestant --;
 
 		positionPiece[numPiece].line = -1;		
 		
 	}
-	
 	
 	/*
 	 * CAS OU LA PIECE ATTAQUANT EST PLUS FORTE QUE LA PIÈCE ATTAQUÉE
@@ -244,7 +291,7 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		newBox.piece = EPnone;
 	
 
-		if(attaque = 1)
+		if(attaque == 1)
 		{
 			
 			positionPiece[numPiece].line = enemyPos.line;
@@ -275,7 +322,7 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 
-		if(attaque = 1)
+		if(attaque == 1)
 		{
 			positionPiece[numPiece].line = -1;
 			contextPerso.board[armyPos.line][armyPos.col] = newBox;	
@@ -286,7 +333,6 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		}
 
 	}	
-
 	attaque = 0;
 }
 
@@ -305,23 +351,29 @@ void Penalty()
  */
 int verificationMouvement(SMove move, SGameState gameState,EColor color){
 	
+	
 	SBox boxStart, boxEnd, newBox;
 	
 	if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
 		
 			boxStart = gameState.board[move.start.line][move.start.col];
+			int t;
 			//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
 			if(boxStart.content == color){
+				
 				//VERIFICATION QUE LE PION SELECTIONNER PEUT ETRE BOUGER
 				if(boxStart.piece!=EPnone && boxStart.piece!=EPbomb && boxStart.piece!=EPflag){
 					if(move.end.line>=0 && move.end.line<=9 && move.end.col>=0 && move.end.col<=9){
 						
 						boxEnd = gameState.board[move.end.line][move.end.col];
-
-						//VERIFICATION QUE ARRIVE NE CORRESPOND PAS A UN LAC NI A UN DE CES PIONS
+						
+						//VERIFICATION QUE ARRIVE NE CORRESPOND PAS A UN LAC NI A UN DE CES PIONS	
 						if(boxEnd.content!=color && boxEnd.content!=EClake){
+							
 							//ON VERIFIE QUE LA PIECE DEPLACER CORRESPOND OU PAS UN ECLAIREUR
 							if(boxStart.piece == EPscout){
+								
+								//ON VERIFIE QU'IL NE BOUGE PAS EN DIAGONAL
 								if((move.start.line == move.end.line && move.start.col != move.end.col) ||
 								   (move.start.line != move.end.line && move.start.col == move.end.col)){
 									   
@@ -334,25 +386,46 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 									   while((startLine == endLine && startCol != endCol) ||
 												(startLine != endLine && startCol == endCol)){
 										   
-										   if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content !=ECnone){
+										   //Cas si le prochain coup arrive a la ligne arrivé (mouvement ligne)
+										   if(startCol == endCol && startLine != endLine && startLine+1 == endLine && gameState.board[startLine+1][endCol].content == couleurAdverse) {
+											   startLine++;
+											}
+										   
+										   //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
+										   else if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content !=ECnone){
+												printf("Erreur 1 \n");
+												printf("line start : %i end : %i",startLine, endLine);
 												return 1;
 											}
+											
+											//Cas si le prochain mouvement est une case vide (mouvement ligne)
 											else if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content == ECnone){
 												startLine++;
 											}
 											 
-											if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content !=ECnone){
+											 //Cas si le prochain coup arrive a la ligne arrivé (mouvement col)
+										   if(startLine == endLine && startCol != endCol && startCol+1 == endCol && gameState.board[startLine][endCol+1].content == couleurAdverse) {
+											   startCol++;
+											}
+											 
+											//Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
+											else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content != ECnone){
+												 printf("Erreur 2 \n");
 												 return 1;
 											}
-											else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content ==ECnone){
+											
+											//Cas si le prochain mouvement est une case vide (mouvement colonne)
+											else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content == ECnone){
 												 startCol++;
 											}
 										}
 									return 0;
 								}   
 							}
+							
 							//CAS D'UNE PIÈCE QUI BOUGE ET QUI N'EST PAS UN ÉCLAIREUR
 							else{
+								//Cas ou la piece peut bouger
 								if((move.start.line == move.end.line && move.start.col+1 == move.end.col) ||
 								   (move.start.line == move.end.line && move.start.col-1 == move.end.col) ||
 								   (move.start.line+1 == move.end.line && move.start.col == move.end.col) ||
@@ -426,16 +499,6 @@ void choixStrategieIA(int choix,EPiece boardInit[4][10])
 
 //fonctions liées à nextMove
 
-//Renvoie 0 si les coordonnées passées en paramètres correspondent à un pion de l'ia qui peut bouger
-int peutBouger(int i, int j)
-{
-	if( (i!=9) && (contextPerso.board[i+1][j].content != EClake) && (contextPerso.board[i+1][j].content != couleur) )
-		return 0;
-	
-	return 1;
-}
-
-
 //mise à jour du contexte perso avec le gameState envoyé par l'arbitre
 void majContextePerso(const SGameState * const gameState)
 {
@@ -445,7 +508,7 @@ void majContextePerso(const SGameState * const gameState)
 	{
 		for(j=0;i<10;i++)
 		{
-			if(contextPerso.board[i][j].content != gameState->board[i][j].content)
+			if(contextPerso.board[i][j].content != gameState->board[i][j].content && contextPerso.board[i][j].piece == 12)
 				contextPerso.board[i][j] = gameState->board[i][j];
 		}
 	}
