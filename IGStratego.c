@@ -1,25 +1,121 @@
 #include "PolyLib.h"
 #include "IGStratego.h"
-#define TAILLE_CASE 38	//Taille d'une case en pixels
+#define TAILLE_CASE 60	//Taille d'une case en pixels
+#define MARGE_GAUCHE 160	//Marge gauche
+#define MARGE_DROITE 160	//Marge droite
+#define MARGE_BAS 60	//Marge bas
+#define MARGE_HAUT 10	//Marge haut
+
 
 SDL_Surface *imageFond = NULL;	//création des variables
 SDL_Surface *pionsRouges[12] = {NULL};
 SDL_Surface *pionsBleus[12] = {NULL};
 
+void afficherMenu(){
+	
+	SDL_Surface *ecran = NULL, *texteTitre = NULL, *texte2j = NULL, *texte1j = NULL, *texte2IA = NULL, *texteQuit = NULL;
+	SDL_Rect position;
+    	SDL_Event event;
+    	TTF_Font *policeTitre = NULL, *policeMenu = NULL;
+	SDL_Color couleurNoire = {255, 255, 255};
+	int continuer = 1;
+
+	SDL_Init(SDL_INIT_VIDEO); //démarrage de la SDL
+    	TTF_Init(); //Initialisation de SDL_TTF
+
+	ecran = SDL_SetVideoMode(600, 480, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	SDL_WM_SetCaption("Stratego", NULL);
+
+	// Chargement des polices 
+	policeTitre = TTF_OpenFont("fonts/FreeMonoBold.ttf", 60);
+	policeMenu = TTF_OpenFont("fonts/FreeMonoBold.ttf", 30);
+	
+	// Écriture du texte dans la SDL_Surface texte en mode Blended (optimal) 
+	char message[50] = "STRATEGO";
+	texteTitre = TTF_RenderText_Blended(policeTitre, message, couleurNoire);
+
+	sprintf(message, "2 joueurs");
+
+	texte2j = TTF_RenderText_Blended(policeMenu, message, couleurNoire);
+
+	sprintf(message, "1 joueur");
+	texte1j = TTF_RenderText_Blended(policeMenu, message, couleurNoire);
+	sprintf(message, "2 IA");
+	texte2IA = TTF_RenderText_Blended(policeMenu, message, couleurNoire);
+	sprintf(message, "Quitter");
+	texteQuit = TTF_RenderText_Blended(policeMenu, message, couleurNoire);
+	
+	SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 0, 0, 0));
+	
+	position.x = ecran->w/2 - texteTitre->w/2;
+    	position.y = ecran->h/5 - texteTitre->h/2;
+   	SDL_BlitSurface(texteTitre, NULL, ecran, &position);
+
+	position.x = ecran->w/2 - texte1j->w/2;
+    	position.y = 2*(ecran->h/5) - texte1j->h/2;
+   	SDL_BlitSurface(texte1j, NULL, ecran, &position);
+
+	position.x = ecran->w/2 - texte2j->w/2;
+    	//position.y = 3*(ecran->h/5) - texte2j->h/2;
+	position.y += 50;
+
+   	SDL_BlitSurface(texte2j, NULL, ecran, &position);
+
+	position.x = ecran->w/2 - texte2IA->w/2;
+    	//position.y = 4*(ecran->h/5) - texte2IA->h/2;
+	position.y += 50;
+   	SDL_BlitSurface(texte2IA, NULL, ecran, &position);
+
+	position.x = ecran->w/2 - texteQuit->w/2;
+    	//position.y = 5*(ecran->h/5) - texteQuit->h/2;
+	position.y += 50;
+   	SDL_BlitSurface(texteQuit, NULL, ecran, &position);
+
+	SDL_Flip(ecran);
+
+	while (continuer)
+    {
+        SDL_WaitEvent(&event);
+        switch(event.type)
+        {
+            case SDL_QUIT:	//cas on clique sur la croix
+                continuer = 0;
+                break;
+	    case SDL_KEYDOWN:	//cas : appuie sur une touche
+		switch(event.key.keysym.sym){
+			case SDLK_ESCAPE:
+				continuer = 0;
+				break;
+			default:
+				break;
+		}
+        }
+    }
+
+    TTF_CloseFont(policeTitre);
+    TTF_CloseFont(policeMenu);
+    TTF_Quit();
+
+    SDL_FreeSurface(texteTitre);
+    SDL_FreeSurface(texte2j);
+    SDL_FreeSurface(texte1j);
+    SDL_FreeSurface(texte2IA);
+    SDL_FreeSurface(texteQuit);
+    SDL_Quit(); //faut faire gaffe ça va ptet buger içi
+}		
 
 void selectionnerPion(SDL_Surface *ecran, SPos selected){
 	SDL_Surface *cursor = NULL;
 	SDL_Rect position;
 	
-	position.x = (selected.col)*TAILLE_CASE;
-	position.y = (selected.line)*TAILLE_CASE;
+	position.x = ((selected.col)*TAILLE_CASE)+MARGE_GAUCHE;
+	position.y = ((selected.line)*TAILLE_CASE)+MARGE_HAUT;
 
 	cursor = IMG_Load("icons/iconeSelect.png");
 	SDL_BlitSurface(cursor, NULL, ecran, &position);
 }
 
 void afficheMessage(char* message){
-
     SDL_Surface *ecran = NULL, *texte = NULL;
     SDL_Rect position;
     SDL_Event event;
@@ -38,6 +134,13 @@ void afficheMessage(char* message){
     /* Écriture du texte dans la SDL_Surface texte en mode Blended (optimal) */
     texte = TTF_RenderText_Blended(police, message, couleurNoire);
    
+    SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 0, 0, 0));
+
+    position.x = ecran->w/2 - texte->w/2;
+    position.y = ecran->h/2 - texte->h/2;
+    SDL_BlitSurface(texte, NULL, ecran, &position); /* Blit du texte */
+    SDL_Flip(ecran);
+
     while (continuer)
     {
         SDL_WaitEvent(&event);
@@ -55,20 +158,97 @@ void afficheMessage(char* message){
 				break;
 		}
         }
-
-        SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 0, 0, 0));
-
-        position.x = ecran->w/2 - texte->w/2;
-        position.y = ecran->h/2 - texte->h/2;
-        SDL_BlitSurface(texte, NULL, ecran, &position); /* Blit du texte */
-        SDL_Flip(ecran);
     }
 
     TTF_CloseFont(police);
     TTF_Quit();
 
     SDL_FreeSurface(texte);
-    SDL_Quit();
+    SDL_Quit(); //faut faire gaffe ça va ptet buger içi
+}
+
+void afficheMessageDemande(char* message){
+
+    SDL_Surface *ecran = NULL, *texteQuestion = NULL, *texteOui = NULL, *texteNon = NULL;
+    SDL_Rect position;
+    SDL_Event event;
+    TTF_Font *policeQuestion = NULL, *policeOui = NULL, *policeNon = NULL;
+    SDL_Color couleurNoire = {255, 255, 255};
+    int continuer = 1;
+    char *oui = "Oui", *non = "Non";
+
+    SDL_Init(SDL_INIT_VIDEO); //démarrage de la SDL
+    TTF_Init(); //Initialisation de SDL_TTF
+
+    ecran = SDL_SetVideoMode(400, 100, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+    //SDL_WM_SetCaption("Gestion du texte avec SDL_ttf", NULL);
+
+    /* Chargement de la police */
+    policeQuestion = TTF_OpenFont("fonts/FreeMonoBold.ttf", 20);
+    policeOui = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);
+    policeNon = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);
+    /* Écriture du texte dans la SDL_Surface texte en mode Blended (optimal) */
+    texteQuestion = TTF_RenderText_Blended(policeQuestion, message, couleurNoire);
+    texteOui = TTF_RenderText_Blended(policeOui, oui, couleurNoire);
+    texteNon = TTF_RenderText_Blended(policeNon, non, couleurNoire);
+
+    SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 0, 0, 0));
+
+    position.x = ecran->w/2 - texteQuestion->w/2;
+    position.y = ecran->h/3 - texteQuestion->h/3;
+    SDL_BlitSurface(texteQuestion, NULL, ecran, &position); /* Blit du texte */
+
+	position.x = ecran->w/3 - texteOui->w/2;
+        position.y = 2*(ecran->h/3 - texteOui->h/3);
+
+	SDL_BlitSurface(texteOui, NULL, ecran, &position);
+
+	position.x = 2*(ecran->w/3 - texteNon->w/2);
+        position.y = 2*(ecran->h/3 - texteNon->h/3);
+
+	SDL_BlitSurface(texteNon, NULL, ecran, &position);
+        SDL_Flip(ecran);
+
+	while (continuer)
+    {
+        SDL_WaitEvent(&event);
+        switch(event.type)
+        {
+            case SDL_QUIT:	//cas on clique sur la croix
+                continuer = 0;
+                break;
+	    case SDL_KEYDOWN:	//cas : appuie sur une touche
+		switch(event.key.keysym.sym){
+			case SDLK_ESCAPE:
+				continuer = 0;
+				break;
+			default:
+				break;
+		}
+	    case SDL_MOUSEBUTTONUP:	
+		//cas quand on clique sur oui
+		if(((event.button.y) > 50) && ((event.button.y) < 80) && ((event.button.x) > 100) && ((event.button.x) < 160)){
+			printf("COUCOU");
+			fflush(stdout);
+		}
+
+		if(((event.button.y) > 50) && ((event.button.y) < 80) && ((event.button.x) > 230) && ((event.button.x) < 300)){
+			printf("UOCUOC");
+			fflush(stdout);
+		}
+		break;
+        }
+    }
+
+    TTF_CloseFont(policeQuestion);
+    TTF_CloseFont(policeOui);
+    TTF_CloseFont(policeNon);
+    TTF_Quit();
+
+    SDL_FreeSurface(texteQuestion);
+    SDL_FreeSurface(texteOui);
+    SDL_FreeSurface(texteNon);
+    SDL_Quit(); //faut faire gaffe ça va ptet buger içi
 }
 
 	
@@ -79,13 +259,14 @@ void initBoard(SGameState gameState, SDL_Surface *ecran){
 
 	SDL_Rect positionFond;
 
-	imageFond = IMG_Load("board.png");
+	imageFond = IMG_Load("icons/board.png");
 	
 	//On remplit les deux tableaux avec les images qui vont bien
 	//***************** PIONS ROUGES ***********************
-	pionsRouges[0] = IMG_Load("icons/Bombe0r.png");
+	
+	pionsRouges[0] = IMG_Load("icons/bomb0r.png");
 	SDL_SetColorKey(pionsRouges[0], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[0]->format, 255, 255, 255));
-
+printf("chargement\n");
 	pionsRouges[1] = IMG_Load("icons/spy1r.png");
 	SDL_SetColorKey(pionsRouges[1], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[1]->format, 255, 255, 255));
 
@@ -120,7 +301,7 @@ void initBoard(SGameState gameState, SDL_Surface *ecran){
 	SDL_SetColorKey(pionsRouges[11], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[11]->format, 255, 255, 255));
 
 	//***************** PIONS BLEUS ***********************
-	pionsBleus[0] = IMG_Load("icons/Bombe0b.png");
+	pionsBleus[0] = IMG_Load("icons/bomb0b.png");
 	SDL_SetColorKey(pionsBleus[0], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[0]->format, 255, 255, 255));
 
 	pionsBleus[1] = IMG_Load("icons/spy1b.png");
@@ -163,67 +344,71 @@ void initBoard(SGameState gameState, SDL_Surface *ecran){
 
 	for(i = 0; i<10; i++){
 		for(j=0; j<10; j++){
+			
+			int widthScreen = j*((ecran->w-(MARGE_DROITE+MARGE_GAUCHE))/10)+MARGE_GAUCHE;
+			int heightScreen = i*((ecran->h-(MARGE_HAUT+MARGE_BAS))/10)+MARGE_HAUT;	
+
 			switch(gameState.board[i][j].content){
 				case ECred:
 					switch(gameState.board[i][j].piece){
 						case EPbomb:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[0], NULL, ecran, &position);
 							break;
 						case EPspy:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[1], NULL, ecran, &position);
 							break;
 						case EPscout:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[2], NULL, ecran, &position);
 							break;
 						case EPminer:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[3], NULL, ecran, &position);
 							break;
 						case EPsergeant:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[4], NULL, ecran, &position);
 							break;
 						case EPlieutenant:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[5], NULL, ecran, &position);
 							break;
 						case EPcaptain:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[6], NULL, ecran, &position);
 							break;
 						case EPmajor:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[7], NULL, ecran, &position);
 							break;
 						case EPcolonel:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[8], NULL, ecran, &position);
 							break;
 						case EPgeneral:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[9], NULL, ecran, &position);
 							break;
 						case EPmarshal:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[10], NULL, ecran, &position);
 							break;
 						case EPflag:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[11], NULL, ecran, &position);
 							break;
 						default:
@@ -234,63 +419,63 @@ void initBoard(SGameState gameState, SDL_Surface *ecran){
 				case ECblue:
 					switch(gameState.board[i][j].piece){
 						case EPbomb:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[0], NULL, ecran, &position);
 							break;
 						case EPspy:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[1], NULL, ecran, &position);
 							break;
 						case EPscout:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[2], NULL, ecran, &position);
 							break;
 						case EPminer:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[3], NULL, ecran, &position);
 							break;
 						case EPsergeant:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[4], NULL, ecran, &position);
 							break;
 						case EPlieutenant:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[5], NULL, ecran, &position);
 							break;
 						case EPcaptain:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[6], NULL, ecran, &position);
 							break;
 						case EPmajor:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[7], NULL, ecran, &position);
 							break;
 						case EPcolonel:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[8], NULL, ecran, &position);
 							break;
 						case EPgeneral:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[9], NULL, ecran, &position);
 							break;
 						case EPmarshal:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[10], NULL, ecran, &position);
 							break;
 						case EPflag:
-							position.x = j*(ecran->w/10);
-							position.y = i*(ecran->h/10);
+							position.x = widthScreen;
+							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[11], NULL, ecran, &position);
 							break;
 						default:
@@ -315,12 +500,15 @@ SMove renvoieCoordonnees(SDL_Surface *ecran, SGameState gameState){
 
 	while(continuer){
 		SDL_WaitEvent(&event);
+
 		switch(event.type){
 				case SDL_MOUSEBUTTONUP:
-					if(event.button.button == SDL_BUTTON_LEFT){
-						positionDepart.line = (event.button.y)/TAILLE_CASE;
-						positionDepart.col = (event.button.x)/TAILLE_CASE;
+					//il faut que ce soit un clic gauche et qu'il se situe dans la grille de jeu
+					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
+						positionDepart.line = ((event.button.y-(MARGE_HAUT))/TAILLE_CASE);
+						positionDepart.col = ((event.button.x-(MARGE_GAUCHE))/TAILLE_CASE);
 						continuer = 0;
+
 					}
 					break;
 
@@ -328,7 +516,9 @@ SMove renvoieCoordonnees(SDL_Surface *ecran, SGameState gameState){
 					break;
 		}
 	}
+	printf("Ligne: %d, Colonne: %d\n",positionDepart.line, positionDepart.col);
 	if((gameState.board[positionDepart.line][positionDepart.col].content == ECred) || (gameState.board[positionDepart.line][positionDepart.col].content == ECblue)){
+		printf("COUCOU\n");
 		selectionnerPion(ecran, positionDepart);
 		SDL_Flip(ecran);
 	}
@@ -338,9 +528,9 @@ SMove renvoieCoordonnees(SDL_Surface *ecran, SGameState gameState){
 		SDL_WaitEvent(&event);
 		switch(event.type){
 				case SDL_MOUSEBUTTONUP:
-					if(event.button.button == SDL_BUTTON_LEFT){
-						positionArrivee.line = (event.button.y)/TAILLE_CASE;
-						positionArrivee.col = (event.button.x)/TAILLE_CASE;
+					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
+						positionDepart.line = ((event.button.y-(MARGE_HAUT+MARGE_BAS))/TAILLE_CASE);
+						positionDepart.col = ((event.button.x-(MARGE_GAUCHE+MARGE_DROITE))/TAILLE_CASE);
 						continuer = 0;					
 					}
 					break;
@@ -363,19 +553,37 @@ int interfaceGraphique(SGameState gameState){
 	
 	
 	SDL_Surface *ecran = NULL;	//création des variables
-	//int continuer = 1;
-	//SDL_Event event;
+	int continuer = 1;
+	SDL_Event event;
 
 
 	SDL_Init(SDL_INIT_VIDEO);	//initialisation de la SDL
 
-	ecran = SDL_SetVideoMode(380, 377, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);	//chargement des surfaces
+	ecran = SDL_SetVideoMode(920, 670, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);	//chargement des surfaces
 	SDL_WM_SetCaption("Stratego", NULL);
 	
 	initBoard(gameState, ecran);
 	
 	SDL_Flip(ecran);
-
+	//Boucle pour tester la selection de pions
+	/*while (continuer)
+    {renvoieCoordonnees(ecran,gameState);
+        SDL_WaitEvent(&event);
+        switch(event.type)
+        {
+            case SDL_QUIT:	//cas on clique sur la croix
+                continuer = 0;
+                break;
+	    case SDL_KEYDOWN:	//cas : appuie sur une touche
+		switch(event.key.keysym.sym){
+			case SDLK_ESCAPE:
+				continuer = 0;
+				break;
+			default:
+				break;
+		}
+        }
+    }*/
 	return EXIT_SUCCESS;
 	
 }
