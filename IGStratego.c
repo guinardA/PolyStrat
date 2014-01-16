@@ -2,7 +2,9 @@
 #include "IGStratego.h"
 #define TAILLE_CASE 38	//Taille d'une case en pixels
 
-SDL_Surface *ecran = NULL, *imageFond = NULL, *pionRouge = NULL, *pionBleu = NULL;	//création des variables
+SDL_Surface *imageFond = NULL;	//création des variables
+SDL_Surface *pionsRouges[12] = {NULL};
+SDL_Surface *pionsBleus[12] = {NULL};
 
 
 void selectionnerPion(SDL_Surface *ecran, SPos selected){
@@ -75,10 +77,7 @@ void initBoard(SGameState gameState, SDL_Surface *ecran){
 	SDL_Rect position;
 	int i=0, j=0;
 
-	SDL_Surface *imageFond = NULL;	//création des variables
 	SDL_Rect positionFond;
-	SDL_Surface *pionsRouges[12] = {NULL};
-	SDL_Surface *pionsBleus[12] = {NULL};
 
 	imageFond = IMG_Load("board.png");
 	
@@ -305,28 +304,6 @@ void initBoard(SGameState gameState, SDL_Surface *ecran){
 		}
 	}
 
-	/*SDL_Rect position;
-	int i=0, j=0;
-	for(i = 0; i<10; i++){
-		for(j=0; j<10; j++){
-			switch(gameState.board[i][j].content){
-				case ECred:
-					position.x = j*(ecran->w/10);
-					position.y = i*(ecran->h/10);
-					SDL_BlitSurface(pionRouge, NULL, ecran, &position);
-					break;
-
-				case ECblue:
-					position.x = j*(ecran->w/10);
-					position.y = i*(ecran->h/10);
-					SDL_BlitSurface(pionBleu, NULL, ecran, &position);
-					break;
-				
-				default:
-					break;
-			}
-		}
-	}*/
 }
 
 SMove renvoieCoordonnees(SDL_Surface *ecran, SGameState gameState){
@@ -398,32 +375,20 @@ int interfaceGraphique(SGameState gameState){
 	initBoard(gameState, ecran);
 	
 	SDL_Flip(ecran);
-	/*
-	while (continuer){
-		SDL_WaitEvent(&event);
-		switch(event.type){
-			case SDL_QUIT:
-				continuer = 0;
-				break;
-			case SDL_KEYDOWN:
-				switch(event.key.keysym.sym){
-					case SDLK_ESCAPE:
-						continuer = 0;
-						break;
-					
-					default:
-						break;
-				}
-				break;
-		}
-		
-	}*/
-	/*
-	SDL_FreeSurface(pionRouge);
-	SDL_FreeSurface(pionBleu);
-	SDL_FreeSurface(imageFond);
-	SDL_Quit(); //on quitte la SDL
-*/
+
 	return EXIT_SUCCESS;
 	
+}
+
+void quitter_sdl(){
+	
+	int i;
+
+	for(i=0;i<12;i++){
+		SDL_FreeSurface(pionsRouges[i]);
+		SDL_FreeSurface(pionsBleus[i]);
+	}
+	
+	SDL_FreeSurface(imageFond);
+	SDL_Quit(); //on quitte la SDL
 }

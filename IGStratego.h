@@ -9,3 +9,4 @@ void initBoard(SGameState gameState, SDL_Surface *ecran);
 int interfaceGraphique(SGameState gameState);
 void afficheMessage(char* message);
 void selectionnerPion(SDL_Surface *ecran, SPos selected);
+void quitter_sdl();

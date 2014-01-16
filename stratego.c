@@ -8,7 +8,8 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <time.h>
-//#include <pthread.h>
+#include <pthread.h>
+#include <X11/Xlib.h>
 #include "PolyLib.h"
 #include "IGStratego.h"
 
@@ -150,6 +151,7 @@ char nameJ1[50],  nameJ2[50];
 int game, fin = 0,couleur, pion_erreur_j1, pion_erreur_j2;
 EColor couleurJ1, couleurJ2;
 EPiece boardInitJ1[4][10], boardInitJ2[4][10];
+pthread_t thread_quitter;
 srand(time(NULL));
 
 //==========ATTENTION : CODE 1 JOUEUR, MODIF EN 2 JOUEUR
@@ -161,6 +163,8 @@ j2InitLibrary(nameJ2);
 //Début du match avec possibilité de plusieurs parties
 j1StartMatch(); 
 j2StartMatch();
+XInitThreads();
+pthread_create (&thread_quitter, NULL, quitter, NULL);
 
 do {
 	
@@ -1011,20 +1015,24 @@ void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2){
 
 
 }
-/*
+
 static void * quitter(void * p_data){
 	
 	int continuer = 1;
 	SDL_Event event;
 	
-		while (continuer){
+	while (continuer){
+		SDL_Delay(100);
 		SDL_WaitEvent(&event);
+		
 		switch(event.type){
 			case SDL_QUIT:
 				continuer = 0;
 				break;
+				
 			case SDL_KEYDOWN:
 				switch(event.key.keysym.sym){
+					
 					case SDLK_ESCAPE:
 						continuer = 0;
 						break;
@@ -1034,12 +1042,8 @@ static void * quitter(void * p_data){
 				}
 				break;
 		}
-		
 	}
+	quitter_sdl();
 	
-	SDL_FreeSurface(pionRouge);
-	SDL_FreeSurface(pionBleu);
-	SDL_FreeSurface(imageFond);
-	SDL_Quit(); //on quitte la SDL
 }
-*/
+
