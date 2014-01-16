@@ -13,9 +13,6 @@
 #include "PolyLib.h"
 #include "IGStratego.h"
 
-
-
-
 void initialisationContexteJeu(SGameState *gameState);
 int verificationNombrePiece(EPiece boardInit[4][10]);
 void enregistrePion(EPiece boardInit[4][10], SGameState *gameState, EColor color, int joueur);
@@ -236,7 +233,6 @@ do {
 	
 	//On continue la partie si il n'y a pas eu 3 erreurs lors du placement des pions
 	if(fin == 0){
-		
 		//ENREGISTRE LES PIONS DU JOUEUR 1 SUR LE CONTEXTE DE JEU
 		enregistrePion(boardInitJ1, &gameState, couleurJ1, 1);
 		
@@ -244,7 +240,6 @@ do {
 		enregistrePion(boardInitJ2, &gameState, couleurJ2, 2);
 		
 		interfaceGraphique(gameState); //On affiche le plateau de jeu après initialisation
-		
 		do{
 			
 			//DEPLACEMENT D'UN PION
@@ -259,7 +254,8 @@ do {
 					
 					//VERIFIE QUE LE MOUVEMENT EST VALIDE
 					pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult);
-					
+					/*int l;
+					scanf("%i",l);*/
 					//Cas ou on a réalisé une erreure
 					if(pion_erreur_j1 == 1){
 						fin = finPartie(1,0);
@@ -330,7 +326,8 @@ do {
 					
 					//VERIFIE QUE LE MOUVEMENT EST VALIDE
 					pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult);
-					
+					/*int l;
+					scanf("%i",l);*/
 					//Cas ou on a réalisé une erreure
 					if(pion_erreur_j2 == 1){
 						fin = finPartie(2,0);
@@ -522,22 +519,27 @@ int verificationNombrePiece(EPiece boardInit[4][10]){
 void enregistrePion(EPiece boardInit[4][10], SGameState *gameState, EColor color, int joueur){
 	
 	SBox box;
-	int i,j,k=9;
+	int i,j,lineJ, colJ;
 	
-	//On enregistre les pions du joueur sur le contexte général
-	for(i=0;i<4;i++){
-		for(j=0;j<10;j++){
-			box.content = color;
-			box.piece = boardInit[i][j];
-			if(joueur == 1){
-				gameState->board[i][j] = box;
-			}
-			else{
-				gameState->board[k][j] = box;
+	if(joueur == 1){
+		for(i=0;i<4;i++){
+			for(j=0;j<10;j++){	
+				box.content = color;
+				box.piece = boardInit[i][j];
+				lineJ = 9 - i;
+				gameState->board[lineJ][j] = box;
 			}
 		}
-		if(joueur == 2){
-				k--;
+	}
+	
+	if(joueur == 2){
+		for(i=0;i<4;i++){
+			for(j=0;j<10;j++){	
+				box.content = color;
+				box.piece = boardInit[i][j];
+				colJ = 9 - j;
+				gameState->board[i][colJ] = box;
+			}
 		}
 	}
 }
@@ -551,6 +553,38 @@ SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int jo
 	SBox box;
 	int i,j, m = 9;
 	
+	if(joueur == 1){
+		for(i=0;i<10;i++){
+			for(j=0;j<10;j++){
+				if(gameState.board[i][j].content == color){
+					box.content = color;
+					box.piece = EPnone;
+					gameStatePerso.board[9-i][j] = box;
+				
+				}
+				else{
+					gameStatePerso.board[9-i][j] = gameState.board[i][j];
+				}
+			}
+		}
+	}
+	
+	if(joueur == 2){
+		for(i=0;i<10;i++){
+			for(j=0;j<10;j++){
+				if(gameState.board[i][j].content == color){
+					box.content = color;
+					box.piece = EPnone;
+					gameStatePerso.board[i][9-j] = box;
+				
+				}
+				else{
+					gameStatePerso.board[i][9-j] = gameState.board[i][j];
+				}
+			}
+		}
+	}
+	/*
 	//Placement des pions adverse avec juste la couleur et ces pions avec toute la couleur
 	for(i=0;i<10;i++){
 		for(j=0;j<10;j++){
@@ -576,7 +610,7 @@ SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int jo
 		if(joueur == 2){
 			m --;
 		}
-	}
+	}*/
 	
 	//On copies les pions sortie
 	for(i=0;i<11;i++){
@@ -606,9 +640,13 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 	if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
 		
 			//On inverse le mouvement pour le joueur 2
-			if(joueur == 2){
+			if(joueur == 1){
 				move.start.line = 9-move.start.line;
 				move.end.line = 9-move.end.line;
+			}
+			if(joueur == 2){
+				move.start.col = 9-move.start.col;
+				move.end.col = 9-move.end.col;
 			}
 			
 			boxStart = gameState->board[move.start.line][move.start.col];
@@ -761,22 +799,38 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
  */
 int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResultJ1)(SPos, EPiece, SPos, EPiece), void(*AttackResultJ2)(SPos, EPiece, SPos, EPiece)){
 	SBox attaquant, attaquer, newBox;
+	SMove moveJ2, moveJ1;
 	
 	//ON DEFINIE QUI ATTAQUE ET QUI EST ATTAQUÉ
 	attaquant = gameState->board[move.start.line][move.start.col];
 	attaquer = gameState->board[move.end.line][move.end.col];
 	
+	moveJ1.start.line = 9 - move.start.line;
+	moveJ1.start.col = move.start.col;
+	moveJ1.end.line = 9 - move.end.line;
+	moveJ1.end.col = move.end.col;
+	
+	moveJ2.end.line = move.end.line;
+	moveJ2.end.col = 9 - move.end.col;
+	moveJ2.start.line = move.start.line;
+	moveJ2.start.col = 9 - move.start.col;
+	
 	//JOUEUR 1 QUI ATTAQUE
 	if(joueur == 1){
-		(*AttackResultJ1)(move.start, attaquant.piece, move.end, attaquer.piece);
-		(*AttackResultJ2)(move.end, attaquer.piece, move.end, attaquer.piece);
+		//printf("Attaque 1\n");
+
+		(*AttackResultJ1)(moveJ1.start, attaquant.piece, moveJ1.end, attaquer.piece);
+		(*AttackResultJ2)(moveJ2.end, attaquer.piece, moveJ2.start, attaquant.piece);
 	} 
 	//JOUEUR 2 QUI ATTAQUE
 	else
 	{
-		(*AttackResultJ2)(move.start, attaquant.piece, move.end, attaquer.piece);
-		(*AttackResultJ1)(move.end, attaquer.piece, move.end, attaquer.piece);
+		//printf("Attaque 2\n");
+		
+		(*AttackResultJ2)(moveJ2.start, attaquant.piece, moveJ2.end, attaquer.piece);
+		(*AttackResultJ1)(moveJ1.end, attaquer.piece, moveJ1.start, attaquant.piece);
 	}
+	
 	
 	//CAS OU LES 2 PIÈCES SONT DE FORCE ÉQUIVALENTE
 	if(attaquant.piece == attaquer.piece){
@@ -803,7 +857,7 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	 * OU CAS OU LA PIECE ATTAQUANT EST UN DÉMINENEUR ET LA PIECE ATTAQUÉE UNE BOMBE
 	 * OU CAS OU LA PIECE ATTAQUANT EST UNE ESPIONNE ET LA PIECE ATTAQUÉE UN MARCHAL
 	 */
-	if((attaquant.piece > attaquer.piece && attaquer.piece !=EPbomb) || 
+	else if((attaquant.piece > attaquer.piece && attaquer.piece !=EPbomb) || 
 	(attaquant.piece == EPminer && attaquer.piece == EPbomb) ||
 	(attaquant.piece == EPspy && attaquer.piece == EPmarshal)){
 		

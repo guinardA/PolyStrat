@@ -131,6 +131,7 @@ SMove NextMove(const SGameState * const gameState)
 	SMove move; 
 	int line, col, i, j;
 	SBox board[10][10];
+	
 	do
 	{
 		//On sélectionne la pièce a bouger
@@ -221,7 +222,9 @@ SMove NextMove(const SGameState * const gameState)
 		}
 		printf("\n");
 	}
-	*/
+	printf("Couleur du joueur : %i\n", couleur);
+	printf("Coup origine : \n%i - %i\n%i - %i\n\n", move.start.line, move.start.col,move.end.line,move.end.col);*/
+	
 	return move;
 }
 
@@ -234,14 +237,19 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 	EPiece attaquant;
 	EPiece attaquer;
 	SBox newBox;
-	int numPiece = 0;
+	int numPiece = 0, arret =1, i;
 	SPos pos;
 	
-	while((armyPos.line != pos.line) && (armyPos.col != pos.col))
+	while(arret)
 	{
-		pos.line = positionPiece[numPiece].line;
-		pos.col = positionPiece[numPiece].col;
-		numPiece ++;
+		if(positionPiece[numPiece].line == armyPos.line){
+			if(positionPiece[numPiece].col == armyPos.col){
+				arret = 0;
+			}
+		}
+		if(arret == 1){
+			numPiece = numPiece + 1;
+		}
 	}	
 
 	if(attaque == 1)
@@ -254,21 +262,20 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		attaquant = enemyPiece;
 		attaquer = armyPiece;
 	}
-
+			
 	//CAS OU LES 2 PIÈCES SONT DE FORCE ÉQUIVALENTE
 	if(attaquant == attaquer){
-		
+
 		contextPerso.redOut[attaquant]++;
-		contextPerso.blueOut[attaquer]++;		
-			
+		contextPerso.blueOut[attaquer]++;	
+
 		//ON MODIFIE LE CONTEXTE DE JEU
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 		contextPerso.board[armyPos.line][armyPos.col] = newBox;
 		contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
-
-		positionPiece[numPiece].line = -1;		
 		
+		positionPiece[numPiece].line = -1;	
 	}
 	
 	/*
@@ -276,10 +283,10 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 	 * OU CAS OU LA PIECE ATTAQUANT EST UN DÉMINENEUR ET LA PIECE ATTAQUÉE UNE BOMBE
 	 * OU CAS OU LA PIECE ATTAQUANT EST UNE ESPIONNE ET LA PIECE ATTAQUÉE UN MARCHAL
 	 */
-	if((attaquant > attaquer && attaquer!=EPbomb) || 
+	else if((attaquant > attaquer && attaquer!=EPbomb) || 
 	(attaquant == EPminer && attaquer == EPbomb) ||
 	(attaquant == EPspy && attaquer == EPmarshal)){
-		
+
 		if(couleur == ECred){
 			contextPerso.blueOut[attaquer]++;
 		} else {
@@ -293,30 +300,17 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 
 		if(attaque == 1)
 		{
-			
 			positionPiece[numPiece].line = enemyPos.line;
 			positionPiece[numPiece].col = enemyPos.col;		
 
 			contextPerso.board[enemyPos.line][enemyPos.col] = contextPerso.board[armyPos.line][armyPos.col];
 			contextPerso.board[armyPos.line][armyPos.col] = newBox;	
 		}
-		else
-		{
-			positionPiece[numPiece].line = -1;
-
-			contextPerso.board[armyPos.line][armyPos.col] = contextPerso.board[enemyPos.line][enemyPos.col];
-			contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
-		}
-
+		
 		
 	}	
 	else
 	{
-		if(couleur == ECred){
-			contextPerso.redOut[attaquer]++;
-		} else {
-			contextPerso.blueOut[attaquer]++;
-		}
 	
 		//ON MODIFIE LE CONTEXTE DE JEU
 		newBox.content = ECnone;
@@ -326,10 +320,6 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		{
 			positionPiece[numPiece].line = -1;
 			contextPerso.board[armyPos.line][armyPos.col] = newBox;	
-		}
-		else
-		{
-			contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
 		}
 
 	}	
