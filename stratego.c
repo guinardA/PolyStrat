@@ -1052,9 +1052,9 @@ static void * quitter(void * p_data){
 	/*j1EndMatch();
 	j2EndMatch();*/
 
-	dlclose(j1Lib);
-	dlclose(j2Lib);
-	
+	/*dlclose(j1Lib);
+	dlclose(j2Lib);*/
+
 	quitter_sdl();
 	exit(EXIT_SUCCESS);
 	
