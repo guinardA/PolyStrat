@@ -2,6 +2,9 @@
 #include "IGStratego.h"
 #define TAILLE_CASE 38	//Taille d'une case en pixels
 
+SDL_Surface *ecran = NULL, *imageFond = NULL, *pionRouge = NULL, *pionBleu = NULL;	//création des variables
+
+
 void selectionnerPion(SDL_Surface *ecran, SPos selected){
 	SDL_Surface *cursor = NULL;
 	SDL_Rect position;
@@ -382,10 +385,10 @@ SMove renvoieCoordonnees(SDL_Surface *ecran, SGameState gameState){
 int interfaceGraphique(SGameState gameState){
 	
 	
-
 	SDL_Surface *ecran = NULL;	//création des variables
 	//int continuer = 1;
 	//SDL_Event event;
+
 
 	SDL_Init(SDL_INIT_VIDEO);	//initialisation de la SDL
 
