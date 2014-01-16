@@ -28,13 +28,12 @@ static void * quitter(void * p_data);
 void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2);
 
 char * message;
+void *j1Lib, *j2Lib;
 
 int main(int argc, const char * argv[]){
 
 
 //=========================Gestion ouverture de la librarie et des méthodes liés
-
-void *j1Lib, *j2Lib;
 
 typedef void (*pfInitLibrary)(char[50]);
 typedef void (*pfStartMatch)();
@@ -404,11 +403,17 @@ do {
 	
 }while(game==1);
 	
+//AJOUTER LES FREE ET LES CLOSES
+quitter_sdl();
+	
 j1EndMatch();
 j2EndMatch();
 
 dlclose(j1Lib);
 dlclose(j2Lib);
+
+exit(EXIT_SUCCESS);	
+
 return(1);
 }
 
@@ -1043,7 +1048,15 @@ static void * quitter(void * p_data){
 				break;
 		}
 	}
+	//AJOUTER TOUS LES FREE ET CLOSE A RÉALISER
+	/*j1EndMatch();
+	j2EndMatch();*/
+
+	dlclose(j1Lib);
+	dlclose(j2Lib);
+	
 	quitter_sdl();
+	exit(EXIT_SUCCESS);
 	
 }
 

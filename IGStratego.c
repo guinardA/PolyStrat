@@ -391,4 +391,5 @@ void quitter_sdl(){
 	
 	SDL_FreeSurface(imageFond);
 	SDL_Quit(); //on quitte la SDL
+	
 }
