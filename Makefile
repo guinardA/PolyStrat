@@ -6,8 +6,7 @@ all: stratego.c clean
 		gcc -g IGStratego.c stratego.c -o stratego -ldl -lSDL -lSDLmain -lSDL_image -lSDL_ttf -lpthread -D_REENTRANT -lX11
 
 install: polylib.so polylib2.so
-		sudo mv polylib.so /usr/lib/
-		sudo mv polylib2.so /usr/lib/
+		
 
 polylib.so: polylib.o
 		gcc -shared -o polylib.so *.o	
