@@ -1,8 +1,16 @@
-/* VERIFIER POSITION DES JOUEURS PAR RAPPORT A L'INTERFACE GRAPHIQUE IMPORTANT !!!!!!!
- * MODIFIER LA ROTATION DU JOUEUR 2 EN 180°
- * GÉRER LA REGLE DES VA ET VIENS 
+
+/* GÉRER LA REGLE DES VA ET VIENS 
  * COMPTER LE NOMBRE DE PARTIE GAGNER ET PERDUE
- * RÈGLE DE FIN PARTIE LORSQUE IL NE RESTE QUE DES BOMBES ET LE FLAG*/
+ * RÈGLE DE FIN PARTIE LORSQUE IL NE RESTE QUE DES BOMBES ET LE FLAG
+ * 2 joueurs
+ * règle dans IA
+ * Méthode joueur a la main
+ * 		Afficher ok au message erreur et grisé la croix
+ *  	placePion // Problème lorsque erreur placement affiche pas message erreur et puis gamestate pas effacé
+ * 		afficheErreur
+ * 		Lors d'un combat affiché la piece attaqué avec un delay
+ * 
+ * */
 
 #include <stdio.h>
 #include <dlfcn.h>
@@ -10,6 +18,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <X11/Xlib.h>
+#include <time.h>
 #include "PolyLib.h"
 #include "IGStratego.h"
 
@@ -17,8 +26,10 @@ void initialisationContexteJeu(SGameState *gameState);
 int verificationNombrePiece(EPiece boardInit[4][10]);
 void enregistrePion(EPiece boardInit[4][10], SGameState *gameState, EColor color, int joueur);
 SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int joueur);
-int verificationMouvement(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece));
-int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece));
+SGameState duplicationJoueur(SGameState gameState, EColor color, int joueur);
+int verificationMouvement(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece), int nb_IA);
+void placePion(EColor color, EPiece boardInit[4][10]);
+int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResultJ1)(SPos, EPiece, SPos, EPiece), void(*AttackResultJ2)(SPos, EPiece, SPos, EPiece), int nbr_IA);
 int finPartie(int joueur, int flag);
 static void * quitter(void * p_data);
 
@@ -29,389 +40,574 @@ void *j1Lib, *j2Lib;
 
 int main(int argc, const char * argv[]){
 
+int nbr_coup_permis = atoi(argv[1]);
+int nbr_IA = atoi(argv[2]);
 
-//=========================Gestion ouverture de la librarie et des méthodes liés
+if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
+	//=========================Gestion ouverture de la librarie et des méthodes liés
 
-typedef void (*pfInitLibrary)(char[50]);
-typedef void (*pfStartMatch)();
-typedef void (*pfStartGame)(const EColor,EPiece[4][10]);
-typedef void (*pfEndGame)();
-typedef void (*pfEndMatch)();
-typedef SMove (*pfNextMove)(const SGameState * const);
-typedef void (*pfAttackResult)(SPos,EPiece,SPos,EPiece);
-typedef void (*pfPenalty)();
+	typedef void (*pfInitLibrary)(char[50]);
+	typedef void (*pfStartMatch)();
+	typedef void (*pfStartGame)(const EColor,EPiece[4][10]);
+	typedef void (*pfEndGame)();
+	typedef void (*pfEndMatch)();
+	typedef SMove (*pfNextMove)(const SGameState * const);
+	typedef void (*pfAttackResult)(SPos,EPiece,SPos,EPiece);
+	typedef void (*pfPenalty)();
 
-//Librairie 1
-pfInitLibrary j1InitLibrary;
-pfStartMatch j1StartMatch;
-pfStartGame j1StartGame;
-pfEndGame j1EndGame;
-pfEndMatch j1EndMatch;
-pfNextMove j1NextMove;
-pfAttackResult j1AttackResult;
-pfPenalty j1Penalty;
+	//Librairie 1
+	pfInitLibrary j1InitLibrary;
+	pfStartMatch j1StartMatch;
+	pfStartGame j1StartGame;
+	pfEndGame j1EndGame;
+	pfEndMatch j1EndMatch;
+	pfNextMove j1NextMove;
+	pfAttackResult j1AttackResult;
+	pfPenalty j1Penalty;
 
-//Librairie 2
-pfInitLibrary j2InitLibrary;
-pfStartMatch j2StartMatch;
-pfStartGame j2StartGame;
-pfEndGame j2EndGame;
-pfEndMatch j2EndMatch;
-pfNextMove j2NextMove;
-pfAttackResult j2AttackResult;
-pfPenalty j2Penalty;
+	//Librairie 2
+	pfInitLibrary j2InitLibrary;
+	pfStartMatch j2StartMatch;
+	pfStartGame j2StartGame;
+	pfEndGame j2EndGame;
+	pfEndMatch j2EndMatch;
+	pfNextMove j2NextMove;
+	pfAttackResult j2AttackResult;
+	pfPenalty j2Penalty;
 
-//Ouverture fonction librairie 1
-if((j1Lib=dlopen("polylib.so",RTLD_LAZY))==NULL){
-	printf("Erreur de chargement de la libraire");
-	return(0);
-}
-if((j1InitLibrary=(pfInitLibrary)dlsym(j1Lib,"InitLibrary"))==NULL){
-	printf("Erreur de chargement de 'InitLibrary'");
-	return(0);
-}
-if((j1StartMatch=(pfStartMatch)dlsym(j1Lib,"StartMatch"))==NULL){
-	printf("Erreur de chargement de 'StartMatch'");
-	return(0);
-}
-if((j1StartGame=(pfStartGame)dlsym(j1Lib,"StartGame"))==NULL){
-	printf("Erreur de chargement de 'StartGame'");
-	return(0);
-}
-if((j1EndGame=(pfEndGame)dlsym(j1Lib,"EndGame"))==NULL){
-	printf("Erreur de chargement de 'EndGame'");
-	return(0);
-}
-if((j1EndMatch=(pfEndMatch)dlsym(j1Lib,"EndMatch"))==NULL){
-	printf("Erreur de chargement de 'EndMatch'");
-	return(0);
-}
-
-if((j1NextMove=(pfNextMove)dlsym(j1Lib,"NextMove"))==NULL){
-	printf("Erreur de chargement de 'NextMove'");
-	return(0);
-}
-if((j1AttackResult=(pfAttackResult)dlsym(j1Lib,"AttackResult"))==NULL){
-	printf("Erreur de chargement de 'AttackResult'");
-	return(0);
-}
-if((j1Penalty=(pfPenalty)dlsym(j1Lib,"Penalty"))==NULL){
-	printf("Erreur de chargement de 'Penalty'");
-	return(0);
-}
-
-//Ouverture fonction librairie 2
-if((j2Lib=dlopen("polylib2.so",RTLD_LAZY))==NULL){
-	printf("Erreur de chargement de la libraire");
-	return(0);
-}
-if((j2InitLibrary=(pfInitLibrary)dlsym(j2Lib,"InitLibrary"))==NULL){
-	printf("Erreur de chargement de 'InitLibrary'");
-	return(0);
-}
-if((j2StartMatch=(pfStartMatch)dlsym(j2Lib,"StartMatch"))==NULL){
-	printf("Erreur de chargement de 'StartMatch'");
-	return(0);
-}
-if((j2StartGame=(pfStartGame)dlsym(j2Lib,"StartGame"))==NULL){
-	printf("Erreur de chargement de 'StartGame'");
-	return(0);
-}
-if((j2EndGame=(pfEndGame)dlsym(j2Lib,"EndGame"))==NULL){
-	printf("Erreur de chargement de 'EndGame'");
-	return(0);
-}
-if((j2EndMatch=(pfEndMatch)dlsym(j2Lib,"EndMatch"))==NULL){
-	printf("Erreur de chargement de 'EndMatch'");
-	return(0);
-}
-
-if((j2NextMove=(pfNextMove)dlsym(j2Lib,"NextMove"))==NULL){
-	printf("Erreur de chargement de 'NextMove'");
-	return(0);
-}
-if((j2AttackResult=(pfAttackResult)dlsym(j2Lib,"AttackResult"))==NULL){
-	printf("Erreur de chargement de 'AttackResult'");
-	return(0);
-}
-if((j2Penalty=(pfPenalty)dlsym(j2Lib,"Penalty"))==NULL){
-	printf("Erreur de chargement de 'Penalty'");
-	return(0);
-}
-
-//=========================Initialisation d'une partie
-SGameState gameState;//Plateau du jeu a dupliquer afin éviter qu'une libraire modifie original
-SGameState gameStateJ1,gameStateJ2;//Plateau du jeu pour le joueur 1 et 2
-SMove move;
-char nameJ1[50],  nameJ2[50];
-int game, fin = 0,couleur, pion_erreur_j1, pion_erreur_j2;
-EColor couleurJ1, couleurJ2;
-EPiece boardInitJ1[4][10], boardInitJ2[4][10];
-pthread_t thread_quitter;
-srand(time(NULL));
-
-//==========ATTENTION : CODE 1 JOUEUR, MODIF EN 2 JOUEUR
-
-//Initialisation des librarie
-j1InitLibrary(nameJ1);
-j2InitLibrary(nameJ2);
-
-//Début du match avec possibilité de plusieurs parties
-j1StartMatch(); 
-j2StartMatch();
-XInitThreads();
-pthread_create (&thread_quitter, NULL, quitter, NULL);
-
-do {
-	
-	
-	//On initialise a 1 car aucune ereurs commise actuellement
-	pion_erreur_j1 = 1;
-	pion_erreur_j2 = 1;
-	
-	//On initialise le nombre de faute a 0
-	finPartie(0,0);
-	
-	//INITIALISATION DU CONTEXTE DE JEU
-	initialisationContexteJeu(&gameState);
-
-	//DIFINISSION DE LA COULEUR DU JOUEUR ET PLACEMENT DES PIONS PAR LE JOUEURS
-	couleur = (int)rand()%2;
-	
-	//ENREGISTREMENT ET VERIFICATION DES PIONS DES JOUEURS
-	do{
-		if(couleur == 0){ //Si c'est égal a 0 alors la librairie 1 sera rouge et la librarie 2 sera bleu sinon inverse
-			//Joueur 1 = rouge
-			if(pion_erreur_j1 !=0){
-				j1StartGame(ECred,boardInitJ1);
-				couleurJ1 = ECred;
-				pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
-			}
-			//Joueur 2 = Bleu
-			if(pion_erreur_j2 !=0){
-				j2StartGame(ECblue,boardInitJ2);
-				couleurJ2 = ECblue;
-				pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
-			}
-		} 
-		
-		else{
-			//Joueur 1 = Bleu
-			if(pion_erreur_j1 !=0){
-				j1StartGame(ECblue,boardInitJ1);
-				couleurJ1 = ECblue;
-				pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
-			}
-			//Joueur 2 = rouge
-			if(pion_erreur_j2 !=0){
-				j2StartGame(ECred,boardInitJ2);
-				couleurJ2 = ECred;
-				pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
-			}
+	//Ouverture fonction librairie 1
+	if(nbr_IA >0){
+		if((j1Lib=dlopen(argv[3],RTLD_LAZY))==NULL){
+			printf("Erreur de chargement de la libraire");
+			return(0);
 		}
-		
-		if(pion_erreur_j1 == 1){
-			fin = finPartie(1,0);
-			j1Penalty();
-			if(fin == 1 ){
-				printf("3 erreurs pour %s donc %s gagne le match\n",nameJ1, nameJ2);
-				j1EndGame();
-				j2EndGame();
-			}
+		if((j1InitLibrary=(pfInitLibrary)dlsym(j1Lib,"InitLibrary"))==NULL){
+			printf("Erreur de chargement de 'InitLibrary'");
+			return(0);
 		}
-		if(pion_erreur_j2 == 1){
-			fin = finPartie(2,0);
-			j2Penalty();
-			if(fin == 1 ){
-				printf("3 erreurs pour %s donc %s gagne le match",nameJ2, nameJ1);
-				j1EndGame();
-				j2EndGame();
-			}
+		if((j1StartMatch=(pfStartMatch)dlsym(j1Lib,"StartMatch"))==NULL){
+			printf("Erreur de chargement de 'StartMatch'");
+			return(0);
 		}
-		
-	}while((pion_erreur_j1 == 1 || pion_erreur_j2 == 1) && fin == 0 );
+		if((j1StartGame=(pfStartGame)dlsym(j1Lib,"StartGame"))==NULL){
+			printf("Erreur de chargement de 'StartGame'");
+			return(0);
+		}
+		if((j1EndGame=(pfEndGame)dlsym(j1Lib,"EndGame"))==NULL){
+			printf("Erreur de chargement de 'EndGame'");
+			return(0);
+		}
+		if((j1EndMatch=(pfEndMatch)dlsym(j1Lib,"EndMatch"))==NULL){
+			printf("Erreur de chargement de 'EndMatch'");
+			return(0);
+		}
+
+		if((j1NextMove=(pfNextMove)dlsym(j1Lib,"NextMove"))==NULL){
+			printf("Erreur de chargement de 'NextMove'");
+			return(0);
+		}
+		if((j1AttackResult=(pfAttackResult)dlsym(j1Lib,"AttackResult"))==NULL){
+			printf("Erreur de chargement de 'AttackResult'");
+			return(0);
+		}
+		if((j1Penalty=(pfPenalty)dlsym(j1Lib,"Penalty"))==NULL){
+			printf("Erreur de chargement de 'Penalty'");
+			return(0);
+		}
+	}
+
+	if(nbr_IA >1){
+		//Ouverture fonction librairie 2
+		if((j2Lib=dlopen(argv[4],RTLD_LAZY))==NULL){
+			printf("Erreur de chargement de la libraire");
+			return(0);
+		}
+		if((j2InitLibrary=(pfInitLibrary)dlsym(j2Lib,"InitLibrary"))==NULL){
+			printf("Erreur de chargement de 'InitLibrary'");
+			return(0);
+		}
+		if((j2StartMatch=(pfStartMatch)dlsym(j2Lib,"StartMatch"))==NULL){
+			printf("Erreur de chargement de 'StartMatch'");
+			return(0);
+		}
+		if((j2StartGame=(pfStartGame)dlsym(j2Lib,"StartGame"))==NULL){
+			printf("Erreur de chargement de 'StartGame'");
+			return(0);
+		}
+		if((j2EndGame=(pfEndGame)dlsym(j2Lib,"EndGame"))==NULL){
+			printf("Erreur de chargement de 'EndGame'");
+			return(0);
+		}
+		if((j2EndMatch=(pfEndMatch)dlsym(j2Lib,"EndMatch"))==NULL){
+			printf("Erreur de chargement de 'EndMatch'");
+			return(0);
+		}
+
+		if((j2NextMove=(pfNextMove)dlsym(j2Lib,"NextMove"))==NULL){
+			printf("Erreur de chargement de 'NextMove'");
+			return(0);
+		}
+		if((j2AttackResult=(pfAttackResult)dlsym(j2Lib,"AttackResult"))==NULL){
+			printf("Erreur de chargement de 'AttackResult'");
+			return(0);
+		}
+		if((j2Penalty=(pfPenalty)dlsym(j2Lib,"Penalty"))==NULL){
+			printf("Erreur de chargement de 'Penalty'");
+			return(0);
+		}
+	}
+
+	//=========================Initialisation d'une partie
+	SGameState gameState;//Plateau du jeu a dupliquer afin éviter qu'une libraire modifie original
+	SGameState gameStateJ1,gameStateJ2;//Plateau du jeu pour le joueur 1 et 2
+	SMove move;
+	char nameJ1[50],  nameJ2[50];
+	int game, fin ,couleur, pion_erreur_j1, pion_erreur_j2, nbr_coup_j1, nbr_coup_j2;
+	EColor couleurJ1, couleurJ2;
+	EPiece boardInitJ1[4][10], boardInitJ2[4][10];
+	pthread_t thread_quitter;
+	srand(time(NULL));
+
+	//==========ATTENTION : CODE 1 JOUEUR, MODIF EN 2 JOUEUR
+
+	//Initialisation des librarie
+	//Début du match avec possibilité de plusieurs parties
+	if(nbr_IA >0){
+		j1InitLibrary(nameJ1);
+		j1StartMatch();
+	}
+	if(nbr_IA >1){
+		j2InitLibrary(nameJ2);
+		j2StartMatch();
+	}
 	
-	//On continue la partie si il n'y a pas eu 3 erreurs lors du placement des pions
-	if(fin == 0){
-		//ENREGISTRE LES PIONS DU JOUEUR 1 SUR LE CONTEXTE DE JEU
-		enregistrePion(boardInitJ1, &gameState, couleurJ1, 1);
+	XInitThreads();
+	pthread_create (&thread_quitter, NULL, quitter, NULL);
+
+	do {
 		
-		//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
-		enregistrePion(boardInitJ2, &gameState, couleurJ2, 2);
+		fin =0;
+		nbr_coup_j1 = 1;
+		nbr_coup_j2 = 1;
 		
-		interfaceGraphique(gameState); //On affiche le plateau de jeu après initialisation
+		//On initialise a 1 car aucune ereurs commise actuellement
+		pion_erreur_j1 = 1;
+		pion_erreur_j2 = 1;
+		
+		//On initialise le nombre de faute a 0
+		finPartie(0,0);
+		
+		//INITIALISATION DU CONTEXTE DE JEU
+		initialisationContexteJeu(&gameState);
+
+		//DIFINISSION DE LA COULEUR DU JOUEUR ET PLACEMENT DES PIONS PAR LE JOUEURS
+		couleur = (int)rand()%2;
+		
+		//ENREGISTREMENT ET VERIFICATION DES PIONS DES JOUEURS
 		do{
-			
-			//DEPLACEMENT D'UN PION
-			//Si joueur 1 est rouge alors il commence
-			if(couleurJ1 == ECred){
-				do{
-					//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
-					gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
-					
-					move = j1NextMove(&gameStateJ1);
-					//move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
-					
-					//VERIFIE QUE LE MOUVEMENT EST VALIDE
-					pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult);
-					/*int l;
-					scanf("%i",l);*/
-					//Cas ou on a réalisé une erreure
-					if(pion_erreur_j1 == 1){
-						fin = finPartie(1,0);
-						j1Penalty();
-						printf("Mouvement non valide\n");
-						if(fin == 1 ){
-							printf("3 erreurs pour %s donc %s gagne le match\n",nameJ1, nameJ2);
-							j1EndGame();
-							j2EndGame();
-						}
-					}
-					//Cas ou le drapeau a été détruie
-					if(pion_erreur_j1 == 2){
-						fin = 1;
-						printf("%s a détruit le drapeau de %s, victoire de %s\n",nameJ1, nameJ2, nameJ1);
-							j1EndGame();
-							j2EndGame();
-					}
-					
-					interfaceGraphique(gameState); //On affiche le plateau de jeu après le tour du joueur 1
-					
-				}while(pion_erreur_j1 == 1 && fin == 0);
+			if(couleur == 0){ //Si c'est égal a 0 alors la librairie 1 sera rouge et la librarie 2 sera bleu sinon inverse
+				//Joueur 1 = rouge
+				if(pion_erreur_j1 !=0){
+					//if(nbr_IA == 2){
+						j1StartGame(ECred,boardInitJ1);
+						couleurJ1 = ECred;
+					/*}
+					else{
+						placePion(ECred, boardInitJ1);
+						couleurJ1 = ECred;		
+					}*/
+					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
+				}
 				
-				if(fin == 0){
-					do{
-						//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
-						gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
-						
-						move = j2NextMove(&gameStateJ2);
-						//move = renvoieCoordonnees();
-						
-						//VERIFIE QUE LE MOUVEMENT EST VALIDE
-						pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult);
-						
-						//Cas ou on a réalisé une erreure
-						if(pion_erreur_j2 == 1){
-							fin = finPartie(2,0);
-							j2Penalty();
-							printf("Mouvement non valide\n");
-							if(fin == 1 ){
-								printf("3 erreurs pour %s donc %s gagne le match\n",nameJ2, nameJ1);
-								j1EndGame();
-								j2EndGame();
-							}
-						}
-						//Cas ou le drapeau a été détruie
-						if(pion_erreur_j1 == 2){
-							fin = 1;
-							printf("%s a détruit le drapeau de %s, victoire de %s\n",nameJ2, nameJ1, nameJ2);
-								j1EndGame();
-								j2EndGame();
-						}
-						
-						interfaceGraphique(gameState); //On affiche le plateau de jeu après le tour du joueur 2
-						
-					}while(pion_erreur_j2 == 1 && fin == 0);
+				//Joueur 2 = Bleu
+				if(pion_erreur_j2 !=0){
+					if(nbr_IA == 1){
+						j1StartGame(ECblue,boardInitJ2);
+						couleurJ2 = ECblue;
+					}
+					else if(nbr_IA == 2){
+						j2StartGame(ECblue,boardInitJ2);
+						couleurJ2 = ECblue;
+					}
+					else{
+						placePion(ECblue, boardInitJ2);
+						couleurJ2 = ECblue;		
+					}
+					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
+				}
+			} 
+			
+			else{
+				//Joueur 1 = Bleu
+				if(pion_erreur_j1 !=0){
+					if(nbr_IA == 2){
+						j1StartGame(ECblue,boardInitJ1);
+						couleurJ1 = ECblue;
+					}
+					else{
+						placePion(ECblue, boardInitJ1);
+						couleurJ1 = ECblue;		
+					}
+					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
+				}
+				//Joueur 2 = rouge
+				if(pion_erreur_j2 == 1){
+					if(nbr_IA == 1){
+						j1StartGame(ECred,boardInitJ2);
+						couleurJ2 = ECred;
+					}
+					else if(nbr_IA == 2){
+						j2StartGame(ECred,boardInitJ2);
+						couleurJ2 = ECred;
+					}
+					else{
+						placePion(ECred, boardInitJ2);
+						couleurJ2 = ECred;		
+					}
+					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
 				}
 			}
 			
-			//Si joueur 2 est rouge alors il commence
-			else{
-				do{
-					//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
-					gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
-					
-					move = j2NextMove(&gameStateJ2);
-					//move = renvoieCoordonnees();
-					
-					//VERIFIE QUE LE MOUVEMENT EST VALIDE
-					pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult);
-					/*int l;
-					scanf("%i",l);*/
-					//Cas ou on a réalisé une erreure
-					if(pion_erreur_j2 == 1){
-						fin = finPartie(2,0);
-						j2Penalty();
-						if(fin == 1 ){
-							printf("3 erreurs pour %s donc %s gagne le match\n",nameJ2, nameJ1);
-							j1EndGame();
-							j2EndGame();
-						}
+			if(pion_erreur_j1 == 1){
+				if(nbr_IA == 2){
+					fin = finPartie(1,0);
+					j1Penalty();
+				}
+				if(fin == 1 ){
+					printf("3 erreurs pour %s donc %s gagne le match\n",nameJ1, nameJ2);
+					if(nbr_IA == 1){
+						j1EndGame();
 					}
-					//Cas ou le drapeau a été détruie
-					if(pion_erreur_j1 == 2){
-						fin = 1;
-						printf("%s a détruit le drapeau de %s, victoire de %s\n",nameJ2, nameJ1, nameJ2);
-							j1EndGame();
-							j2EndGame();
+					if(nbr_IA == 2){
+						j2EndGame();
 					}
-					
-					interfaceGraphique(gameState); //On affiche le plateau de jeu après le tour du joueur 2
-						
-				}while(pion_erreur_j2 == 1 && fin == 0);
+				}
+			}
+			if(pion_erreur_j2 == 1){
+				if(nbr_IA == 1){
+					fin = finPartie(2,0);
+					j1Penalty();
+				}
+				else if(nbr_IA == 2){
+					fin = finPartie(2,0);
+					j2Penalty();
+				}
+				if(fin == 1 ){
+					printf("3 erreurs pour %s donc %s gagne le match",nameJ2, nameJ1);
+					if(nbr_IA == 1){
+						j1EndGame();
+					}
+					if(nbr_IA == 2){
+						j2EndGame();
+					}
+				}
+			}
+			
+		}while((pion_erreur_j1 == 1 || pion_erreur_j2 == 1) && fin == 0 );
+		
+		//On continue la partie si il n'y a pas eu 3 erreurs lors du placement des pions
+		if(fin == 0){
+			//ENREGISTRE LES PIONS DU JOUEUR 1 SUR LE CONTEXTE DE JEU
+			enregistrePion(boardInitJ1, &gameState, couleurJ1, 1);
+			
+			//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
+			enregistrePion(boardInitJ2, &gameState, couleurJ2, 2);
+			
+			do{
 				
-				if(fin == 0){
+				//DEPLACEMENT D'UN PION
+				//Si joueur 1 est rouge alors il commence
+				if(couleurJ1 == ECred){
 					do{
-						//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
-						gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
 						
-						move = j1NextMove(&gameStateJ1);
-						//move = renvoieCoordonnees();
-						
-						//VERIFIE QUE LE MOUVEMENT EST VALIDE
-						pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult);
+						if(nbr_IA == 2){
+							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
+							gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
+							move = j1NextMove(&gameStateJ1);
+							pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 2);
+							interfaceGraphique(gameState); //On affiche le plateau de jeu après initialisation
+						}
+						else{
+							gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
+							interfaceGraphique(gameStateJ1);
+							move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+							move.start.line = 9-move.start.line;
+							move.end.line = 9-move.end.line;	
+							
+							pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 0);
+							gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
+							interfaceGraphique(gameStateJ1);
+						}
+						/*
+						clock_t start,end;
+						printf("titi\n");
+						start=clock();
+						printf("toto\n");
+						while(((end=clock())-start)<=2*CLOCKS_PER_SEC);
+						printf("tata\n");*/
 						
 						//Cas ou on a réalisé une erreure
 						if(pion_erreur_j1 == 1){
-							fin = finPartie(1,0);
-							j1Penalty();
-							printf("Mouvement non valide\n");
+							
+							if(nbr_IA == 2){
+								fin = finPartie(1,0);
+								j1Penalty();
+							}
+							
+							afficheMessage("Mouvement non valide");
+							
 							if(fin == 1 ){
+								
 								printf("3 erreurs pour %s donc %s gagne le match\n",nameJ1, nameJ2);
-								j1EndGame();
-								j2EndGame();
+								if(nbr_IA == 2){
+									j1EndGame();
+								}
+								if(nbr_IA == 1){
+									j2EndGame();
+								}
 							}
 						}
 						//Cas ou le drapeau a été détruie
 						if(pion_erreur_j1 == 2){
 							fin = 1;
 							printf("%s a détruit le drapeau de %s, victoire de %s\n",nameJ1, nameJ2, nameJ1);
-							j1EndGame();
-							j2EndGame();
+							if(nbr_IA == 2){
+								j1EndGame();
+							}
+							if(nbr_IA == 1){
+								j2EndGame();
+							}
 						}
 						
-						interfaceGraphique(gameState); //On affiche le plateau de jeu après le tour du joueur 1
-						
 					}while(pion_erreur_j1 == 1 && fin == 0);
+					
+					nbr_coup_j1 ++; //Un coup de réaliser
+					
+					if(fin == 0 && nbr_coup_j1<=nbr_coup_permis && nbr_coup_j2<=nbr_coup_permis){
+						do{
+							if(nbr_IA == 1){
+								//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
+								gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);	
+								move = j1NextMove(&gameStateJ2);
+								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 1);
+							}
+							else if(nbr_IA == 2){
+								interfaceGraphique(gameState);
+								//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
+								gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
+								move = j2NextMove(&gameStateJ2);
+								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 2);
+								interfaceGraphique(gameState);
+							}
+							
+							else{
+								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
+								interfaceGraphique(gameStateJ2);
+								move = renvoieCoordonnees();
+								move.start.line = 9-move.start.line;
+								move.end.line = 9-move.end.line;						
+								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 0);
+								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
+								interfaceGraphique(gameStateJ2);
+							}
+							
+							//Cas ou on a réalisé une erreure
+							if(pion_erreur_j2 == 1){
+								
+								if(nbr_IA == 1){
+									fin = finPartie(2,0);
+									j1Penalty();
+								}
+								else if(nbr_IA == 2){
+									fin = finPartie(2,0);
+									j2Penalty();
+								}
+								
+								afficheMessage("Mouvement non valide");
+								if(fin == 1 ){
+									printf("3 erreurs pour %s donc %s gagne le match\n",nameJ2, nameJ1);
+									if(nbr_IA == 1){
+										j1EndGame();
+									}
+									if(nbr_IA == 2){
+										j2EndGame();
+									}
+								}
+							}
+							//Cas ou le drapeau a été détruie
+							if(pion_erreur_j1 == 2){
+								fin = 1;
+								printf("%s a détruit le drapeau de %s, victoire de %s\n",nameJ2, nameJ1, nameJ2);
+								if(nbr_IA == 1){
+									j1EndGame();
+								}
+								if(nbr_IA == 2){
+									j2EndGame();
+								}
+							}
+						
+							
+						}while(pion_erreur_j2 == 1 && fin == 0);
+						
+							nbr_coup_j2 ++; //Un coup de réaliser
+					}
 				}
-			}
-		}while(fin == 0);
-	}
-	
-	//Demande de nouvelle partie				
-	printf("Voulez vous refaire une partie ? 1:oui, 0:non = ");
-	scanf ("%i",&game);
-	
-	
-	/*printf("\n=========================================================\nPLATEAU DE JEU\n");
-	afficheConsole(gameState, couleurJ1, couleurJ2);
-	printf("\n=========================================================\n");
-	*/
-	
-}while(game==1);
-	
-//AJOUTER LES FREE ET LES CLOSES
-quitter_sdl();
-	
-j1EndMatch();
-j2EndMatch();
+				
+				//Si joueur 2 est rouge alors il commence
+				else{
+					do{
+						if(nbr_IA == 1){
+							//interfaceGraphique(gameState); 
+							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
+							gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
+							
+							move = j1NextMove(&gameStateJ2);
+							pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 1);
+						}
+						
+						else if(nbr_IA == 2){
+							interfaceGraphique(gameState);
+							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
+							gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
+							
+							move = j2NextMove(&gameStateJ2);
+							pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 2);
+							interfaceGraphique(gameState);
+						}
+						else{
+								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
+								interfaceGraphique(gameStateJ2);
+								move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+								move.start.line = 9-move.start.line;
+								move.end.line = 9-move.end.line;							
+								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 0);
+								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
+								interfaceGraphique(gameStateJ2);
+							}
+						
+						//Cas ou on a réalisé une erreure
+						if(pion_erreur_j2 == 1){
+							if(nbr_IA == 1){
+								fin = finPartie(2,0);
+								j1Penalty();
+							}	
+							
+							else if(nbr_IA == 2){
+								fin = finPartie(2,0);
+								j2Penalty();
+							}	
+							afficheMessage("Mouvement non valide");
+							if(fin == 1 ){
+								printf("3 erreurs pour %s donc %s gagne le match\n",nameJ2, nameJ1);
+								if(nbr_IA == 1){
+									j1EndGame();
+								}
+								if(nbr_IA == 2){
+									j2EndGame();
+								}
+							}
+						}
+						//Cas ou le drapeau a été détruie
+						if(pion_erreur_j1 == 2){
+							fin = 1;
+							printf("%s a détruit le drapeau de %s, victoire de %s\n",nameJ2, nameJ1, nameJ2);
+								if(nbr_IA == 1){
+									j1EndGame();
+								}
+								if(nbr_IA == 2){
+									j2EndGame();
+								}
+						}
+					}while(pion_erreur_j2 == 1 && fin == 0);
+					
+					nbr_coup_j2 ++; //Un coup de réaliser
+					
+					if(fin == 0){
+						do{
+							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
+							if(nbr_IA == 2){
+								interfaceGraphique(gameState);
+								gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
+							
+								move = j1NextMove(&gameStateJ1);
+								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 2);
+							}
+							else{
+								gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
+								interfaceGraphique(gameStateJ1);
+								move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+								move.start.line = 9-move.start.line;
+								move.end.line = 9-move.end.line;					
+								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 0);
+								gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
+							}
+							
+							//Cas ou on a réalisé une erreure
+							if(pion_erreur_j1 == 1){
+								if(nbr_IA == 2){
+									fin = finPartie(1,0);
+									j1Penalty();
+								}
+								afficheMessage("Mouvement non valide");
+								if(fin == 1 ){
+									printf("3 erreurs pour %s donc %s gagne le match\n",nameJ1, nameJ2);
+									if(nbr_IA == 1){
+										j1EndGame();
+									}
+									if(nbr_IA == 2){
+										j2EndGame();
+									}
+								}
+							}
+							//Cas ou le drapeau a été détruie
+							if(pion_erreur_j1 == 2){
+								fin = 1;
+								printf("%s a détruit le drapeau de %s, victoire de %s\n",nameJ1, nameJ2, nameJ1);
+								if(nbr_IA == 1){
+									j1EndGame();
+								}
+								if(nbr_IA == 2){
+									j2EndGame();
+								}
+							}
+							
+							interfaceGraphique(gameState); //On affiche le plateau de jeu après le tour du joueur 1
+							
+						}while(pion_erreur_j1 == 1 && fin == 0);
+						
+						nbr_coup_j1 ++; //Un coup de réaliser
+					}
+				}
+			}while(fin == 0  && nbr_coup_j1<=nbr_coup_permis  && nbr_coup_j2<=nbr_coup_permis);
+		}
+		
+		//Demande de nouvelle partie				
+		game = afficheMessageDemande("Voulez vous refaire une partie ?");	
+		
+		
+		/*printf("\n=========================================================\nPLATEAU DE JEU\n");
+		afficheConsole(gameState, couleurJ1, couleurJ2);
+		printf("\n=========================================================\n");
+		*/
+		
+	}while(game==1);
+		
+	//AJOUTER LES FREE ET LES CLOSES
+	quitter_sdl();
+		
+	j1EndMatch();
+	j2EndMatch();
 
-dlclose(j1Lib);
-dlclose(j2Lib);
+	dlclose(j1Lib);
+	dlclose(j2Lib);
 
-exit(EXIT_SUCCESS);	
+	exit(EXIT_SUCCESS);	
 
-return(1);
+	return(1);
+}
+else{
+	return(0);
+}
 }
 
 /*
@@ -621,12 +817,243 @@ SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int jo
 	return gameStatePerso;
 }
 
+SGameState duplicationJoueur(SGameState gameState, EColor color, int joueur){
+	SGameState gameStatePerso;
+	SBox box;
+	int i,j, m = 9;
+	
+	if(joueur == 1){
+		for(i=0;i<10;i++){
+			for(j=0;j<10;j++){
+				if(gameState.board[i][j].content == color){
+					box.content = color;
+					box.piece = EPnone;
+					gameStatePerso.board[i][j] = box;
+				}
+				else{
+					gameStatePerso.board[i][j] = gameState.board[i][j];
+				}
+			}
+		}
+	}
+	
+	if(joueur == 2){
+		for(i=0;i<10;i++){
+			for(j=0;j<10;j++){
+				if(gameState.board[i][j].content == color){
+					box.content = color;
+					box.piece = EPnone;
+					gameStatePerso.board[9-i][9-j] = box;
+				
+				}
+				else{
+					gameStatePerso.board[9-i][9-j] = gameState.board[i][j];
+				}
+			}
+		}
+	}
+	
+	//On copies les pions sortie
+	for(i=0;i<11;i++){
+		gameStatePerso.redOut[i] = gameState.redOut[i];
+		gameStatePerso.blueOut[i] = gameState.blueOut[i];
+	}
+	
+	return gameStatePerso;
+}
+
+void placePion(EColor color, EPiece boardInit[4][10]){
+	
+	int i, j;
+	SPos position;
+	SBox box;
+	SGameState SGame;
+	
+	for(i =0; i<4 ;i++){
+		for(j=0; j<10;j++){
+			 boardInit[i][j] = EPnone;
+		}
+	}
+	interfaceGraphique(SGame);
+	printf("Pose ton drapeau\n");
+	do{
+		position = getPos();
+		if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			printf("Erreur de placement, veuillez recommencez 1");
+		}
+	}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+	boardInit[9-position.line][9-position.col] = EPflag;
+	box.piece = EPflag;
+	box.content = color;
+	SGame.board[position.line][position.col] = box;
+	interfaceGraphique(SGame);
+	printf("Pose tes 6 bombes\n");
+
+	for(i=0;i<6;i++){
+		do{
+			position = getPos();
+			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				printf("Erreur de placement, veuillez recommencez 2");
+			}
+		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		boardInit[9-position.line][9-position.col] = EPbomb;
+		box.piece = EPbomb;
+		box.content = color;
+		SGame.board[position.line][position.col] = box;
+		interfaceGraphique(SGame);
+	}
+
+	printf("Pose ton espion\n");
+	do{
+		position = getPos();
+		if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			printf("Erreur de placement, veuillez recommencez");
+		}
+	}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+	boardInit[9-position.line][9-position.col] = EPspy;
+	box.piece = EPspy;
+	box.content = color;
+	SGame.board[position.line][position.col] = box;
+	interfaceGraphique(SGame);
+	
+	printf("Pose tes 8 scoutes\n");
+	for(i=0;i<8;i++){
+		do{
+			position = getPos();
+			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				printf("Erreur de placement, veuillez recommencez");
+			}
+		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		boardInit[9-position.line][9-position.col] = EPscout;
+		box.piece = EPscout;
+		box.content = color;
+		SGame.board[position.line][position.col] = box;
+		interfaceGraphique(SGame);
+	}
+	
+	printf("Pose tes 5 démineurs\n");
+	for(i=0;i<5;i++){
+		do{
+			position = getPos();
+			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				printf("Erreur de placement, veuillez recommencez");
+			}
+		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		boardInit[9-position.line][9-position.col] = EPminer;
+		box.piece = EPminer;
+		box.content = color;
+		SGame.board[position.line][position.col] = box;
+		interfaceGraphique(SGame);
+	}
+	
+	printf("Pose tes 4 sergeants\n");
+	for(i=0;i<4;i++){
+		do{
+			position = getPos();
+			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				printf("Erreur de placement, veuillez recommencez");
+			}
+		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		boardInit[9-position.line][9-position.col] = EPsergeant;
+		box.piece = EPsergeant;
+		box.content = color;
+		SGame.board[position.line][position.col] = box;
+		interfaceGraphique(SGame);
+	}
+	
+	printf("Pose tes 4 lieutenants\n");
+	for(i=0;i<4;i++){
+		do{
+			position = getPos();
+			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				printf("Erreur de placement, veuillez recommencez");
+			}
+		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		boardInit[9-position.line][9-position.col] = EPlieutenant;
+		box.piece = EPlieutenant;
+		box.content = color;
+		SGame.board[position.line][position.col] = box;
+		interfaceGraphique(SGame);
+	}
+	
+	printf("Pose tes 4 capitaines\n");
+	for(i=0;i<4;i++){
+		do{
+			position = getPos();
+			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				printf("Erreur de placement, veuillez recommencez");
+			}
+		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		boardInit[9-position.line][9-position.col] = EPcaptain;
+		box.piece = EPcaptain;
+		box.content = color;
+		SGame.board[position.line][position.col] = box;
+		interfaceGraphique(SGame);
+	}
+	
+	printf("Pose tes 3 majors\n");
+	for(i=0;i<3;i++){
+		do{
+			position = getPos();
+			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				printf("Erreur de placement, veuillez recommencez");
+			}
+		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		boardInit[9-position.line][9-position.col] = EPmajor;
+		box.piece = EPmajor;
+		box.content = color;
+		SGame.board[position.line][position.col] = box;
+		interfaceGraphique(SGame);
+	}
+	
+	printf("Pose tes 2 colonnel\n");
+	for(i=0;i<2;i++){
+		do{
+			position = getPos();
+			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				printf("Erreur de placement, veuillez recommencez");
+			}
+		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		boardInit[9-position.line][9-position.col] = EPcolonel;
+		box.piece = EPcolonel;
+		box.content = color;
+		SGame.board[position.line][position.col] = box;
+		interfaceGraphique(SGame);
+	}
+	
+	printf("Pose ton général\n");
+	do{
+		position = getPos();
+		if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			printf("Erreur de placement, veuillez recommencez");
+		}
+	}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+	boardInit[9-position.line][9-position.col] = EPgeneral;
+	box.piece = EPgeneral;
+	box.content = color;
+	SGame.board[position.line][position.col] = box;
+	interfaceGraphique(SGame);
+		
+	printf("Pose ton marshal\n");
+	do{
+		position = getPos();
+		if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			printf("Erreur de placement, veuillez recommencez");
+		}
+	}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+	boardInit[9-position.line][9-position.col] = EPmarshal;
+	box.piece = EPmarshal;
+	box.content = color;
+	SGame.board[position.line][position.col] = box;
+	interfaceGraphique(SGame);			
+}
+
 /*
  * FONCTION QUI VERIFIE QUE LE MOUVEMENT DU JOUEUR EST RÉALISABLE
  * SI OUI ON VÉRIFIE ENSUITE SI IL Y A UN CONFLITS OU PAS
  * SI NON ON ENVOIE UNE ERREUR AU JOUEUR
  */
-int verificationMouvement(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece)){
+int verificationMouvement(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece), int nb_IA){
 	
 	SBox boxStart, boxEnd, newBox;
 	int colorAdverse;
@@ -648,23 +1075,23 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 				move.start.col = 9-move.start.col;
 				move.end.col = 9-move.end.col;
 			}
-			
+
 			boxStart = gameState->board[move.start.line][move.start.col];
 			
 			//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
 			if(boxStart.content == color){
-				
+	
 				//VERIFICATION QUE LE PION SELECTIONNER PEUT ETRE BOUGER
 				if(boxStart.piece!=EPnone && boxStart.piece!=EPbomb && boxStart.piece!=EPflag){
-					
+				
 					//ON VÉRIFIE QUE ARRIVÉ EST BIEN DANS LE JEU
 					if(move.end.line>=0 && move.end.line<=9 && move.end.col>=0 && move.end.col<=9){
-						
+			
 						boxEnd = gameState->board[move.end.line][move.end.col];
-
+						
 						//VERIFICATION QUE ARRIVE NE CORRESPOND PAS A UN LAC NI A UN DE CES PIONS
 						if(boxEnd.content!=color && boxEnd.content!=EClake){
-							
+					
 							//ON VERIFIE QUE LA PIECE DEPLACER CORRESPOND OU PAS UN ECLAIREUR
 							if(boxStart.piece == EPscout){
 								
@@ -676,7 +1103,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 									   int endLine = move.end.line;
 									   int startCol = move.start.col;
 									   int endCol= move.end.col;
-									   
+									
 									   //ON VERIFIE DANS LE CAS D'UN ÉCLAIREUR SI IL NE SAUTE PAS PAR DESSUS UN LAC OU UN JOUEUR DURANT SONT DÉPLACEMENT
 									   while((startLine == endLine && startCol != endCol) ||
 												(startLine != endLine && startCol == endCol)){
@@ -700,17 +1127,17 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 												}
 												 
 												 //Cas si le prochain coup arrive a la ligne arrivé (mouvement colonne)
-												if (startLine == endLine && startCol != endCol && startCol+1 == endCol && gameState->board[startLine][endCol+1].content == colorAdverse) {
+												if (startLine == endLine && startCol != endCol && startCol+1 == endCol && gameState->board[startLine][startCol+1].content == colorAdverse) {
 													startCol++;
 												}
 												 
 												 //Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
-												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col+1].content !=ECnone){
+												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol+1].content !=ECnone){
 													 return 1;
 												}
 												
 												//Cas si le prochain mouvement est une case vide (mouvement colonne)
-												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col+1].content ==ECnone){
+												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol+1].content ==ECnone){
 													 startCol++;
 												}
 											}
@@ -733,16 +1160,16 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 												}
 												 
 												  //Cas si le prochain coup arrive a la ligne arrivé (mouvement colonne)
-												if (startLine == endLine && startCol != endCol && startCol-1 == endCol && gameState->board[startLine][endCol-1].content == colorAdverse) {
+												if (startLine == endLine && startCol != endCol && startCol-1 == endCol && gameState->board[startLine][startCol-1].content == colorAdverse) {
 													startCol--;
 												}
 												  //Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
-												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col-1].content !=ECnone){
+												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol-1].content !=ECnone){
 													 return 1;
 												}
 												
 												//Cas si le prochain mouvement est une case vide (mouvement colonne)
-												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][move.end.col-1].content ==ECnone){
+												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol-1].content ==ECnone){
 													 startCol--;
 												}
 											}
@@ -751,7 +1178,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 									
 									//ON VÉRIFIE SI LE DÉPLACEMENT ENTRAINE UNE ATTAQUE OU PAS
 									if(boxEnd.content==colorAdverse){
-										return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2);
+										return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2, nb_IA);
 									}
 									else{
 										//ON MODIFIE LE CONTEXTE DE JEU AVEC LE DÉPLACEMENT
@@ -765,6 +1192,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 							}
 							//CAS D'UNE PIÈCE QUI BOUGE ET QUI N'EST PAS UN ÉCLAIREUR
 							else{
+							
 								if((move.start.line == move.end.line && move.start.col == move.end.col+1) ||
 								   (move.start.line == move.end.line && move.start.col == move.end.col-1) ||
 								   (move.start.line == move.end.line+1 && move.start.col == move.end.col) ||
@@ -773,7 +1201,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 									printf("Déplacement réalisé\n");
 									//ON VÉRIFIE SI LE DÉPLACEMENT ENTRAIN UNE ATTAQUE OU PAS
 									if(boxEnd.content==colorAdverse){
-										return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2);
+										return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2, nb_IA);
 									}
 									else{
 										gameState->board[move.end.line][move.end.col] = gameState->board[move.start.line][move.start.col];
@@ -782,13 +1210,15 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 										gameState->board[move.start.line][move.start.col] = newBox;
 									}
 									return 0;
-								}   
+								}
 							}
+						
 						}
-					}				
+					}			
 				}
 			}
 		}
+
 	return 1;
 }
 
@@ -797,7 +1227,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
  * VÉRIFIE QU'ELLE EST LE RÉSULTAT DE L'ATTAQUE ET MODIFIE LE CONTEXTE DE JEU SELON LE TYPE DE COMBAT
  * RENVOIE 2 LORSQUE LE DRAPEAU ÉNNEMIE A ÉTÉ CAPTURÉ LORS DU ATTAQUE
  */
-int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResultJ1)(SPos, EPiece, SPos, EPiece), void(*AttackResultJ2)(SPos, EPiece, SPos, EPiece)){
+int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResultJ1)(SPos, EPiece, SPos, EPiece), void(*AttackResultJ2)(SPos, EPiece, SPos, EPiece), int nbr_IA){
 	SBox attaquant, attaquer, newBox;
 	SMove moveJ2, moveJ1;
 	
@@ -817,18 +1247,26 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	
 	//JOUEUR 1 QUI ATTAQUE
 	if(joueur == 1){
-		//printf("Attaque 1\n");
-
-		(*AttackResultJ1)(moveJ1.start, attaquant.piece, moveJ1.end, attaquer.piece);
-		(*AttackResultJ2)(moveJ2.end, attaquer.piece, moveJ2.start, attaquant.piece);
+		
+		if(nbr_IA == 2){
+			(*AttackResultJ1)(moveJ1.start, attaquant.piece, moveJ1.end, attaquer.piece);
+			(*AttackResultJ2)(moveJ2.end, attaquer.piece, moveJ2.start, attaquant.piece);
+		}
+		if(nbr_IA == 1){
+			(*AttackResultJ1)(moveJ2.end, attaquer.piece, moveJ2.start, attaquant.piece);
+		}
+		
 	} 
 	//JOUEUR 2 QUI ATTAQUE
 	else
 	{
-		//printf("Attaque 2\n");
-		
-		(*AttackResultJ2)(moveJ2.start, attaquant.piece, moveJ2.end, attaquer.piece);
-		(*AttackResultJ1)(moveJ1.end, attaquer.piece, moveJ1.start, attaquant.piece);
+		if(nbr_IA == 2){
+			(*AttackResultJ2)(moveJ2.start, attaquant.piece, moveJ2.end, attaquer.piece);
+			(*AttackResultJ1)(moveJ1.end, attaquer.piece, moveJ1.start, attaquant.piece);
+		}
+		if(nbr_IA == 1){
+			(*AttackResultJ1)(moveJ2.start, attaquant.piece, moveJ2.end, attaquer.piece);
+		}
 	}
 	
 	

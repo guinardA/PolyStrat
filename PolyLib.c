@@ -138,6 +138,7 @@ SMove NextMove(const SGameState * const gameState)
 		do
 		{
 			i = (int)rand()%40;
+			j = (int)rand()%4;
 			line = positionPiece[i].line;
 			col = positionPiece[i].col;
 		}while( (contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag) || (line <0));
@@ -146,24 +147,24 @@ SMove NextMove(const SGameState * const gameState)
 		move.start.line = line;
 		move.start.col = col;
 		
-		//Cas ou on se trouve pas a la dernière ligne
-		if(line<9)
-		{
+		if(j == 0){
 			move.end.line = line+1;
 			move.end.col = col;
-			
 		}
-		//Si on est pas a la première colonne alors on recule d'une colonne si on est a la dernière ligne
-		else if(col>0)
-		{
-			move.end.line = line;
-			move.end.col = col-1;
+		
+		else if(j == 1){
+			move.end.line = line-1;
+			move.end.col = col;
 		}
-		//Si on est a la première colonne et a la dernière ligne alors on avance d'une colonne
-		else
-		{
+		
+		else if(j == 2){
 			move.end.line = line;
 			move.end.col = col+1;
+		}
+		
+		else if(j == 3){
+			move.end.line = line;
+			move.end.col = col-1;
 		}
 	}
 	while(verificationMouvement(move, *gameState, couleur)!=0);
@@ -224,7 +225,6 @@ SMove NextMove(const SGameState * const gameState)
 	}
 	printf("Couleur du joueur : %i\n", couleur);
 	printf("Coup origine : \n%i - %i\n%i - %i\n\n", move.start.line, move.start.col,move.end.line,move.end.col);*/
-	
 	return move;
 }
 
@@ -356,7 +356,7 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 					if(move.end.line>=0 && move.end.line<=9 && move.end.col>=0 && move.end.col<=9){
 						
 						boxEnd = gameState.board[move.end.line][move.end.col];
-						
+			
 						//VERIFICATION QUE ARRIVE NE CORRESPOND PAS A UN LAC NI A UN DE CES PIONS	
 						if(boxEnd.content!=color && boxEnd.content!=EClake){
 							
@@ -376,37 +376,72 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 									   while((startLine == endLine && startCol != endCol) ||
 												(startLine != endLine && startCol == endCol)){
 										   
-										   //Cas si le prochain coup arrive a la ligne arrivé (mouvement ligne)
-										   if(startCol == endCol && startLine != endLine && startLine+1 == endLine && gameState.board[startLine+1][endCol].content == couleurAdverse) {
-											   startLine++;
-											}
+										   //CAS PION MONTANT
+										   if(startLine < endLine || startCol < endCol){
 										   
-										   //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
-										   else if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content !=ECnone){
-												printf("Erreur 1 \n");
-												printf("line start : %i end : %i",startLine, endLine);
-												return 1;
+											   //Cas si le prochain coup arrive a la ligne arrivé (mouvement ligne)
+											   if(startCol == endCol && startLine != endLine && startLine+1 == endLine && gameState.board[startLine+1][endCol].content == couleurAdverse) {
+												   startLine++;
+												}
+											   
+											   //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
+											   else if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content !=ECnone){
+													return 1;
+												}
+												
+												//Cas si le prochain mouvement est une case vide (mouvement ligne)
+												else if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content == ECnone){
+													startLine++;
+												}
+												 
+												 //Cas si le prochain coup arrive a la ligne arrivé (mouvement col)
+											   if(startLine == endLine && startCol != endCol && startCol+1 == endCol && gameState.board[startLine][startCol+1].content == couleurAdverse) {
+												   startCol++;
+												}
+												 
+												//Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
+												else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][startCol+1].content != ECnone){
+													 return 1;
+												}
+												
+												//Cas si le prochain mouvement est une case vide (mouvement colonne)
+												else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][startCol+1].content == ECnone){
+													 startCol++;
+												}
 											}
-											
-											//Cas si le prochain mouvement est une case vide (mouvement ligne)
-											else if(startCol == endCol && startLine != endLine && gameState.board[startLine+1][endCol].content == ECnone){
-												startLine++;
-											}
-											 
-											 //Cas si le prochain coup arrive a la ligne arrivé (mouvement col)
-										   if(startLine == endLine && startCol != endCol && startCol+1 == endCol && gameState.board[startLine][endCol+1].content == couleurAdverse) {
-											   startCol++;
-											}
-											 
-											//Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
-											else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content != ECnone){
-												 printf("Erreur 2 \n");
-												 return 1;
-											}
-											
-											//Cas si le prochain mouvement est une case vide (mouvement colonne)
-											else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][move.end.col+1].content == ECnone){
-												 startCol++;
+											//CAS PION MONTANT
+										   else if(startLine > endLine || startCol > endCol){
+										   
+											   //Cas si le prochain coup arrive a la ligne arrivé (mouvement ligne)
+											   if(startCol == endCol && startLine != endLine && startLine-1 == endLine && gameState.board[startLine-1][endCol].content == couleurAdverse) {
+												   startLine--;
+												}
+											   
+											   //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
+											   else if(startCol == endCol && startLine != endLine && gameState.board[startLine-1][endCol].content !=ECnone){
+													printf("Erreur 1 \n");
+													return 1;
+												}
+												
+												//Cas si le prochain mouvement est une case vide (mouvement ligne)
+												else if(startCol == endCol && startLine != endLine && gameState.board[startLine-1][endCol].content == ECnone){
+													startLine--;
+												}
+												 
+												 //Cas si le prochain coup arrive a la ligne arrivé (mouvement col)
+											   if(startLine == endLine && startCol != endCol && startCol-1 == endCol && gameState.board[startLine][startCol-1].content == couleurAdverse) {
+												   startCol--;
+												}
+												 
+												//Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
+												else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][startCol-1].content != ECnone){
+													 return 1;
+												}
+												
+												//Cas si le prochain mouvement est une case vide (mouvement colonne)
+												else if (startLine == endLine && startCol != endCol && gameState.board[move.start.line][startCol-1].content == ECnone){
+													 startCol--;
+												}
 											}
 										}
 									return 0;
@@ -431,7 +466,6 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 		}
 	return 1;
 }
-
 
 /*
  *Initialisation des pièces de l'ia

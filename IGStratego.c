@@ -8,8 +8,8 @@
 
 
 SDL_Surface *imageFond = NULL;	//création des variables
-SDL_Surface *pionsRouges[12] = {NULL};
-SDL_Surface *pionsBleus[12] = {NULL};
+SDL_Surface *pionsRouges[13] = {NULL};
+SDL_Surface *pionsBleus[13] = {NULL};
 
 void afficherMenu(){
 	
@@ -111,70 +111,64 @@ void selectionnerPion(SDL_Surface *ecran, SPos selected){
 	position.x = ((selected.col)*TAILLE_CASE)+MARGE_GAUCHE;
 	position.y = ((selected.line)*TAILLE_CASE)+MARGE_HAUT;
 
-	cursor = IMG_Load("icons/iconeSelect.png");
+	cursor = IMG_Load("icons/iconSelected.png");
 	SDL_BlitSurface(cursor, NULL, ecran, &position);
 }
 
 void afficheMessage(char* message){
-    SDL_Surface *ecran = NULL, *texte = NULL;
+    SDL_Surface *ecran = NULL, *texte = NULL, *textOk = NULL;
     SDL_Rect position;
     SDL_Event event;
-    TTF_Font *police = NULL;
+    TTF_Font *police = NULL, *policeOk = NULL;
     SDL_Color couleurNoire = {255, 255, 255};
     int continuer = 1;
-
     SDL_Init(SDL_INIT_VIDEO); //démarrage de la SDL
     TTF_Init(); //Initialisation de SDL_TTF
-
-    ecran = SDL_SetVideoMode(400, 100, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+    ecran = SDL_SetVideoMode(600, 200, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
     //SDL_WM_SetCaption("Gestion du texte avec SDL_ttf", NULL);
-
     /* Chargement de la police */
-    police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 20);
+    police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 30);
+    policeOk = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);
     /* Écriture du texte dans la SDL_Surface texte en mode Blended (optimal) */
     texte = TTF_RenderText_Blended(police, message, couleurNoire);
+    char *messageOk = "Ok";
+    textOk = TTF_RenderText_Blended(police, messageOk, couleurNoire);
    
     SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 0, 0, 0));
-
     position.x = ecran->w/2 - texte->w/2;
-    position.y = ecran->h/2 - texte->h/2;
+    position.y = ecran->h/3 - texte->h/2;
     SDL_BlitSurface(texte, NULL, ecran, &position); /* Blit du texte */
+    position.x = ecran->w/2 - textOk->w/2;
+    position.y = 2*(ecran->h/3) - textOk->h/2;
+    SDL_BlitSurface(textOk, NULL, ecran, &position);
     SDL_Flip(ecran);
-
     while (continuer)
     {
         SDL_WaitEvent(&event);
         switch(event.type)
-        {
-            case SDL_QUIT:	//cas on clique sur la croix
-                continuer = 0;
-                break;
-	    case SDL_KEYDOWN:	//cas : appuie sur une touche
-		switch(event.key.keysym.sym){
-			case SDLK_ESCAPE:
-				continuer = 0;
-				break;
-			default:
-				break;
+        {	
+	    case SDL_MOUSEBUTTONUP:
+		if(((event.button.y) > 115) && ((event.button.y) < 145) && ((event.button.x) > 280) && ((event.button.x) < 320)){
+			
 		}
+	    default:
+		break;	
         }
     }
-
     TTF_CloseFont(police);
     TTF_Quit();
-
     SDL_FreeSurface(texte);
     SDL_Quit(); //faut faire gaffe ça va ptet buger içi
 }
 
-void afficheMessageDemande(char* message){
+int afficheMessageDemande(char* message){
 
     SDL_Surface *ecran = NULL, *texteQuestion = NULL, *texteOui = NULL, *texteNon = NULL;
     SDL_Rect position;
     SDL_Event event;
     TTF_Font *policeQuestion = NULL, *policeOui = NULL, *policeNon = NULL;
     SDL_Color couleurNoire = {255, 255, 255};
-    int continuer = 1;
+    int continuer = 1, retour;
     char *oui = "Oui", *non = "Non";
 
     SDL_Init(SDL_INIT_VIDEO); //démarrage de la SDL
@@ -228,13 +222,15 @@ void afficheMessageDemande(char* message){
 	    case SDL_MOUSEBUTTONUP:	
 		//cas quand on clique sur oui
 		if(((event.button.y) > 50) && ((event.button.y) < 80) && ((event.button.x) > 100) && ((event.button.x) < 160)){
-			printf("COUCOU");
 			fflush(stdout);
+			retour = 1;
+			continuer = 0;
 		}
 
 		if(((event.button.y) > 50) && ((event.button.y) < 80) && ((event.button.x) > 230) && ((event.button.x) < 300)){
-			printf("UOCUOC");
 			fflush(stdout);
+			retour = 0;
+			continuer = 0;
 		}
 		break;
         }
@@ -249,6 +245,8 @@ void afficheMessageDemande(char* message){
     SDL_FreeSurface(texteOui);
     SDL_FreeSurface(texteNon);
     SDL_Quit(); //faut faire gaffe ça va ptet buger içi
+    
+    return retour;
 }
 
 	
@@ -299,6 +297,9 @@ printf("chargement\n");
 
 	pionsRouges[11] = IMG_Load("icons/flag11r.png");
 	SDL_SetColorKey(pionsRouges[11], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[11]->format, 255, 255, 255));
+	
+	pionsRouges[12] = IMG_Load("icons/noner.png");
+	SDL_SetColorKey(pionsRouges[12], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[12]->format, 255, 255, 255));
 
 	//***************** PIONS BLEUS ***********************
 	pionsBleus[0] = IMG_Load("icons/bomb0b.png");
@@ -336,6 +337,9 @@ printf("chargement\n");
 
 	pionsBleus[11] = IMG_Load("icons/flag11b.png");
 	SDL_SetColorKey(pionsBleus[11], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[11]->format, 255, 255, 255));
+	
+	pionsBleus[12] = IMG_Load("icons/noneb.png");
+	SDL_SetColorKey(pionsBleus[12], SDL_SRCCOLORKEY, SDL_MapRGB(pionsBleus[12]->format, 255, 255, 255));
 	
 	positionFond.x = 0;
 	positionFond.y = 0;
@@ -411,6 +415,11 @@ printf("chargement\n");
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[11], NULL, ecran, &position);
 							break;
+						case EPnone:
+							position.x = widthScreen;
+							position.y = heightScreen;
+							SDL_BlitSurface(pionsRouges[12], NULL, ecran, &position);
+							break;
 						default:
 							break;
 					}
@@ -478,6 +487,11 @@ printf("chargement\n");
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[11], NULL, ecran, &position);
 							break;
+						case EPnone:
+							position.x = widthScreen;
+							position.y = heightScreen;
+							SDL_BlitSurface(pionsBleus[12], NULL, ecran, &position);
+							break;
 						default:
 							break;
 					}
@@ -491,16 +505,14 @@ printf("chargement\n");
 
 }
 
-SMove renvoieCoordonnees(SDL_Surface *ecran, SGameState gameState){
+SMove renvoieCoordonnees(){
 	
 	SDL_Event event;
 	SPos positionDepart, positionArrivee;
 	SMove mouvementPion;
 	int continuer = 1;
-
 	while(continuer){
 		SDL_WaitEvent(&event);
-
 		switch(event.type){
 				case SDL_MOUSEBUTTONUP:
 					//il faut que ce soit un clic gauche et qu'il se situe dans la grille de jeu
@@ -508,41 +520,28 @@ SMove renvoieCoordonnees(SDL_Surface *ecran, SGameState gameState){
 						positionDepart.line = ((event.button.y-(MARGE_HAUT))/TAILLE_CASE);
 						positionDepart.col = ((event.button.x-(MARGE_GAUCHE))/TAILLE_CASE);
 						continuer = 0;
-
 					}
 					break;
-
-				default:
-					break;
-		}
-	}
-	printf("Ligne: %d, Colonne: %d\n",positionDepart.line, positionDepart.col);
-	if((gameState.board[positionDepart.line][positionDepart.col].content == ECred) || (gameState.board[positionDepart.line][positionDepart.col].content == ECblue)){
-		printf("COUCOU\n");
-		selectionnerPion(ecran, positionDepart);
-		SDL_Flip(ecran);
-	}
-	continuer = 1;
-
-	while(continuer){
-		SDL_WaitEvent(&event);
-		switch(event.type){
-				case SDL_MOUSEBUTTONUP:
-					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
-						positionDepart.line = ((event.button.y-(MARGE_HAUT+MARGE_BAS))/TAILLE_CASE);
-						positionDepart.col = ((event.button.x-(MARGE_GAUCHE+MARGE_DROITE))/TAILLE_CASE);
-						continuer = 0;					
-					}
-					break;
-
 				default:
 					break;
 		}
 	}
 	
-	SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 255, 255, 255)); //on efface l'ecran
-	initBoard(gameState, ecran);
-
+	continuer = 1;
+	while(continuer){
+		SDL_WaitEvent(&event);
+		switch(event.type){
+				case SDL_MOUSEBUTTONUP:
+					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
+						positionArrivee.line = ((event.button.y-MARGE_HAUT)/TAILLE_CASE);
+						positionArrivee.col = ((event.button.x-MARGE_GAUCHE)/TAILLE_CASE);
+						continuer = 0;					
+					}
+					break;
+				default:
+					break;
+		}
+	}
 	mouvementPion.start = positionDepart;
 	mouvementPion.end = positionArrivee;
 	
@@ -586,6 +585,39 @@ int interfaceGraphique(SGameState gameState){
     }*/
 	return EXIT_SUCCESS;
 	
+}
+
+//Retourne la position de la case sur laquelle on a cliqué, si ce n'est pas une case on renvoie une variable SPos avec -1 comme valeur de ligne et colonne
+SPos getPos(){
+	int continuer = 1;
+	SDL_Event event;
+	SPos posClic;	
+
+	while(continuer){
+		SDL_WaitEvent(&event);
+		switch(event.type){
+			case SDL_MOUSEBUTTONUP:
+				if(event.button.button == SDL_BUTTON_LEFT){
+					if(((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
+						posClic.line = ((event.button.y-MARGE_HAUT)/TAILLE_CASE);
+						posClic.col = ((event.button.x-MARGE_GAUCHE)/TAILLE_CASE);
+						continuer = 0;
+					}
+					else{
+						posClic.line = -1;
+						posClic.col = -1;
+						continuer = 0;
+					}
+					break;
+				}
+				else{
+					break;
+				}
+			default:
+				break;
+		}
+	}
+	return posClic;
 }
 
 void quitter_sdl(){
