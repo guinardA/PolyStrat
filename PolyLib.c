@@ -188,7 +188,7 @@ SMove NextMove(const SGameState * const gameState)
 		positionPiece[i].line = move.end.line;
 		positionPiece[i].col = move.end.col;
 	}
-	/*
+	
 	 //Affichage du contexte perso a corriger
 	for(i=0; i<10 ; i++){
 		for(j=0 ; j<10 ; j++){
@@ -224,7 +224,7 @@ SMove NextMove(const SGameState * const gameState)
 		printf("\n");
 	}
 	printf("Couleur du joueur : %i\n", couleur);
-	printf("Coup origine : \n%i - %i\n%i - %i\n\n", move.start.line, move.start.col,move.end.line,move.end.col);*/
+	printf("Coup origine : \n%i - %i\n%i - %i\n\n", move.start.line, move.start.col,move.end.line,move.end.col);
 	return move;
 }
 
