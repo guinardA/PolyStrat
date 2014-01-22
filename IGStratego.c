@@ -10,10 +10,24 @@
 SDL_Surface *imageFond = NULL;	//création des variables
 SDL_Surface *pionsRouges[13] = {NULL};
 SDL_Surface *pionsBleus[13] = {NULL};
+SDL_Surface *ecran = NULL;
+/*
+void afficherMessageEcran(char *message){
+	SDL_Surface *texteTitre = NULL;
+	SDL_Rect position;
+	TTF_Font *police = NULL;
+	SDL_Color couleurNoire = {255, 255, 255};
+
+	TTF_Init();
+	
+	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 30);
+	
+
+}*/
 
 void afficherMenu(){
 	
-	SDL_Surface *ecran = NULL, *texteTitre = NULL, *texte2j = NULL, *texte1j = NULL, *texte2IA = NULL, *texteQuit = NULL;
+	SDL_Surface /*ecran = NULL,*/ *texteTitre = NULL, *texte2j = NULL, *texte1j = NULL, *texte2IA = NULL, *texteQuit = NULL;
 	SDL_Rect position;
     	SDL_Event event;
     	TTF_Font *policeTitre = NULL, *policeMenu = NULL;
@@ -104,7 +118,7 @@ void afficherMenu(){
     SDL_Quit(); //faut faire gaffe ça va ptet buger içi
 }		
 
-void selectionnerPion(SDL_Surface *ecran, SPos selected){
+void selectionnerPion(SDL_Surface *ecran, SPos selected, SGameState gameState){
 	SDL_Surface *cursor = NULL;
 	SDL_Rect position;
 	
@@ -112,11 +126,15 @@ void selectionnerPion(SDL_Surface *ecran, SPos selected){
 	position.y = ((selected.line)*TAILLE_CASE)+MARGE_HAUT;
 
 	cursor = IMG_Load("icons/iconSelected.png");
-	SDL_BlitSurface(cursor, NULL, ecran, &position);
+
+	if((gameState.board[selected.line][selected.col].content == ECred) || (gameState.board[selected.line][selected.col].content == ECblue)){
+		SDL_BlitSurface(cursor, NULL, ecran, &position);
+		SDL_Flip(ecran);
+	}
 }
 
 void afficheMessage(char* message){
-    SDL_Surface *ecran = NULL, *texte = NULL, *textOk = NULL;
+    SDL_Surface /*ecran = NULL,*/ *texte = NULL, *textOk = NULL;
     SDL_Rect position;
     SDL_Event event;
     TTF_Font *police = NULL, *policeOk = NULL;
@@ -163,7 +181,7 @@ void afficheMessage(char* message){
 
 int afficheMessageDemande(char* message){
 
-    SDL_Surface *ecran = NULL, *texteQuestion = NULL, *texteOui = NULL, *texteNon = NULL;
+    SDL_Surface /*ecran = NULL,*/ *texteQuestion = NULL, *texteOui = NULL, *texteNon = NULL;
     SDL_Rect position;
     SDL_Event event;
     TTF_Font *policeQuestion = NULL, *policeOui = NULL, *policeNon = NULL;
@@ -505,7 +523,7 @@ printf("chargement\n");
 
 }
 
-SMove renvoieCoordonnees(){
+SMove renvoieCoordonnees(SGameState gameState){
 	
 	SDL_Event event;
 	SPos positionDepart, positionArrivee;
@@ -526,7 +544,7 @@ SMove renvoieCoordonnees(){
 					break;
 		}
 	}
-	
+	selectionnerPion(ecran, positionDepart, gameState);
 	continuer = 1;
 	while(continuer){
 		SDL_WaitEvent(&event);
@@ -551,7 +569,7 @@ SMove renvoieCoordonnees(){
 int interfaceGraphique(SGameState gameState){
 	
 	
-	SDL_Surface *ecran = NULL;	//création des variables
+	//SDL_Surface *ecran = NULL;	//création des variables
 	int continuer = 1;
 	SDL_Event event;
 

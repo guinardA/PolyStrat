@@ -2,6 +2,7 @@
 /* COMPTER LE NOMBRE DE PARTIE GAGNER ET PERDUE
  * EU UN MOUVEMENT NON VALIDE QUI EST PASSÉ DE IA
  * ERREUR ON NE COMPTE PAS LE COUPS
+ * FAIRE TXT AFFICHE TOUS LES COUPS
  * règle dans IA
  * Méthode joueur a la main
  * 		Afficher ok au message erreur et grisé la croix
@@ -247,6 +248,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 					}
 					else{
 						placePion(ECblue, boardInitJ1);
+						printf("\ntoto 1");
 						couleurJ1 = ECblue;		
 					}
 					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
@@ -305,7 +307,6 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 			}
 			
 		}while((pion_erreur_j1 == 1 || pion_erreur_j2 == 1) && fin == 0 );
-		
 		//On continue la partie si il n'y a pas eu 3 erreurs lors du placement des pions
 		if(fin == 0){
 			//ENREGISTRE LES PIONS DU JOUEUR 1 SUR LE CONTEXTE DE JEU
@@ -331,7 +332,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						else{
 							gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 							interfaceGraphique(gameStateJ1);
-							move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+							move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
 							move.start.line = 9-move.start.line;
 							move.end.line = 9-move.end.line;	
 							
@@ -405,7 +406,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							else{
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
-								move = renvoieCoordonnees();
+								move = renvoieCoordonnees(gameState);
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;						
 								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 0);
@@ -460,11 +461,14 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 				
 				//Si joueur 2 est rouge alors il commence
 				else{
+							
 					do{
 						if(nbr_IA == 1){
-							//interfaceGraphique(gameState); 
+							printf("\ntoto 3");
+							
+							interfaceGraphique(gameState); 
 							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
-							gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
+							gameStateJ2  = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
 							
 							move = j1NextMove(&gameStateJ2);
 							pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 1);
@@ -482,7 +486,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						else{
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
-								move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+								move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;							
 								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 0);
@@ -544,7 +548,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							else{
 								gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 								interfaceGraphique(gameStateJ1);
-								move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+								move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;					
 								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 0);
