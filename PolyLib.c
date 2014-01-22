@@ -131,7 +131,7 @@ SMove NextMove(const SGameState * const gameState)
 
 	SMove move; 
 	int line, col, i, j;
-	SBox board[10][10];
+	//SBox board[10][10];
 	
 	do
 	{
