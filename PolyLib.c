@@ -6,6 +6,9 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color);
 void choixStrategieIA(int choix,EPiece boardInit[4][10]);
 void majContextePerso(const SGameState * const gameState);
 int vaEtViens(SMove move);
+int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy);
+
+void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2);
 
 EColor couleur,couleurAdverse;
 
@@ -131,7 +134,7 @@ SMove NextMove(const SGameState * const gameState)
 
 	SMove move; 
 	int line, col, i, j;
-	SBox board[10][10];
+	//SBox board[10][10];
 	
 	do
 	{
@@ -139,7 +142,7 @@ SMove NextMove(const SGameState * const gameState)
 		do
 		{
 			i = (int)rand()%40;
-			j = (int)rand()%4;
+			j = (int)rand()%10;
 			line = positionPiece[i].line;
 			col = positionPiece[i].col;
 		}while( (contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag) || (line <0));
@@ -147,23 +150,52 @@ SMove NextMove(const SGameState * const gameState)
 		//Position de départ
 		move.start.line = line;
 		move.start.col = col;
-		
-		if(j == 0){
+
+		//si notre pièce est à côté d'un adversaire
+		if(contextPerso.board[line+1][col].content == couleurAdverse)
+		{
+			if(doitAttaquer(line,col,line+1,col) == 1 )
+			{
+				move.end.line = line+1;
+				move.end.col = col;
+			}
+			else
+			{
+				move.end.line = line-1;
+				move.end.col = col;
+			}
+		}
+		else if(contextPerso.board[line-1][col].content == couleurAdverse)
+		{
+			move.end.line = line-1;
+			move.end.col = col;
+		}
+		else if(contextPerso.board[line][col+1].content == couleurAdverse)
+		{
+			move.end.line = line;
+			move.end.col = col+1;
+		}
+		else if(contextPerso.board[line-1][col].content == couleurAdverse)
+		{
+			move.end.line = line;
+			move.end.col = col-1;
+		}//sinon mouvement aléatoire
+		else if( (j>=0) && (j<7) ){
 			move.end.line = line+1;
 			move.end.col = col;
 		}
 		
-		else if(j == 1){
+		else if(j == 7){
 			move.end.line = line-1;
 			move.end.col = col;
 		}
 		
-		else if(j == 2){
+		else if(j == 8){
 			move.end.line = line;
 			move.end.col = col+1;
 		}
 		
-		else if(j == 3){
+		else if(j == 9){
 			move.end.line = line;
 			move.end.col = col-1;
 		}
@@ -189,7 +221,7 @@ SMove NextMove(const SGameState * const gameState)
 		positionPiece[i].line = move.end.line;
 		positionPiece[i].col = move.end.col;
 	}
-	
+	/*
 	 //Affichage du contexte perso a corriger
 	for(i=0; i<10 ; i++){
 		for(j=0 ; j<10 ; j++){
@@ -225,7 +257,8 @@ SMove NextMove(const SGameState * const gameState)
 		printf("\n");
 	}
 	printf("Couleur du joueur : %i\n", couleur);
-	printf("Coup origine : \n%i - %i\n%i - %i\n\n", move.start.line, move.start.col,move.end.line,move.end.col);
+	printf("Coup origine : \n%i - %i\n%i - %i\n\n", move.start.line, move.start.col,move.end.line,move.end.col);*/
+	afficheConsole(contextPerso, couleur, couleurAdverse);
 	return move;
 }
 
@@ -288,6 +321,7 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 	(attaquant == EPminer && attaquer == EPbomb) ||
 	(attaquant == EPspy && attaquer == EPmarshal)){
 
+		//maj de la pièce éliminée pour le contexte perso
 		if(couleur == ECred){
 			contextPerso.blueOut[attaquer]++;
 		} else {
@@ -298,32 +332,74 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 	
-
+		//l'ia attaque
 		if(attaque == 1)
 		{
+			//déplacement de notre pièce
 			positionPiece[numPiece].line = enemyPos.line;
 			positionPiece[numPiece].col = enemyPos.col;		
 
+			//maj de déplacement pour le contexte perso
 			contextPerso.board[enemyPos.line][enemyPos.col] = contextPerso.board[armyPos.line][armyPos.col];
 			contextPerso.board[armyPos.line][armyPos.col] = newBox;	
+		}
+		//l'adversaire nous attaque
+		else
+		{
+			//perte de notre piece
+			positionPiece[numPiece].line = -1;
+
+			//la case de l'adversaire est libérée par son déplacment
+			contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
+
+			//création d'une box correspondant à l'adversaire
+			newBox.content = couleurAdverse;
+			newBox.piece = attaquant;
+
+			//l'adversaire prend la place de notre pièce, on a maintenant sa valeur
+			contextPerso.board[armyPos.line][armyPos.col] = newBox;	
+
 		}
 		
 		
 	}	
 	else
 	{
-	
+
+		//maj de la pièce éliminée pour le contexte perso
+		if(couleur == ECred){
+			contextPerso.blueOut[attaquant]++;
+		} else {
+			contextPerso.redOut[attaquant]++;
+		}
+
 		//ON MODIFIE LE CONTEXTE DE JEU
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 
+		//l'ia attaque
 		if(attaque == 1)
 		{
 			positionPiece[numPiece].line = -1;
+
 			contextPerso.board[armyPos.line][armyPos.col] = newBox;	
+
+			//création d'une box correspondant à l'adversaire
+			newBox.content = couleurAdverse;
+			newBox.piece = attaquant;
+
+			//on a maintenant la valeur de l'adversaire
+			contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
+		}
+		//l'adversaire nous attaque
+		else
+		{
+			// l'emplacement de l'adversaire est maintenant vide
+			contextPerso.board[enemyPos.line][enemyPos.col] = newBox;
 		}
 
 	}	
+
 	attaque = 0;
 }
 
@@ -569,4 +645,143 @@ void majContextePerso(const SGameState * const gameState)
 				contextPerso.board[i][j] = gameState->board[i][j];
 		}
 	}
+}
+
+
+
+int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy)
+{
+	return 1;
+
+}
+/*
+ * FONCTION QUI AFFICHE DANS EN CONSOLE LE CONTEXTE DE JEU
+ */
+void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2){
+	int i, j;
+	
+	printf("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\nCouleur\n");
+	
+	//AFFICHAGE QUE DES COULEURS
+	
+	if(joueur1 == ECred){
+		printf("Joueur 1 : rouge\nJoueur 2 : bleu\n\n");
+	}
+	else{
+		printf("Joueur 1 : bleu\nJoueur 2 : rouge\n\n");
+	}
+	
+	printf("R : Joueur rouge\n");
+	printf("B : Joueur bleu\n");
+	printf("L : Lac\n");
+	printf("0 : Vide\n\n");
+
+	printf("  |");
+	for(i=0;i<10;i++){
+		printf(" %i |",i);
+	}
+	printf("\n");
+	
+	for(i=0;i<10;i++){
+		printf("%i |",i);
+		for(j=0;j<10;j++){
+			if(gameState.board[i][j].content == ECred){
+				printf(" R |");
+			}
+			else if(gameState.board[i][j].content == ECblue){
+				printf(" B |");
+			}
+			else if(gameState.board[i][j].content == EClake){
+				printf(" L |");
+			}
+			else{
+				printf(" O |");
+			}
+		}
+		printf("\n");
+	}
+	
+	//AFFICHAGE QUE DES PERSONNAGE
+	printf("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\nPersonnages\n");
+	
+	if(joueur1 == ECred){
+		printf("Joueur 1 : rouge\nJoueur 2 : bleu\n\n");
+	}
+	else{
+		printf("Joueur 1 : bleu\nJoueur 2 : rouge\n\n");
+	}
+	
+	printf("Lettre en majuscule : Joueur rouge\n");
+	printf("Lettre en miniscule : Joueur bleu\n\n");
+	
+	printf("bo : Bomb\n");
+	printf("sp : Spy\n");
+	printf("sc : Scout\n");
+	printf("mi : Miner\n");
+	printf("se : Sergeant\n");
+	printf("li : Lieutenant\n");
+	printf("ca : Captain\n");
+	printf("ma : Major\n");
+	printf("co : Colonel\n");
+	printf("ge : General\n");
+	printf("ms : Marshal\n");
+	printf("fl : Flag\n");
+	printf("no : None\n\n");
+	
+	printf("L : Lac\n\n");
+	printf("0 : Vide\n\n");
+
+	printf("  |");
+	for(i=0;i<10;i++){
+		printf(" %i |",i);
+	}
+	printf("\n");
+	
+	for(i=0;i<10;i++){
+		printf("%i |",i);
+		for(j=0;j<10;j++){
+			
+			if(gameState.board[i][j].content == ECblue){
+				if(gameState.board[i][j].piece == EPbomb) printf(" bo|");
+				if(gameState.board[i][j].piece == EPspy) printf(" sp|");
+				if(gameState.board[i][j].piece == EPscout) printf(" sc|");
+				if(gameState.board[i][j].piece == EPminer) printf(" mi|");
+				if(gameState.board[i][j].piece == EPsergeant) printf(" se|");
+				if(gameState.board[i][j].piece == EPlieutenant) printf(" li|");;
+				if(gameState.board[i][j].piece == EPcaptain) printf(" ca|");
+				if(gameState.board[i][j].piece == EPmajor) printf(" ma|");
+				if(gameState.board[i][j].piece == EPcolonel) printf(" co|");
+				if(gameState.board[i][j].piece == EPgeneral) printf(" ge|");
+				if(gameState.board[i][j].piece == EPmarshal) printf(" ms|");
+				if(gameState.board[i][j].piece == EPflag) printf(" fl|");
+				if(gameState.board[i][j].piece == EPnone) printf(" no|");
+			}
+			
+			else if(gameState.board[i][j].content == ECred){
+				if(gameState.board[i][j].piece == EPbomb) printf(" BO|");
+				if(gameState.board[i][j].piece == EPspy) printf(" SP|");
+				if(gameState.board[i][j].piece == EPscout) printf(" SC|");
+				if(gameState.board[i][j].piece == EPminer) printf(" MI|");
+				if(gameState.board[i][j].piece == EPsergeant) printf(" SE|");
+				if(gameState.board[i][j].piece == EPlieutenant) printf(" LI|");;
+				if(gameState.board[i][j].piece == EPcaptain) printf(" CA|");
+				if(gameState.board[i][j].piece == EPmajor) printf(" MA|");
+				if(gameState.board[i][j].piece == EPcolonel) printf(" CO|");
+				if(gameState.board[i][j].piece == EPgeneral) printf(" GE|");
+				if(gameState.board[i][j].piece == EPmarshal) printf(" MS|");
+				if(gameState.board[i][j].piece == EPflag) printf(" FL|");
+				if(gameState.board[i][j].piece == EPnone) printf(" NO|");
+			}
+			
+			else if(gameState.board[i][j].content == EClake){
+				printf(" L |");
+			}
+			else{
+				printf(" O |");
+			}
+		}
+		printf("\n");
+	}
+
+
 }
