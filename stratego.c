@@ -332,7 +332,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						else{
 							gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 							interfaceGraphique(gameStateJ1);
-							move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+							move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
 							move.start.line = 9-move.start.line;
 							move.end.line = 9-move.end.line;	
 							
@@ -406,7 +406,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							else{
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
-								move = renvoieCoordonnees();
+								move = renvoieCoordonnees(gameState);
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;						
 								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 0);
@@ -486,7 +486,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						else{
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
-								move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+								move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;							
 								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 0);
@@ -548,7 +548,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							else{
 								gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 								interfaceGraphique(gameStateJ1);
-								move = renvoieCoordonnees(); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+								move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;					
 								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 0);
