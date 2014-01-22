@@ -5,6 +5,7 @@
 int verificationMouvement(SMove move, SGameState gameState,EColor color);
 void choixStrategieIA(int choix,EPiece boardInit[4][10]);
 void majContextePerso(const SGameState * const gameState);
+int vaEtViens(SMove move);
 
 EColor couleur,couleurAdverse;
 
@@ -333,6 +334,35 @@ void Penalty()
 	printf("Nombre de pénalité : %i\n",penalite);
 }
 
+int vaEtViens(SMove move){
+	
+	static int nbr_mvt;
+	int retour =0;
+	static SPos pos[2];
+
+	if(pos[0].line == move.start.line && pos[0].col == move.start.col && pos[1].line ==  move.end.line && pos[1].col == move.end.col && nbr_mvt%2 == 0){
+		nbr_mvt ++;
+		pos[0] = move.start;
+		pos[1] = move.end;
+	}
+	else if(pos[0].line == move.end.line && pos[0].col == move.end.col && pos[1].line ==  move.start.line && pos[1].col ==  move.start.col && nbr_mvt%2 == 1){
+		nbr_mvt ++;
+		pos[0] = move.end;
+		pos[1] = move.start;
+	}
+	else{
+		nbr_mvt = 1;
+		pos[0] = move.start;
+		pos[1] = move.end;
+	}
+	
+	if( nbr_mvt >= 4){
+		retour =1;
+	}
+	
+	return retour;
+}
+
 //Ensemble des fonctions liées a IA
 
 /*
@@ -345,6 +375,8 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 	SBox boxStart, boxEnd, newBox;
 	
 	if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
+		
+		if(vaEtViens(move) == 0){
 		
 			boxStart = gameState.board[move.start.line][move.start.col];
 			int t;
@@ -464,6 +496,7 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 				}
 			}
 		}
+	}
 	return 1;
 }
 

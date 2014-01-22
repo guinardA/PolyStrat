@@ -1,15 +1,13 @@
 
-/* GÉRER LA REGLE DES VA ET VIENS 
- * COMPTER LE NOMBRE DE PARTIE GAGNER ET PERDUE
- * RÈGLE DE FIN PARTIE LORSQUE IL NE RESTE QUE DES BOMBES ET LE FLAG
- * 2 joueurs
+/* COMPTER LE NOMBRE DE PARTIE GAGNER ET PERDUE
+ * EU UN MOUVEMENT NON VALIDE QUI EST PASSÉ DE IA
+ * ERREUR ON NE COMPTE PAS LE COUPS
  * règle dans IA
  * Méthode joueur a la main
  * 		Afficher ok au message erreur et grisé la croix
  *  	placePion // Problème lorsque erreur placement affiche pas message erreur et puis gamestate pas effacé
  * 		afficheErreur
  * 		Lors d'un combat affiché la piece attaqué avec un delay
- * 
  * */
 
 #include <stdio.h>
@@ -24,6 +22,9 @@
 
 void initialisationContexteJeu(SGameState *gameState);
 int verificationNombrePiece(EPiece boardInit[4][10]);
+int verifPionsBouger(SGameState gameState);
+int vaEtViensJ1(SMove move);
+int vaEtViensJ2(SMove move);
 void enregistrePion(EPiece boardInit[4][10], SGameState *gameState, EColor color, int joueur);
 SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int joueur);
 SGameState duplicationJoueur(SGameState gameState, EColor color, int joueur);
@@ -162,7 +163,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 	SGameState gameStateJ1,gameStateJ2;//Plateau du jeu pour le joueur 1 et 2
 	SMove move;
 	char nameJ1[50],  nameJ2[50];
-	int game, fin ,couleur, pion_erreur_j1, pion_erreur_j2, nbr_coup_j1, nbr_coup_j2;
+	int game, fin ,couleur, pion_erreur_j1, pion_erreur_j2, nbr_coup_j1, nbr_coup_j2, nbr_pion_rouge=0, nbr_pion_bleu=0;
 	EColor couleurJ1, couleurJ2;
 	EPiece boardInitJ1[4][10], boardInitJ2[4][10];
 	pthread_t thread_quitter;
@@ -203,7 +204,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 		//DIFINISSION DE LA COULEUR DU JOUEUR ET PLACEMENT DES PIONS PAR LE JOUEURS
 		couleur = (int)rand()%2;
 		
-		//ENREGISTREMENT ET VERIFICATION DES PIONS DES JOUEURS
+//ENREGISTREMENT ET VERIFICATION DES PIONS DES JOUEURS
 		do{
 			if(couleur == 0){ //Si c'est égal a 0 alors la librairie 1 sera rouge et la librarie 2 sera bleu sinon inverse
 				//Joueur 1 = rouge
@@ -315,7 +316,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 			
 			do{
 				
-				//DEPLACEMENT D'UN PION
+//DEPLACEMENT D'UN PION
 				//Si joueur 1 est rouge alors il commence
 				if(couleurJ1 == ECred){
 					do{
@@ -338,6 +339,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 							interfaceGraphique(gameStateJ1);
 						}
+						
 						/*
 						clock_t start,end;
 						printf("titi\n");
@@ -346,9 +348,10 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						while(((end=clock())-start)<=2*CLOCKS_PER_SEC);
 						printf("tata\n");*/
 						
-						//Cas ou on a réalisé une erreure
-						if(pion_erreur_j1 == 1){
+						//On vérifie qu'il y a encore un pion a bouger
+						fin = verifPionsBouger(gameState);
 							
+						if(pion_erreur_j1 == 1){
 							if(nbr_IA == 2){
 								fin = finPartie(1,0);
 								j1Penalty();
@@ -393,7 +396,6 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							}
 							else if(nbr_IA == 2){
 								interfaceGraphique(gameState);
-								//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
 								gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
 								move = j2NextMove(&gameStateJ2);
 								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 2);
@@ -410,6 +412,9 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
 							}
+							
+							//On vérifie qu'il y a encore un pion a bouger
+							fin = verifPionsBouger(gameState);
 							
 							//Cas ou on a réalisé une erreure
 							if(pion_erreur_j2 == 1){
@@ -485,6 +490,10 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								interfaceGraphique(gameStateJ2);
 							}
 						
+						
+						//On vérifie qu'il y a encore un pion a bouger
+						fin = verifPionsBouger(gameState);
+						
 						//Cas ou on a réalisé une erreure
 						if(pion_erreur_j2 == 1){
 							if(nbr_IA == 1){
@@ -542,6 +551,10 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 							}
 							
+							
+							//On vérifie qu'il y a encore un pion a bouger
+							fin = verifPionsBouger(gameState);
+							
 							//Cas ou on a réalisé une erreure
 							if(pion_erreur_j1 == 1){
 								if(nbr_IA == 2){
@@ -579,6 +592,29 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 					}
 				}
 			}while(fin == 0  && nbr_coup_j1<=nbr_coup_permis  && nbr_coup_j2<=nbr_coup_permis);
+		}
+
+		
+		if(nbr_coup_j1==nbr_coup_permis+1  || nbr_coup_j2==nbr_coup_permis+1){
+			int i;
+			
+			for(i=0; i<11;i++){
+				nbr_pion_rouge = nbr_pion_rouge + gameState.redOut[i];
+			}
+			for(i=0; i<11;i++){
+				nbr_pion_bleu = nbr_pion_bleu + gameState.blueOut[i];
+			}
+			
+			if(nbr_pion_rouge > nbr_pion_bleu){
+				printf("Joueur rouge a gagné la partie avec un plus grand nombre de pions restant\n");
+			}
+			else if(nbr_pion_bleu> nbr_pion_rouge){
+				printf("Joueur bleu a gagné la partie avec un plus grand nombre de pions restant\n");
+			}
+			else{
+				printf("Match exaequo\n");
+			}
+			
 		}
 		
 		//Demande de nouvelle partie				
@@ -705,6 +741,83 @@ int verificationNombrePiece(EPiece boardInit[4][10]){
 		return 1;
 	}
 	return 0;
+}
+
+int vaEtViensJ1(SMove move){
+	
+	static int nbr_mvt_J1;
+	int retour =0;
+	static SPos pos1[2];
+
+	if(pos1[0].line == move.start.line && pos1[0].col == move.start.col && pos1[1].line ==  move.end.line && pos1[1].col == move.end.col && nbr_mvt_J1%2 == 0){
+		nbr_mvt_J1 ++;
+		pos1[0] = move.start;
+		pos1[1] = move.end;
+	}
+	else if(pos1[0].line == move.end.line && pos1[0].col == move.end.col && pos1[1].line ==  move.start.line && pos1[1].col ==  move.start.col && nbr_mvt_J1%2 == 1){
+		nbr_mvt_J1 ++;
+		pos1[0] = move.end;
+		pos1[1] = move.start;
+	}
+	else{
+		nbr_mvt_J1 = 1;
+		pos1[0] = move.start;
+		pos1[1] = move.end;
+	}
+	
+	if( nbr_mvt_J1 >= 4){
+		retour =1;
+	}
+	
+	return retour;
+}
+
+int verifPionsBouger(SGameState gameState){
+	
+int retour = 0; 
+
+if(gameState.redOut[1] == 1 && gameState.redOut[2] == 8 && gameState.redOut[3] == 5 && gameState.redOut[4] == 4 && gameState.redOut[5] == 4
+&& gameState.redOut[6] == 4 && gameState.redOut[7] == 3 && gameState.redOut[8] == 2 && gameState.redOut[9] == 1 && gameState.redOut[10] == 1){
+	printf("Fin de la partie pour le joueur rouge car plus de pion a déplacer");
+	retour = 1;
+}
+
+if(gameState.blueOut[1] == 1 && gameState.blueOut[2] == 8 && gameState.blueOut[3] == 5 && gameState.blueOut[4] == 4 && gameState.blueOut[5] == 4
+&& gameState.blueOut[6] == 4 && gameState.blueOut[7] == 3 && gameState.blueOut[8] == 2 && gameState.blueOut[9] == 1 && gameState.blueOut[10] == 1){
+	printf("Fin de la partie pour le joueur bleu car plus de pion a déplacer");
+	retour = 1;
+}
+
+return retour;
+}
+
+int vaEtViensJ2(SMove move){
+	
+	static int nbr_mvt_J2;
+	int retour =0;
+	static SPos pos2[2];
+
+	if(pos2[0].line == move.start.line && pos2[0].col == move.start.col && pos2[1].line ==  move.end.line && pos2[1].col == move.end.col && nbr_mvt_J2%2 == 0){
+		nbr_mvt_J2 ++;
+		pos2[0] = move.start;
+		pos2[1] = move.end;
+	}
+	else if(pos2[0].line == move.end.line && pos2[0].col == move.end.col && pos2[1].line ==  move.start.line && pos2[1].col ==  move.start.col && nbr_mvt_J2%2 == 1){
+		nbr_mvt_J2 ++;
+		pos2[0] = move.end;
+		pos2[1] = move.start;
+	}
+	else{
+		nbr_mvt_J2 = 1;
+		pos2[0] = move.start;
+		pos2[1] = move.end;
+	}
+	
+	if( nbr_mvt_J2 >= 4){
+		retour =1;
+	}
+	
+	return retour;
 }
 
 /*
@@ -1064,161 +1177,163 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 	}
 	else colorAdverse = ECred;
 	
-	if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
-		
-			//On inverse le mouvement pour le joueur 2
-			if(joueur == 1){
-				move.start.line = 9-move.start.line;
-				move.end.line = 9-move.end.line;
-			}
-			if(joueur == 2){
-				move.start.col = 9-move.start.col;
-				move.end.col = 9-move.end.col;
-			}
+		if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
+			
+			if((joueur == 1 && vaEtViensJ1(move) == 0) || (joueur == 2 && vaEtViensJ2(move) == 0)){
+			
+				//On inverse le mouvement pour le joueur 2
+				if(joueur == 1){
+					move.start.line = 9-move.start.line;
+					move.end.line = 9-move.end.line;
+				}
+				if(joueur == 2){
+					move.start.col = 9-move.start.col;
+					move.end.col = 9-move.end.col;
+				}
 
-			boxStart = gameState->board[move.start.line][move.start.col];
-			
-			//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
-			if(boxStart.content == color){
-	
-				//VERIFICATION QUE LE PION SELECTIONNER PEUT ETRE BOUGER
-				if(boxStart.piece!=EPnone && boxStart.piece!=EPbomb && boxStart.piece!=EPflag){
+				boxStart = gameState->board[move.start.line][move.start.col];
 				
-					//ON VÉRIFIE QUE ARRIVÉ EST BIEN DANS LE JEU
-					if(move.end.line>=0 && move.end.line<=9 && move.end.col>=0 && move.end.col<=9){
-			
-						boxEnd = gameState->board[move.end.line][move.end.col];
-						
-						//VERIFICATION QUE ARRIVE NE CORRESPOND PAS A UN LAC NI A UN DE CES PIONS
-						if(boxEnd.content!=color && boxEnd.content!=EClake){
+				//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
+				if(boxStart.content == color){
+		
+					//VERIFICATION QUE LE PION SELECTIONNER PEUT ETRE BOUGER
+					if(boxStart.piece!=EPnone && boxStart.piece!=EPbomb && boxStart.piece!=EPflag){
 					
-							//ON VERIFIE QUE LA PIECE DEPLACER CORRESPOND OU PAS UN ECLAIREUR
-							if(boxStart.piece == EPscout){
-								
-								//ON VERIFIE QU'IL NE BOUGE PAS EN DIAGONAL
-								if((move.start.line == move.end.line && move.start.col != move.end.col) ||
-								   (move.start.line != move.end.line && move.start.col == move.end.col)){
-									   
-									   int startLine = move.start.line;
-									   int endLine = move.end.line;
-									   int startCol = move.start.col;
-									   int endCol= move.end.col;
-									
-									   //ON VERIFIE DANS LE CAS D'UN ÉCLAIREUR SI IL NE SAUTE PAS PAR DESSUS UN LAC OU UN JOUEUR DURANT SONT DÉPLACEMENT
-									   while((startLine == endLine && startCol != endCol) ||
-												(startLine != endLine && startCol == endCol)){
-													
-										   //CAS PION MONTANT
-										   if(startLine < endLine || startCol < endCol){
-											   
-											   //Cas si le prochain coup arrive a la ligne arrivé (mouvement ligne)
-											   if(startCol == endCol && startLine != endLine && startLine+1 == endLine && gameState->board[startLine+1][endCol].content == colorAdverse) {
-													startLine++;
-												}
-											   
-											   //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
-											    else if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content !=ECnone){
-													return 1;
-												}
-												
-												//Cas si le prochain mouvement est une case vide (mouvement ligne)
-												else if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content == ECnone){
-													startLine++;
-												}
-												 
-												 //Cas si le prochain coup arrive a la ligne arrivé (mouvement colonne)
-												if (startLine == endLine && startCol != endCol && startCol+1 == endCol && gameState->board[startLine][startCol+1].content == colorAdverse) {
-													startCol++;
-												}
-												 
-												 //Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
-												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol+1].content !=ECnone){
-													 return 1;
-												}
-												
-												//Cas si le prochain mouvement est une case vide (mouvement colonne)
-												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol+1].content ==ECnone){
-													 startCol++;
-												}
-											}
-											//CAS PION DESCENDANT
-											else if(startLine > endLine || startCol > endCol){
-												
-												  //Cas si le prochain coup arrive a la ligne arrivé (mouvement ligne)
-											    if(startCol == endCol && startLine != endLine && startLine-1 == endLine && gameState->board[startLine-1][endCol].content == colorAdverse) {
-													startLine--;
-												}
-												
-												 //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
-												else if(startCol == endCol && startLine != endLine && gameState->board[startLine-1][endCol].content !=ECnone){
-													return 1;
-												}
-												
-												//Cas si le prochain mouvement est une case vide (mouvement ligne)
-												else if(startCol == endCol && startLine != endLine && gameState->board[startLine-1][endCol].content == ECnone){
-													startLine--;
-												}
-												 
-												  //Cas si le prochain coup arrive a la ligne arrivé (mouvement colonne)
-												if (startLine == endLine && startCol != endCol && startCol-1 == endCol && gameState->board[startLine][startCol-1].content == colorAdverse) {
-													startCol--;
-												}
-												  //Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
-												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol-1].content !=ECnone){
-													 return 1;
-												}
-												
-												//Cas si le prochain mouvement est une case vide (mouvement colonne)
-												else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol-1].content ==ECnone){
-													 startCol--;
-												}
-											}
-										}
-									printf("Déplacement réalisé\n");
-									
-									//ON VÉRIFIE SI LE DÉPLACEMENT ENTRAINE UNE ATTAQUE OU PAS
-									if(boxEnd.content==colorAdverse){
-										return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2, nb_IA);
-									}
-									else{
-										//ON MODIFIE LE CONTEXTE DE JEU AVEC LE DÉPLACEMENT
-										gameState->board[move.end.line][move.end.col] = gameState->board[move.start.line][move.start.col];
-										newBox.content = ECnone;
-										newBox.piece = EPnone;
-										gameState->board[move.start.line][move.start.col] = newBox;
-									}
-									return 0;
-								}   
-							}
-							//CAS D'UNE PIÈCE QUI BOUGE ET QUI N'EST PAS UN ÉCLAIREUR
-							else{
+						//ON VÉRIFIE QUE ARRIVÉ EST BIEN DANS LE JEU
+						if(move.end.line>=0 && move.end.line<=9 && move.end.col>=0 && move.end.col<=9){
+				
+							boxEnd = gameState->board[move.end.line][move.end.col];
 							
-								if((move.start.line == move.end.line && move.start.col == move.end.col+1) ||
-								   (move.start.line == move.end.line && move.start.col == move.end.col-1) ||
-								   (move.start.line == move.end.line+1 && move.start.col == move.end.col) ||
-								   (move.start.line == move.end.line-1 && move.start.col == move.end.col)){
-									   
-									printf("Déplacement réalisé\n");
-									//ON VÉRIFIE SI LE DÉPLACEMENT ENTRAIN UNE ATTAQUE OU PAS
-									if(boxEnd.content==colorAdverse){
-										return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2, nb_IA);
-									}
-									else{
-										gameState->board[move.end.line][move.end.col] = gameState->board[move.start.line][move.start.col];
-										newBox.content = ECnone;
-										newBox.piece = EPnone;
-										gameState->board[move.start.line][move.start.col] = newBox;
-									}
-									return 0;
-								}
-							}
+							//VERIFICATION QUE ARRIVE NE CORRESPOND PAS A UN LAC NI A UN DE CES PIONS
+							if(boxEnd.content!=color && boxEnd.content!=EClake){
 						
-						}
-					}			
+								//ON VERIFIE QUE LA PIECE DEPLACER CORRESPOND OU PAS UN ECLAIREUR
+								if(boxStart.piece == EPscout){
+									
+									//ON VERIFIE QU'IL NE BOUGE PAS EN DIAGONAL
+									if((move.start.line == move.end.line && move.start.col != move.end.col) ||
+									   (move.start.line != move.end.line && move.start.col == move.end.col)){
+										   
+										   int startLine = move.start.line;
+										   int endLine = move.end.line;
+										   int startCol = move.start.col;
+										   int endCol= move.end.col;
+										
+										   //ON VERIFIE DANS LE CAS D'UN ÉCLAIREUR SI IL NE SAUTE PAS PAR DESSUS UN LAC OU UN JOUEUR DURANT SONT DÉPLACEMENT
+										   while((startLine == endLine && startCol != endCol) ||
+													(startLine != endLine && startCol == endCol)){
+														
+											   //CAS PION MONTANT
+											   if(startLine < endLine || startCol < endCol){
+												   
+												   //Cas si le prochain coup arrive a la ligne arrivé (mouvement ligne)
+												   if(startCol == endCol && startLine != endLine && startLine+1 == endLine && gameState->board[startLine+1][endCol].content == colorAdverse) {
+														startLine++;
+													}
+												   
+												   //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
+													else if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content !=ECnone){
+														return 1;
+													}
+													
+													//Cas si le prochain mouvement est une case vide (mouvement ligne)
+													else if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content == ECnone){
+														startLine++;
+													}
+													 
+													 //Cas si le prochain coup arrive a la ligne arrivé (mouvement colonne)
+													if (startLine == endLine && startCol != endCol && startCol+1 == endCol && gameState->board[startLine][startCol+1].content == colorAdverse) {
+														startCol++;
+													}
+													 
+													 //Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
+													else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol+1].content !=ECnone){
+														 return 1;
+													}
+													
+													//Cas si le prochain mouvement est une case vide (mouvement colonne)
+													else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol+1].content ==ECnone){
+														 startCol++;
+													}
+												}
+												//CAS PION DESCENDANT
+												else if(startLine > endLine || startCol > endCol){
+													
+													  //Cas si le prochain coup arrive a la ligne arrivé (mouvement ligne)
+													if(startCol == endCol && startLine != endLine && startLine-1 == endLine && gameState->board[startLine-1][endCol].content == colorAdverse) {
+														startLine--;
+													}
+													
+													 //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
+													else if(startCol == endCol && startLine != endLine && gameState->board[startLine-1][endCol].content !=ECnone){
+														return 1;
+													}
+													
+													//Cas si le prochain mouvement est une case vide (mouvement ligne)
+													else if(startCol == endCol && startLine != endLine && gameState->board[startLine-1][endCol].content == ECnone){
+														startLine--;
+													}
+													 
+													  //Cas si le prochain coup arrive a la ligne arrivé (mouvement colonne)
+													if (startLine == endLine && startCol != endCol && startCol-1 == endCol && gameState->board[startLine][startCol-1].content == colorAdverse) {
+														startCol--;
+													}
+													  //Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
+													else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol-1].content !=ECnone){
+														 return 1;
+													}
+													
+													//Cas si le prochain mouvement est une case vide (mouvement colonne)
+													else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol-1].content ==ECnone){
+														 startCol--;
+													}
+												}
+											}
+										printf("Déplacement réalisé\n");
+										
+										//ON VÉRIFIE SI LE DÉPLACEMENT ENTRAINE UNE ATTAQUE OU PAS
+										if(boxEnd.content==colorAdverse){
+											return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2, nb_IA);
+										}
+										else{
+											//ON MODIFIE LE CONTEXTE DE JEU AVEC LE DÉPLACEMENT
+											gameState->board[move.end.line][move.end.col] = gameState->board[move.start.line][move.start.col];
+											newBox.content = ECnone;
+											newBox.piece = EPnone;
+											gameState->board[move.start.line][move.start.col] = newBox;
+										}
+										return 0;
+									}   
+								}
+								//CAS D'UNE PIÈCE QUI BOUGE ET QUI N'EST PAS UN ÉCLAIREUR
+								else{
+								
+									if((move.start.line == move.end.line && move.start.col == move.end.col+1) ||
+									   (move.start.line == move.end.line && move.start.col == move.end.col-1) ||
+									   (move.start.line == move.end.line+1 && move.start.col == move.end.col) ||
+									   (move.start.line == move.end.line-1 && move.start.col == move.end.col)){
+										   
+										printf("Déplacement réalisé\n");
+										//ON VÉRIFIE SI LE DÉPLACEMENT ENTRAIN UNE ATTAQUE OU PAS
+										if(boxEnd.content==colorAdverse){
+											return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2, nb_IA);
+										}
+										else{
+											gameState->board[move.end.line][move.end.col] = gameState->board[move.start.line][move.start.col];
+											newBox.content = ECnone;
+											newBox.piece = EPnone;
+											gameState->board[move.start.line][move.start.col] = newBox;
+										}
+										return 0;
+									}
+								}
+							
+							}
+						}			
+					}
 				}
 			}
 		}
-
 	return 1;
 }
 
