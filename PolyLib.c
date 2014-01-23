@@ -179,7 +179,8 @@ SMove NextMove(const SGameState * const gameState)
 		{
 			move.end.line = line;
 			move.end.col = col-1;
-		}//sinon mouvement aléatoire
+		}
+		//sinon mouvement aléatoire
 		else if( (j>=0) && (j<7) ){
 			move.end.line = line+1;
 			move.end.col = col;
@@ -415,7 +416,7 @@ int vaEtViens(SMove move){
 	static int nbr_mvt;
 	int retour =0;
 	static SPos pos[2];
-
+	
 	if(pos[0].line == move.start.line && pos[0].col == move.start.col && pos[1].line ==  move.end.line && pos[1].col == move.end.col && nbr_mvt%2 == 0){
 		nbr_mvt ++;
 		pos[0] = move.start;
@@ -433,6 +434,7 @@ int vaEtViens(SMove move){
 	}
 	
 	if( nbr_mvt >= 4){
+		printf("Va et viens IA\n");
 		retour =1;
 	}
 	
@@ -527,7 +529,6 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 											   
 											   //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
 											   else if(startCol == endCol && startLine != endLine && gameState.board[startLine-1][endCol].content !=ECnone){
-													printf("Erreur 1 \n");
 													return 1;
 												}
 												
