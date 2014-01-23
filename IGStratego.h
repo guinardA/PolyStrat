@@ -12,3 +12,4 @@ int afficheMessageDemande(char* message);
 void selectionnerPion(SDL_Surface *ecran, SPos selected, SGameState gameState);
 SPos getPos();
 void quitter_sdl();
+void afficherMessageEcran(char *message, int delay);

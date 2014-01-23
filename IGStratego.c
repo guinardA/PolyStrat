@@ -11,19 +11,29 @@ SDL_Surface *imageFond = NULL;	//création des variables
 SDL_Surface *pionsRouges[13] = {NULL};
 SDL_Surface *pionsBleus[13] = {NULL};
 SDL_Surface *ecran = NULL;
-/*
-void afficherMessageEcran(char *message){
-	SDL_Surface *texteTitre = NULL;
+
+void afficherMessageEcran(char *message, int delay){
+	SDL_Surface *texteTitre = NULL, *ecrantmp = ecran;
 	SDL_Rect position;
 	TTF_Font *police = NULL;
-	SDL_Color couleurNoire = {255, 255, 255};
+	SDL_Color couleurNoire = {0, 0, 0};
 
 	TTF_Init();
 	
 	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 30);
-	
+	texteTitre = TTF_RenderText_Blended(police, message, couleurNoire);
+	position.y = ecran->h - MARGE_BAS + (texteTitre->h)/2 + 10;
+    	position.x = ecran->w/2 - texteTitre->w/2;
+	//printf("VAL: %d\n", (ecran->h - MARGE_BAS/2 - (texteTitre->h)/2));
+	SDL_BlitSurface(texteTitre, NULL, ecran, &position);
 
-}*/
+	SDL_Flip(ecran);
+	SDL_Delay(delay);
+	TTF_CloseFont(police);
+	TTF_Quit();
+	ecran = ecrantmp;
+	SDL_Flip(ecran);
+}
 
 void afficherMenu(){
 	
@@ -532,6 +542,13 @@ SMove renvoieCoordonnees(SGameState gameState){
 	while(continuer){
 		SDL_WaitEvent(&event);
 		switch(event.type){
+				case SDL_QUIT:
+				mouvementPion.start.line = -2;
+				mouvementPion.start.col = -2;
+				mouvementPion.end.line = -2;
+				mouvementPion.end.col = -2;
+				continuer = 0;
+				break;
 				case SDL_MOUSEBUTTONUP:
 					//il faut que ce soit un clic gauche et qu'il se situe dans la grille de jeu
 					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
@@ -544,11 +561,22 @@ SMove renvoieCoordonnees(SGameState gameState){
 					break;
 		}
 	}
-	selectionnerPion(ecran, positionDepart, gameState);
-	continuer = 1;
+	
+	if((mouvementPion.start.line != -2) && (mouvementPion.start.col != -2) && (mouvementPion.end.col != -2) && (mouvementPion.end.line != -2)){
+		selectionnerPion(ecran, positionDepart, gameState); 
+		continuer = 1;
+	}
 	while(continuer){
+		
 		SDL_WaitEvent(&event);
 		switch(event.type){
+				case SDL_QUIT:
+					mouvementPion.start.line = -2;
+					mouvementPion.start.col = -2;
+					mouvementPion.end.line = -2;
+					mouvementPion.end.col = -2;
+					continuer = 0;
+					break;
 				case SDL_MOUSEBUTTONUP:
 					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
 						positionArrivee.line = ((event.button.y-MARGE_HAUT)/TAILLE_CASE);
@@ -560,8 +588,11 @@ SMove renvoieCoordonnees(SGameState gameState){
 					break;
 		}
 	}
-	mouvementPion.start = positionDepart;
-	mouvementPion.end = positionArrivee;
+	
+	if((mouvementPion.start.line != -2) && (mouvementPion.start.col != -2) && (mouvementPion.end.col != -2) && (mouvementPion.end.line != -2)){
+		mouvementPion.start = positionDepart;
+		mouvementPion.end = positionArrivee;
+	}
 	
 	return mouvementPion;
 }
@@ -580,7 +611,6 @@ int interfaceGraphique(SGameState gameState){
 	SDL_WM_SetCaption("Stratego", NULL);
 	
 	initBoard(gameState, ecran);
-	
 	
 	SDL_Flip(ecran);
 	//Boucle pour tester la selection de pions
@@ -615,6 +645,11 @@ SPos getPos(){
 	while(continuer){
 		SDL_WaitEvent(&event);
 		switch(event.type){
+			case SDL_QUIT:
+				posClic.line = -2;
+				posClic.col = -2;
+				continuer = 0;
+				break;
 			case SDL_MOUSEBUTTONUP:
 				if(event.button.button == SDL_BUTTON_LEFT){
 					if(((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
