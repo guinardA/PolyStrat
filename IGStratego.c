@@ -37,16 +37,21 @@ void afficherMessageEcran(char *message, int delay){
 	TTF_Quit();
 	ecran = ecrantmp;
 	SDL_Flip(ecran);
+	
+	SDL_FreeSurface(texteTitre);
+	SDL_FreeSurface(ecrantmp);
+	
 }
 
-void afficherMenu(){
+//Affiche le menu d'accueil. Renvoie 0 pour Quitter, 1 pour 1Joueur, 2 pour 2Joueurs, 3 pour 2IA
+int afficherMenu(){
 	
-	SDL_Surface /*ecran = NULL,*/ *texteTitre = NULL, *texte2j = NULL, *texte1j = NULL, *texte2IA = NULL, *texteQuit = NULL;
+	SDL_Surface *texteTitre = NULL, *texte2j = NULL, *texte1j = NULL, *texte2IA = NULL, *texteQuit = NULL;
 	SDL_Rect position;
     	SDL_Event event;
     	TTF_Font *policeTitre = NULL, *policeMenu = NULL;
 	SDL_Color couleurNoire = {255, 255, 255};
-	int continuer = 1;
+	int continuer = 1, clicMenu = 0;
 
 	SDL_Init(SDL_INIT_VIDEO); //démarrage de la SDL
     	TTF_Init(); //Initialisation de SDL_TTF
@@ -109,14 +114,32 @@ void afficherMenu(){
             case SDL_QUIT:	//cas on clique sur la croix
                 continuer = 0;
                 break;
-	    case SDL_KEYDOWN:	//cas : appuie sur une touche
-		switch(event.key.keysym.sym){
-			case SDLK_ESCAPE:
-				continuer = 0;
-				break;
-			default:
-				break;
+	    case SDL_MOUSEBUTTONUP:
+		//Cas ou on clique sur 1 joueur
+		if(((event.button.y) > 180) && ((event.button.y) < 205) && ((event.button.x) > 225) && ((event.button.x) < 380)){
+			clicMenu = 1;
+			continuer = 0;
+			break;
 		}
+		//Cas ou on clique sur 2 joueurs
+		else if(((event.button.y) > 230) && ((event.button.y) < 255) && ((event.button.x) > 210) && ((event.button.x) < 385)){
+			clicMenu = 2;
+			continuer = 0;
+			break;
+		}
+		//Cas ou on appuie sur 2IA
+		else if(((event.button.y) > 280) && ((event.button.y) < 305) && ((event.button.x) > 245) && ((event.button.x) < 340)){
+			clicMenu = 3;
+			continuer = 0;
+			break;
+		}
+		//Cas ou on clique sur quitter
+		else if(((event.button.y) > 330) && ((event.button.y) < 360) && ((event.button.x) > 230) && ((event.button.x) < 370)){
+			clicMenu = 0;
+			continuer = 0;
+			break;
+		}
+		break;
         }
     }
 
@@ -130,6 +153,7 @@ void afficherMenu(){
     SDL_FreeSurface(texte2IA);
     SDL_FreeSurface(texteQuit);
     SDL_Quit(); //faut faire gaffe ça va ptet buger içi
+    return clicMenu;
 }		
 
 void selectionnerPion(SDL_Surface *ecran, SPos selected, SGameState gameState){
@@ -145,10 +169,11 @@ void selectionnerPion(SDL_Surface *ecran, SPos selected, SGameState gameState){
 		SDL_BlitSurface(cursor, NULL, ecran, &position);
 		SDL_Flip(ecran);
 	}
+	SDL_FreeSurface(cursor);
 }
 
 void afficheMessage(char* message){
-    SDL_Surface /*ecran = NULL,*/ *texte = NULL, *textOk = NULL;
+    SDL_Surface *texte = NULL, *textOk = NULL;
     SDL_Rect position;
     SDL_Event event;
     TTF_Font *police = NULL, *policeOk = NULL;
@@ -157,10 +182,11 @@ void afficheMessage(char* message){
     SDL_Init(SDL_INIT_VIDEO); //démarrage de la SDL
     TTF_Init(); //Initialisation de SDL_TTF
     ecran = SDL_SetVideoMode(600, 200, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
-    //SDL_WM_SetCaption("Gestion du texte avec SDL_ttf", NULL);
+
     /* Chargement de la police */
     police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 30);
     policeOk = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);
+
     /* Écriture du texte dans la SDL_Surface texte en mode Blended (optimal) */
     texte = TTF_RenderText_Blended(police, message, couleurNoire);
     char *messageOk = "Ok";
@@ -169,9 +195,11 @@ void afficheMessage(char* message){
     SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 0, 0, 0));
     position.x = ecran->w/2 - texte->w/2;
     position.y = ecran->h/3 - texte->h/2;
+
     SDL_BlitSurface(texte, NULL, ecran, &position); /* Blit du texte */
     position.x = ecran->w/2 - textOk->w/2;
     position.y = 2*(ecran->h/3) - textOk->h/2;
+
     SDL_BlitSurface(textOk, NULL, ecran, &position);
     SDL_Flip(ecran);
     while (continuer)
@@ -188,14 +216,16 @@ void afficheMessage(char* message){
         }
     }
     TTF_CloseFont(police);
+    TTF_CloseFont(policeOk);
     TTF_Quit();
     SDL_FreeSurface(texte);
+    SDL_FreeSurface(textOk);
     SDL_Quit(); //faut faire gaffe ça va ptet buger içi
 }
 
 int afficheMessageDemande(char* message){
 
-    SDL_Surface /*ecran = NULL,*/ *texteQuestion = NULL, *texteOui = NULL, *texteNon = NULL;
+    SDL_Surface *texteQuestion = NULL, *texteOui = NULL, *texteNon = NULL;
     SDL_Rect position;
     SDL_Event event;
     TTF_Font *policeQuestion = NULL, *policeOui = NULL, *policeNon = NULL;
@@ -213,6 +243,7 @@ int afficheMessageDemande(char* message){
     policeQuestion = TTF_OpenFont("fonts/FreeMonoBold.ttf", 20);
     policeOui = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);
     policeNon = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);
+
     /* Écriture du texte dans la SDL_Surface texte en mode Blended (optimal) */
     texteQuestion = TTF_RenderText_Blended(policeQuestion, message, couleurNoire);
     texteOui = TTF_RenderText_Blended(policeOui, oui, couleurNoire);
@@ -608,7 +639,6 @@ int interfaceGraphique(SGameState gameState){
 	int continuer = 1;
 	SDL_Event event;
 
-
 	SDL_Init(SDL_INIT_VIDEO);	//initialisation de la SDL
 
 	ecran = SDL_SetVideoMode(920, 670, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);	//chargement des surfaces
@@ -686,6 +716,14 @@ void quitter_sdl(){
 	for(i=0;i<12;i++){
 		SDL_FreeSurface(pionsRouges[i]);
 		SDL_FreeSurface(pionsBleus[i]);
+	}
+
+	i = 0;
+	for(i=0; i<11; i++){
+		SDL_FreeSurface(texteBlue[i]);
+		SDL_FreeSurface(texteRed[i]);
+		SDL_FreeSurface(texteBlue[i]);
+		SDL_FreeSurface(texteRed[i]);
 	}
 	
 	SDL_FreeSurface(imageFond);
@@ -778,4 +816,6 @@ void afficherPiecesRestantes(SGameState gameState,SDL_Surface *ecran){
 	SDL_BlitSurface(texteBlue[i], NULL, ecran, &positionCptBlue);
     }
 
+    TTF_CloseFont(police);
+    TTF_Quit();
 }	
