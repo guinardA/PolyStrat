@@ -27,17 +27,12 @@ void afficherMessageEcran(char *message, int delay){
 	TTF_Init();	//Initialisation de SDL_TTF
 	
 
-	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 30);	//Chargement de la police
+	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);	//Chargement de la police
 	texteTitre = TTF_RenderText_Blended(police, message, couleurNoire);	//Ecriture du texte dans la SDL_Surface texteTitre
-	position.y = ecran->h - MARGE_BAS + (texteTitre->h)/2 + 10;
+	position.y = ecran->h - MARGE_BAS + (texteTitre->h)/2 + 22;
     	position.x = ecran->w/2 - texteTitre->w/2;
-<<<<<<< HEAD
-	//printf("VAL: %d\n", (ecran->h - MARGE_BAS/2 - (texteTitre->h)/2));
-	
-	SDL_BlitSurface(texteTitre, NULL, ecran, &position);
-=======
 	SDL_BlitSurface(texteTitre, NULL, ecran, &position);	//On Blit le texteTitre à l'écran
->>>>>>> 025a580fa4878adcbd6179269ac776b67cc06834
+
 
 	SDL_Flip(ecran);	//On rafraichit l'écran
 	SDL_Delay(delay);	//Délai d'affichage du message
