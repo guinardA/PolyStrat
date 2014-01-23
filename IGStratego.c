@@ -11,19 +11,27 @@ SDL_Surface *imageFond = NULL;	//création des variables
 SDL_Surface *pionsRouges[13] = {NULL};
 SDL_Surface *pionsBleus[13] = {NULL};
 SDL_Surface *ecran = NULL;
-/*
-void afficherMessageEcran(char *message){
-	SDL_Surface *texteTitre = NULL;
+
+void afficherMessageEcran(char *message, int delay){
+	SDL_Surface *texteTitre = NULL, *ecrantmp = ecran;
 	SDL_Rect position;
 	TTF_Font *police = NULL;
-	SDL_Color couleurNoire = {255, 255, 255};
+	SDL_Color couleurNoire = {0, 0, 0};
 
 	TTF_Init();
 	
 	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 30);
-	
+	texteTitre = TTF_RenderText_Blended(police, message, couleurNoire);
+	position.y = ecran->h - MARGE_BAS + (texteTitre->h)/2 + 10;
+    	position.x = ecran->w/2 - texteTitre->w/2;
+	//printf("VAL: %d\n", (ecran->h - MARGE_BAS/2 - (texteTitre->h)/2));
+	SDL_BlitSurface(texteTitre, NULL, ecran, &position);
 
-}*/
+	SDL_Flip(ecran);
+	SDL_Delay(delay);
+	ecran = ecrantmp;
+	SDL_Flip(ecran);
+}
 
 void afficherMenu(){
 	
@@ -580,7 +588,6 @@ int interfaceGraphique(SGameState gameState){
 	SDL_WM_SetCaption("Stratego", NULL);
 	
 	initBoard(gameState, ecran);
-	
 	
 	SDL_Flip(ecran);
 	//Boucle pour tester la selection de pions
