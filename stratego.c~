@@ -3,6 +3,8 @@
  * EU UN MOUVEMENT NON VALIDE QUI EST PASSÉ DE IA
  * ERREUR ON NE COMPTE PAS LE COUPS
  * FAIRE TXT AFFICHE TOUS LES COUPS
+ * THREAD 2 IA OU PAS
+ * ERREUR PLACER PIONS PROBLÈME LES PIONS PLACÉ CORRESPOND PAS INVERSEMENT COLONE
  * règle dans IA
  * Méthode joueur a la main
  * 		Afficher ok au message erreur et grisé la croix
@@ -30,7 +32,7 @@ void enregistrePion(EPiece boardInit[4][10], SGameState *gameState, EColor color
 SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int joueur);
 SGameState duplicationJoueur(SGameState gameState, EColor color, int joueur);
 int verificationMouvement(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece), int nb_IA);
-void placePion(EColor color, EPiece boardInit[4][10]);
+void placePion(EColor color, EPiece boardInit[4][10], int joueur);
 int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResultJ1)(SPos, EPiece, SPos, EPiece), void(*AttackResultJ2)(SPos, EPiece, SPos, EPiece), int nbr_IA);
 int finPartie(int joueur, int flag);
 static void * quitter(void * p_data);
@@ -215,7 +217,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						couleurJ1 = ECred;
 					}
 					else{
-						placePion(ECred, boardInitJ1);
+						placePion(ECred, boardInitJ1, 1);
 						couleurJ1 = ECred;		
 					}
 					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
@@ -232,7 +234,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						couleurJ2 = ECblue;
 					}
 					else{
-						placePion(ECblue, boardInitJ2);
+						placePion(ECblue, boardInitJ2, 2);
 						couleurJ2 = ECblue;		
 					}
 					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
@@ -247,8 +249,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						couleurJ1 = ECblue;
 					}
 					else{
-						placePion(ECblue, boardInitJ1);
-						printf("\ntoto 1");
+						placePion(ECblue, boardInitJ1, 1);
 						couleurJ1 = ECblue;		
 					}
 					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
@@ -264,7 +265,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						couleurJ2 = ECred;
 					}
 					else{
-						placePion(ECred, boardInitJ2);
+						placePion(ECred, boardInitJ2, 2);
 						couleurJ2 = ECred;		
 					}
 					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
@@ -340,6 +341,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 							interfaceGraphique(gameStateJ1);
 						}
+						afficherMessageEcran(char *message)
 						
 						/*
 						clock_t start,end;
@@ -464,7 +466,6 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							
 					do{
 						if(nbr_IA == 1){
-							printf("\ntoto 3");
 							
 							interfaceGraphique(gameState); 
 							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
@@ -770,6 +771,7 @@ int vaEtViensJ1(SMove move){
 	}
 	
 	if( nbr_mvt_J1 >= 4){
+		printf("Va et viens arbitre j1\n");
 		retour =1;
 	}
 	
@@ -818,6 +820,7 @@ int vaEtViensJ2(SMove move){
 	}
 	
 	if( nbr_mvt_J2 >= 4){
+		printf("Va et viens arbitre j2\n");
 		retour =1;
 	}
 	
@@ -979,26 +982,36 @@ SGameState duplicationJoueur(SGameState gameState, EColor color, int joueur){
 	return gameStatePerso;
 }
 
-void placePion(EColor color, EPiece boardInit[4][10]){
+void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	
 	int i, j;
 	SPos position;
 	SBox box;
 	SGameState SGame;
 	
+	initialisationContexteJeu(&SGame);
+	
 	for(i =0; i<4 ;i++){
 		for(j=0; j<10;j++){
 			 boardInit[i][j] = EPnone;
+			 if(joueur == 2){
+				 if(color == ECblue) box.content = ECred;
+				 else box.content = ECblue;
+				 box.piece = EPnone;
+				 SGame.board[i][j] = box;
+			}
 		}
 	}
+	
 	interfaceGraphique(SGame);
+
 	printf("Pose ton drapeau\n");
 	do{
 		position = getPos();
-		if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
-			printf("Erreur de placement, veuillez recommencez 1");
+		if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			printf("Erreur de placement, veuillez recommencez 1\n");
 		}
-	}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+	}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 	boardInit[9-position.line][9-position.col] = EPflag;
 	box.piece = EPflag;
 	box.content = color;
