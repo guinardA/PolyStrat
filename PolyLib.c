@@ -651,6 +651,13 @@ void majContextePerso(const SGameState * const gameState)
 
 int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy)
 {
+	EPiece enemy = contextPerso.board[lineEnemy][colEnemy].piece;
+	EPiece army = contextPerso.board[lineArmy][colArmy].piece;
+
+	if(enemy<army)
+	{
+		return 0;
+	}
 	return 1;
 
 }
