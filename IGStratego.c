@@ -16,26 +16,28 @@ SDL_Surface *pionsBlueLeft[11] = {NULL};
 SDL_Surface *texteBlue[11] = {NULL};
 SDL_Surface *texteRed[11] = {NULL};
 
+//Méthode qui permet d'afficher un message dans l'encadré en bas de l'écran
 void afficherMessageEcran(char *message, int delay){
+	//Déclaration des variables
 	SDL_Surface *texteTitre = NULL, *ecrantmp = ecran;
 	SDL_Rect position;
 	TTF_Font *police = NULL;
 	SDL_Color couleurNoire = {0, 0, 0};
 
-	TTF_Init();
+	TTF_Init();	//Initialisation de SDL_TTF
 	
-	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 30);
-	texteTitre = TTF_RenderText_Blended(police, message, couleurNoire);
+
+	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 30);	//Chargement de la police
+	texteTitre = TTF_RenderText_Blended(police, message, couleurNoire);	//Ecriture du texte dans la SDL_Surface texteTitre
 	position.y = ecran->h - MARGE_BAS + (texteTitre->h)/2 + 10;
     	position.x = ecran->w/2 - texteTitre->w/2;
-	//printf("VAL: %d\n", (ecran->h - MARGE_BAS/2 - (texteTitre->h)/2));
-	SDL_BlitSurface(texteTitre, NULL, ecran, &position);
+	SDL_BlitSurface(texteTitre, NULL, ecran, &position);	//On Blit le texteTitre à l'écran
 
-	SDL_Flip(ecran);
-	SDL_Delay(delay);
+	SDL_Flip(ecran);	//On rafraichit l'écran
+	SDL_Delay(delay);	//Délai d'affichage du message
 	TTF_CloseFont(police);
 	TTF_Quit();
-	ecran = ecrantmp;
+	ecran = ecrantmp;	//On réaffiche l'écran comme il était avant
 	SDL_Flip(ecran);
 	
 	SDL_FreeSurface(texteTitre);
@@ -46,6 +48,7 @@ void afficherMessageEcran(char *message, int delay){
 //Affiche le menu d'accueil. Renvoie 0 pour Quitter, 1 pour 1Joueur, 2 pour 2Joueurs, 3 pour 2IA
 int afficherMenu(){
 	
+	//Déclaration des variables
 	SDL_Surface *texteTitre = NULL, *texte2j = NULL, *texte1j = NULL, *texte2IA = NULL, *texteQuit = NULL;
 	SDL_Rect position;
     	SDL_Event event;
@@ -63,23 +66,25 @@ int afficherMenu(){
 	policeTitre = TTF_OpenFont("fonts/FreeMonoBold.ttf", 60);
 	policeMenu = TTF_OpenFont("fonts/FreeMonoBold.ttf", 30);
 	
-	// Écriture du texte dans la SDL_Surface texte en mode Blended (optimal) 
 	char message[50] = "STRATEGO";
 	texteTitre = TTF_RenderText_Blended(policeTitre, message, couleurNoire);
-
+	
+	//On remplit les différents textes et on charge les polices
 	sprintf(message, "2 joueurs");
-
 	texte2j = TTF_RenderText_Blended(policeMenu, message, couleurNoire);
 
 	sprintf(message, "1 joueur");
 	texte1j = TTF_RenderText_Blended(policeMenu, message, couleurNoire);
+
 	sprintf(message, "2 IA");
 	texte2IA = TTF_RenderText_Blended(policeMenu, message, couleurNoire);
+
 	sprintf(message, "Quitter");
 	texteQuit = TTF_RenderText_Blended(policeMenu, message, couleurNoire);
 	
 	SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 0, 0, 0));
 	
+	//Placement des zones de textes à l'écran
 	position.x = ecran->w/2 - texteTitre->w/2;
     	position.y = ecran->h/5 - texteTitre->h/2;
    	SDL_BlitSurface(texteTitre, NULL, ecran, &position);
@@ -89,29 +94,28 @@ int afficherMenu(){
    	SDL_BlitSurface(texte1j, NULL, ecran, &position);
 
 	position.x = ecran->w/2 - texte2j->w/2;
-    	//position.y = 3*(ecran->h/5) - texte2j->h/2;
 	position.y += 50;
 
    	SDL_BlitSurface(texte2j, NULL, ecran, &position);
 
 	position.x = ecran->w/2 - texte2IA->w/2;
-    	//position.y = 4*(ecran->h/5) - texte2IA->h/2;
 	position.y += 50;
    	SDL_BlitSurface(texte2IA, NULL, ecran, &position);
 
 	position.x = ecran->w/2 - texteQuit->w/2;
-    	//position.y = 5*(ecran->h/5) - texteQuit->h/2;
 	position.y += 50;
    	SDL_BlitSurface(texteQuit, NULL, ecran, &position);
 
 	SDL_Flip(ecran);
 
+	//On attend un évenement de le joueur et on agit en réaction
 	while (continuer)
     {
         SDL_WaitEvent(&event);
         switch(event.type)
         {
-            case SDL_QUIT:	//cas on clique sur la croix
+	    //Cas on clique sur la croix
+            case SDL_QUIT:	
                 continuer = 0;
                 break;
 	    case SDL_MOUSEBUTTONUP:
@@ -143,6 +147,7 @@ int afficherMenu(){
         }
     }
 
+    //Libération des différentes variables
     TTF_CloseFont(policeTitre);
     TTF_CloseFont(policeMenu);
     TTF_Quit();
@@ -152,19 +157,24 @@ int afficherMenu(){
     SDL_FreeSurface(texte1j);
     SDL_FreeSurface(texte2IA);
     SDL_FreeSurface(texteQuit);
-    SDL_Quit(); //faut faire gaffe ça va ptet buger içi
+    SDL_Quit();
     return clicMenu;
 }		
 
+//Méthode qui permet de mettre en évidence le pion qui à été sélectionné
 void selectionnerPion(SDL_Surface *ecran, SPos selected, SGameState gameState){
+	//Déclaration des variables
 	SDL_Surface *cursor = NULL;
 	SDL_Rect position;
 	
+	//Calcul de la position du curseur en fonction du paramètre SPos selected
 	position.x = ((selected.col)*TAILLE_CASE)+MARGE_GAUCHE;
 	position.y = ((selected.line)*TAILLE_CASE)+MARGE_HAUT;
 
+	//Chargement de l'image du curseur
 	cursor = IMG_Load("icons/iconSelected.png");
 
+	//Si la position passée en paramètre contient un pion on affiche le curseur
 	if((gameState.board[selected.line][selected.col].content == ECred) || (gameState.board[selected.line][selected.col].content == ECblue)){
 		SDL_BlitSurface(cursor, NULL, ecran, &position);
 		SDL_Flip(ecran);
@@ -172,6 +182,7 @@ void selectionnerPion(SDL_Surface *ecran, SPos selected, SGameState gameState){
 	SDL_FreeSurface(cursor);
 }
 
+//A SUPPRIMER
 void afficheMessage(char* message){
     SDL_Surface *texte = NULL, *textOk = NULL;
     SDL_Rect position;
@@ -223,8 +234,10 @@ void afficheMessage(char* message){
     SDL_Quit(); //faut faire gaffe ça va ptet buger içi
 }
 
+//Méthode qui permet d'afficher une fenêtre popup
 int afficheMessageDemande(char* message){
 
+    //Déclaration des variables
     SDL_Surface *texteQuestion = NULL, *texteOui = NULL, *texteNon = NULL;
     SDL_Rect position;
     SDL_Event event;
@@ -237,36 +250,37 @@ int afficheMessageDemande(char* message){
     TTF_Init(); //Initialisation de SDL_TTF
 
     ecran = SDL_SetVideoMode(400, 100, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
-    //SDL_WM_SetCaption("Gestion du texte avec SDL_ttf", NULL);
 
-    /* Chargement de la police */
+    /* Chargement des police */
     policeQuestion = TTF_OpenFont("fonts/FreeMonoBold.ttf", 20);
     policeOui = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);
     policeNon = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);
 
-    /* Écriture du texte dans la SDL_Surface texte en mode Blended (optimal) */
+    /* Écriture des textes dans les SDL_Surface */
     texteQuestion = TTF_RenderText_Blended(policeQuestion, message, couleurNoire);
     texteOui = TTF_RenderText_Blended(policeOui, oui, couleurNoire);
     texteNon = TTF_RenderText_Blended(policeNon, non, couleurNoire);
 
     SDL_FillRect(ecran, NULL, SDL_MapRGB(ecran->format, 0, 0, 0));
 
+    //Placement des surfaces texte à l'écran
     position.x = ecran->w/2 - texteQuestion->w/2;
     position.y = ecran->h/3 - texteQuestion->h/3;
     SDL_BlitSurface(texteQuestion, NULL, ecran, &position); /* Blit du texte */
 
-	position.x = ecran->w/3 - texteOui->w/2;
-        position.y = 2*(ecran->h/3 - texteOui->h/3);
+    position.x = ecran->w/3 - texteOui->w/2;
+    position.y = 2*(ecran->h/3 - texteOui->h/3);
 
-	SDL_BlitSurface(texteOui, NULL, ecran, &position);
+    SDL_BlitSurface(texteOui, NULL, ecran, &position);
 
-	position.x = 2*(ecran->w/3 - texteNon->w/2);
-        position.y = 2*(ecran->h/3 - texteNon->h/3);
+    position.x = 2*(ecran->w/3 - texteNon->w/2);
+    position.y = 2*(ecran->h/3 - texteNon->h/3);
 
-	SDL_BlitSurface(texteNon, NULL, ecran, &position);
-        SDL_Flip(ecran);
+    SDL_BlitSurface(texteNon, NULL, ecran, &position);
+    SDL_Flip(ecran);
 
-	while (continuer)
+    //On attend que le joueur agisse et on réagit en fonction de ce qu'il fait
+    while (continuer)
     {
         SDL_WaitEvent(&event);
         switch(event.type)
@@ -289,7 +303,7 @@ int afficheMessageDemande(char* message){
 			retour = 1;
 			continuer = 0;
 		}
-
+		//cas quand on clique sur non
 		if(((event.button.y) > 50) && ((event.button.y) < 80) && ((event.button.x) > 230) && ((event.button.x) < 300)){
 			fflush(stdout);
 			retour = 0;
@@ -299,6 +313,7 @@ int afficheMessageDemande(char* message){
         }
     }
 
+    //Libération de la mémoire
     TTF_CloseFont(policeQuestion);
     TTF_CloseFont(policeOui);
     TTF_CloseFont(policeNon);
@@ -307,19 +322,18 @@ int afficheMessageDemande(char* message){
     SDL_FreeSurface(texteQuestion);
     SDL_FreeSurface(texteOui);
     SDL_FreeSurface(texteNon);
-    SDL_Quit(); //faut faire gaffe ça va ptet buger içi
+    SDL_Quit();
     
     return retour;
 }
 
-	
+//Méthode qui permet d'initialiser le plateau de jeu	
 void initBoard(SGameState gameState, SDL_Surface *ecran){
 	
+	//Déclaration des variables
 	SDL_Rect position;
 	int i=0, j=0;
-
 	SDL_Rect positionFond;
-
 	imageFond = IMG_Load("icons/board.png");
 	
 	//On remplit les deux tableaux avec les images qui vont bien
@@ -327,7 +341,7 @@ void initBoard(SGameState gameState, SDL_Surface *ecran){
 	
 	pionsRouges[0] = IMG_Load("icons/bomb0r.png");
 	SDL_SetColorKey(pionsRouges[0], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[0]->format, 255, 255, 255));
-printf("chargement\n");
+
 	pionsRouges[1] = IMG_Load("icons/spy1r.png");
 	SDL_SetColorKey(pionsRouges[1], SDL_SRCCOLORKEY, SDL_MapRGB(pionsRouges[1]->format, 255, 255, 255));
 
@@ -407,14 +421,18 @@ printf("chargement\n");
 	positionFond.x = 0;
 	positionFond.y = 0;
 
+	//On charge l'image de fond
 	SDL_BlitSurface(imageFond, NULL, ecran, &positionFond);
 
+	//Double boucle qui permet de parcourir tout le plateau
 	for(i = 0; i<10; i++){
 		for(j=0; j<10; j++){
 			
+			//Calcul de la position de la prochaine pièce
 			int widthScreen = j*((ecran->w-(MARGE_DROITE+MARGE_GAUCHE))/10)+MARGE_GAUCHE;
 			int heightScreen = i*((ecran->h-(MARGE_HAUT+MARGE_BAS))/10)+MARGE_HAUT;	
 
+			//On vérifie la couleur et le type de la pièce pour charger la bonne image
 			switch(gameState.board[i][j].content){
 				case ECred:
 					switch(gameState.board[i][j].piece){
@@ -568,15 +586,20 @@ printf("chargement\n");
 
 }
 
+//Méthode qui renvoie les coordonnées du mouvement correspondant à deux clics consecutifs du joueur
 SMove renvoieCoordonnees(SGameState gameState){
 	
+	//Déclaration des variables
 	SDL_Event event;
 	SPos positionDepart, positionArrivee;
 	SMove mouvementPion;
 	int continuer = 1;
+	
+	//On attend que l'utilisateur ait cliqué sur une case contenant un pion
 	while(continuer){
 		SDL_WaitEvent(&event);
 		switch(event.type){
+				//Cas ou le joueur clique sur la croix
 				case SDL_QUIT:
 					mouvementPion.start.line = -2;
 					mouvementPion.start.col = -2;
@@ -584,6 +607,7 @@ SMove renvoieCoordonnees(SGameState gameState){
 					mouvementPion.end.col = -2;
 					continuer = 0;
 					break;
+				//Cas ou le joueur fait un clic de souris
 				case SDL_MOUSEBUTTONUP:
 					//il faut que ce soit un clic gauche et qu'il se situe dans la grille de jeu
 					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
@@ -597,10 +621,13 @@ SMove renvoieCoordonnees(SGameState gameState){
 		}
 	}
 	
+	//On vérifie que le joueur n'ait pas cliqué sur la croix
 	if((mouvementPion.start.line != -2) && (mouvementPion.start.col != -2) && (mouvementPion.end.col != -2) && (mouvementPion.end.line != -2)){
 		selectionnerPion(ecran, positionDepart, gameState); 
 		continuer = 1;
 	}
+
+	//On attend que le joueur ait cliqué sur une case vide
 	while(continuer){
 		
 		SDL_WaitEvent(&event);
@@ -632,43 +659,22 @@ SMove renvoieCoordonnees(SGameState gameState){
 	return mouvementPion;
 }
 
-int interfaceGraphique(SGameState gameState){
-	
-	
-	//SDL_Surface *ecran = NULL;	//création des variables
-	int continuer = 1;
-	SDL_Event event;
-
+void initInterface(){
 	SDL_Init(SDL_INIT_VIDEO);	//initialisation de la SDL
 
 	ecran = SDL_SetVideoMode(920, 670, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);	//chargement des surfaces
 	SDL_WM_SetCaption("Stratego", NULL);
+
+}
+
+//Méthode qui permet rafraichir l'écran par rapport au gamestate passé en paramètre
+int interfaceGraphique(SGameState gameState){
 	
 	initBoard(gameState, ecran);
 
 	afficherPiecesRestantes(gameState, ecran);
 	SDL_Flip(ecran);
-	//Boucle pour tester la selection de pions
-	/*while (continuer)
-    {renvoieCoordonnees(ecran,gameState);
-        SDL_WaitEvent(&event);
-        switch(event.type)
-        {
-            case SDL_QUIT:	//cas on clique sur la croix
-                continuer = 0;
-                break;
-	    case SDL_KEYDOWN:	//cas : appuie sur une touche
-		switch(event.key.keysym.sym){
-			case SDLK_ESCAPE:
-				continuer = 0;
-				break;
-			default:
-				break;
-		}
-        }
-    }*/
 	return EXIT_SUCCESS;
-	
 }
 
 //Retourne la position de la case sur laquelle on a cliqué, si ce n'est pas une case on renvoie une variable SPos avec -1 comme valeur de ligne et colonne
@@ -722,8 +728,8 @@ void quitter_sdl(){
 	for(i=0; i<11; i++){
 		SDL_FreeSurface(texteBlue[i]);
 		SDL_FreeSurface(texteRed[i]);
-		SDL_FreeSurface(texteBlue[i]);
-		SDL_FreeSurface(texteRed[i]);
+		SDL_FreeSurface(pionsBlueLeft[i]);
+		SDL_FreeSurface(pionsRedLeft[i]);
 	}
 	
 	SDL_FreeSurface(imageFond);

@@ -15,3 +15,4 @@ SPos getPos();
 void quitter_sdl();
 void afficherMessageEcran(char *message, int delay);
 void afficherPiecesRestantes(SGameState gameState,SDL_Surface *ecran);
+void initInterface();

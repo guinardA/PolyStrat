@@ -1860,7 +1860,7 @@ void ecrireFichier(SGameState gameState){
 				fprintf(fichier," [X] |");
 			}
 		}
-		fprintf(fichier,"\n",i);
+		//fprintf(fichier,"\n",i);
 	}
 	
 	fprintf (fichier, "\nListe des pions rouge dehors :\n");
