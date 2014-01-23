@@ -7,14 +7,14 @@
 #define MARGE_HAUT 10	//Marge haut
 
 
-SDL_Surface *imageFond = NULL;	//création des variables
-SDL_Surface *pionsRouges[13] = {NULL};
-SDL_Surface *pionsBleus[13] = {NULL};
-SDL_Surface *ecran = NULL;
-SDL_Surface *pionsRedLeft[11] = {NULL};
-SDL_Surface *pionsBlueLeft[11] = {NULL};
-SDL_Surface *texteBlue[11] = {NULL};
-SDL_Surface *texteRed[11] = {NULL};
+SDL_Surface *imageFond = NULL;	//Surface qui contient l'image de fond
+SDL_Surface *pionsRouges[13] = {NULL};	//Tableau de surfaces pour les pions rouges
+SDL_Surface *pionsBleus[13] = {NULL};	//Tableau de surfaces pour les pions bleus
+SDL_Surface *ecran = NULL;		//Ecran principal
+SDL_Surface *pionsRedLeft[11] = {NULL};	//Tableau de surfaces pour les pions restants rouges
+SDL_Surface *pionsBlueLeft[11] = {NULL};//Tableau de surfaces pour les pions restants bleus
+SDL_Surface *texteBlue[11] = {NULL};	//Tableau de surfaces pour les textes qui affichent le nombre de pions bleus restantes
+SDL_Surface *texteRed[11] = {NULL};	//Tableau de surfaces pour les textes qui affichent le nombre de pions rouges restantes
 
 //Méthode qui permet d'afficher un message dans l'encadré en bas de l'écran
 void afficherMessageEcran(char *message, int delay){
@@ -27,11 +27,19 @@ void afficherMessageEcran(char *message, int delay){
 	TTF_Init();	//Initialisation de SDL_TTF
 	
 
+<<<<<<< HEAD
 	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);	//Chargement de la police
 	texteTitre = TTF_RenderText_Blended(police, message, couleurNoire);	//Ecriture du texte dans la SDL_Surface texteTitre
 	position.y = ecran->h - MARGE_BAS + (texteTitre->h)/2 + 22;
     	position.x = ecran->w/2 - texteTitre->w/2;
 	SDL_BlitSurface(texteTitre, NULL, ecran, &position);	//On Blit le texteTitre à l'écran
+=======
+	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15); //Chargement de la police 
+	texteTitre = TTF_RenderText_Blended(police, message, couleurNoire); //Ecriture du texte dans la SDL_Surface texteTitre 
+	position.y = ecran->h - MARGE_BAS + (texteTitre->h)/2 + 22; 
+	position.x = ecran->w/2 - texteTitre->w/2; 
+	SDL_BlitSurface(texteTitre, NULL, ecran, &position); //On Blit le texteTitre à l'écran
+>>>>>>> 765396fcaa2b83c504adcf4ff7a2c335cb2a870d
 
 
 	SDL_Flip(ecran);	//On rafraichit l'écran
@@ -435,69 +443,70 @@ void initBoard(SGameState gameState, SDL_Surface *ecran){
 
 			//On vérifie la couleur et le type de la pièce pour charger la bonne image
 			switch(gameState.board[i][j].content){
+				//Cas ou c'est un pion rouge
 				case ECred:
 					switch(gameState.board[i][j].piece){
-						case EPbomb:
+						case EPbomb:	//Bombe
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[0], NULL, ecran, &position);
 							break;
-						case EPspy:
+						case EPspy:	//Espion
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[1], NULL, ecran, &position);
 							break;
-						case EPscout:
+						case EPscout:	//Eclaireur
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[2], NULL, ecran, &position);
 							break;
-						case EPminer:
+						case EPminer:	//Démineur
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[3], NULL, ecran, &position);
 							break;
-						case EPsergeant:
+						case EPsergeant://Sergent
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[4], NULL, ecran, &position);
 							break;
-						case EPlieutenant:
+						case EPlieutenant://Lieutenant
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[5], NULL, ecran, &position);
 							break;
-						case EPcaptain:
+						case EPcaptain:	//Capitaine
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[6], NULL, ecran, &position);
 							break;
-						case EPmajor:
+						case EPmajor:	//Major
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[7], NULL, ecran, &position);
 							break;
-						case EPcolonel:
+						case EPcolonel:	//Colonel
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[8], NULL, ecran, &position);
 							break;
-						case EPgeneral:
+						case EPgeneral:	//Général
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[9], NULL, ecran, &position);
 							break;
-						case EPmarshal:
+						case EPmarshal:	//Marshal
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[10], NULL, ecran, &position);
 							break;
-						case EPflag:
+						case EPflag:	//Drapeau
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[11], NULL, ecran, &position);
 							break;
-						case EPnone:
+						case EPnone:	//Vide
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsRouges[12], NULL, ecran, &position);
@@ -506,70 +515,70 @@ void initBoard(SGameState gameState, SDL_Surface *ecran){
 							break;
 					}
 					break;
-
+				//Cas ou c'est un pion bleu
 				case ECblue:
 					switch(gameState.board[i][j].piece){
-						case EPbomb:
+						case EPbomb:	//Bombe
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[0], NULL, ecran, &position);
 							break;
-						case EPspy:
+						case EPspy:	//Espion
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[1], NULL, ecran, &position);
 							break;
-						case EPscout:
+						case EPscout:	//Eclaireur
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[2], NULL, ecran, &position);
 							break;
-						case EPminer:
+						case EPminer:	//Démineur
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[3], NULL, ecran, &position);
 							break;
-						case EPsergeant:
+						case EPsergeant://Sergent
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[4], NULL, ecran, &position);
 							break;
-						case EPlieutenant:
+						case EPlieutenant://Lieutenant
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[5], NULL, ecran, &position);
 							break;
-						case EPcaptain:
+						case EPcaptain:	//Capitaine
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[6], NULL, ecran, &position);
 							break;
-						case EPmajor:
+						case EPmajor:	//Major
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[7], NULL, ecran, &position);
 							break;
-						case EPcolonel:
+						case EPcolonel:	//Colonel
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[8], NULL, ecran, &position);
 							break;
-						case EPgeneral:
+						case EPgeneral:	//Général
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[9], NULL, ecran, &position);
 							break;
-						case EPmarshal:
+						case EPmarshal:	//Marshal
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[10], NULL, ecran, &position);
 							break;
-						case EPflag:
+						case EPflag:	//Drapeau
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[11], NULL, ecran, &position);
 							break;
-						case EPnone:
+						case EPnone:	//Vide
 							position.x = widthScreen;
 							position.y = heightScreen;
 							SDL_BlitSurface(pionsBleus[12], NULL, ecran, &position);
@@ -596,11 +605,11 @@ SMove renvoieCoordonnees(SGameState gameState){
 	SMove mouvementPion;
 	int continuer = 1;
 	
-	//On attend que l'utilisateur ait cliqué sur une case contenant un pion
+	//On attend que l'utilisateur ait cliqué sur une case de la grille
 	while(continuer){
 		SDL_WaitEvent(&event);
 		switch(event.type){
-				//Cas ou le joueur clique sur la croix
+				//Cas ou on clique sur la croix, on renvoie un SMove avec -2/-2 -2/-2 comme valeurs
 				case SDL_QUIT:
 					mouvementPion.start.line = -2;
 					mouvementPion.start.col = -2;
@@ -610,7 +619,7 @@ SMove renvoieCoordonnees(SGameState gameState){
 					break;
 				//Cas ou le joueur fait un clic de souris
 				case SDL_MOUSEBUTTONUP:
-					//il faut que ce soit un clic gauche et qu'il se situe dans la grille de jeu
+					//il faut que ce soit un clic gauche et situé sur une case de la grille de jeu
 					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
 						positionDepart.line = ((event.button.y-(MARGE_HAUT))/TAILLE_CASE);
 						positionDepart.col = ((event.button.x-(MARGE_GAUCHE))/TAILLE_CASE);
@@ -628,11 +637,12 @@ SMove renvoieCoordonnees(SGameState gameState){
 		continuer = 1;
 	}
 
-	//On attend que le joueur ait cliqué sur une case vide
+	//On attend que le joueur ait cliqué sur une autre case
 	while(continuer){
 		
 		SDL_WaitEvent(&event);
 		switch(event.type){
+				//Cas ou on clique sur la croix, on renvoie un SMove avec -2/-2 -2/-2 comme valeurs
 				case SDL_QUIT:
 					mouvementPion.start.line = -2;
 					mouvementPion.start.col = -2;
@@ -640,7 +650,9 @@ SMove renvoieCoordonnees(SGameState gameState){
 					mouvementPion.end.col = -2;
 					continuer = 0;
 					break;
+				//Cas ou le joueur fait un clic de souris
 				case SDL_MOUSEBUTTONUP:
+					//il faut que ce soit un clic gauche et situé sur une case de la grille de jeu
 					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
 						positionArrivee.line = ((event.button.y-MARGE_HAUT)/TAILLE_CASE);
 						positionArrivee.col = ((event.button.x-MARGE_GAUCHE)/TAILLE_CASE);
@@ -651,7 +663,7 @@ SMove renvoieCoordonnees(SGameState gameState){
 					break;
 		}
 	}
-	
+	//On vérifie que le joueur n'ait pas cliqué sur la croix avant de changer les valeur pour ne pas écraser celles que l'on a donné dans le switch
 	if((mouvementPion.start.line != -2) && (mouvementPion.start.col != -2) && (mouvementPion.end.col != -2) && (mouvementPion.end.line != -2)){
 		mouvementPion.start = positionDepart;
 		mouvementPion.end = positionArrivee;
@@ -660,6 +672,7 @@ SMove renvoieCoordonnees(SGameState gameState){
 	return mouvementPion;
 }
 
+//Méthode qui initialise l'interface
 void initInterface(){
 	SDL_Init(SDL_INIT_VIDEO);	//initialisation de la SDL
 
@@ -680,25 +693,32 @@ int interfaceGraphique(SGameState gameState){
 
 //Retourne la position de la case sur laquelle on a cliqué, si ce n'est pas une case on renvoie une variable SPos avec -1 comme valeur de ligne et colonne
 SPos getPos(){
+	
+	//Déclaration des variables
 	int continuer = 1;
 	SDL_Event event;
 	SPos posClic;	
 
+	//On attend que le joueur clique sur la grille de jeu 
 	while(continuer){
 		SDL_WaitEvent(&event);
 		switch(event.type){
+			//Si le joueur clique sur la croix on renvoie un SPos avec -2/-2 comme valeurs
 			case SDL_QUIT:
 				posClic.line = -2;
 				posClic.col = -2;
 				continuer = 0;
 				break;
 			case SDL_MOUSEBUTTONUP:
+				//Il faut que ce soit un clic gauche
 				if(event.button.button == SDL_BUTTON_LEFT){
+					//On vérifie que le clic se situe bien sur la grille
 					if(((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
 						posClic.line = ((event.button.y-MARGE_HAUT)/TAILLE_CASE);
 						posClic.col = ((event.button.x-MARGE_GAUCHE)/TAILLE_CASE);
 						continuer = 0;
 					}
+					//Si le clic ne se situe pas sur la grille on renvoie un SPos avec -1/-1 comme valeurs
 					else{
 						posClic.line = -1;
 						posClic.col = -1;
@@ -716,7 +736,11 @@ SPos getPos(){
 	return posClic;
 }
 
+<<<<<<< HEAD
 	
+=======
+//Méthode qui permet de libérer la mémoire des différentes variables utilisées et de quitter la SDL
+>>>>>>> 765396fcaa2b83c504adcf4ff7a2c335cb2a870d
 void quitter_sdl(){
 	
 	int i;
@@ -739,23 +763,32 @@ void quitter_sdl(){
 	
 }
 
+<<<<<<< HEAD
 
 
+=======
+//Méthode qui permet d'afficher les piéces restantes sur les côtés en fonction du gamestate passé en paramètre
+>>>>>>> 765396fcaa2b83c504adcf4ff7a2c335cb2a870d
 void afficherPiecesRestantes(SGameState gameState,SDL_Surface *ecran){
+
+    //Déclaration des variables
     SDL_Rect positionJ1, positionJ2, positionCptRed, positionCptBlue;
     int i = 0;
     TTF_Font *police = NULL;
     SDL_Color couleurPolice = {255, 255, 255};
     int nbPiecesInitial[11];
 
+    //Initialisation de SDL_TTF
     TTF_Init();
 
+    //Calcul de la position de la première pièce
     positionJ1.x = MARGE_GAUCHE-TAILLE_CASE - 24;
     positionJ1.y = MARGE_HAUT;
     
     positionJ2.x = ecran->w - (MARGE_DROITE) + 30;
     positionJ2.y = MARGE_HAUT;
 
+    //Chargement de la police
     police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 20);
  
     //Initialisation du nb initial de pieces
@@ -797,8 +830,7 @@ void afficherPiecesRestantes(SGameState gameState,SDL_Surface *ecran){
     pionsBlueLeft[9] = IMG_Load("iconsLeft/general9b.png");
     pionsBlueLeft[10] = IMG_Load("iconsLeft/marshal10b.png");
     
-
-
+    //Boucle qui permet de placer les images de pièces ainsi que le nombre restant sur le côtés du plateau de jeu
     i = 0;
     for(i = 0; i<11; i++){
 	char cptRed[10], cptBlue[10];
@@ -809,12 +841,14 @@ void afficherPiecesRestantes(SGameState gameState,SDL_Surface *ecran){
 	SDL_BlitSurface(pionsRedLeft[i], NULL, ecran, &positionJ1);
 	SDL_BlitSurface(pionsBlueLeft[i], NULL, ecran, &positionJ2);
 
+	//On calcul la différence entre le nombre de pièces maximum et le nombre de pièces éliminées et on place le résultat dans une variable
 	sprintf(cptBlue, "%d", (nbPiecesInitial[i]-gameState.blueOut[i]));
 	sprintf(cptRed, "%d", (nbPiecesInitial[i]-gameState.redOut[i]));
 
 	texteRed[i] = TTF_RenderText_Blended(police, cptRed, couleurPolice);
 	texteBlue[i] = TTF_RenderText_Blended(police, cptBlue, couleurPolice);
 
+	//Calcul de la position des textes indiquant le nombre de pièces restantes
 	positionCptRed.x = positionJ1.x + (TAILLE_CASE-5);
         positionCptBlue.x = positionJ2.x - 5;
 
