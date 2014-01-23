@@ -4,7 +4,6 @@
  * ERREUR ON NE COMPTE PAS LE COUPS
  * FAIRE TXT AFFICHE TOUS LES COUPS
  * THREAD 2 IA OU PAS
- * ERREUR PLACER PIONS PROBLÈME LES PIONS PLACÉ CORRESPOND PAS INVERSEMENT COLONE
  * règle dans IA
  * Méthode joueur a la main
  * 		Afficher ok au message erreur et grisé la croix
@@ -218,7 +217,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 					}
 					else{
 						placePion(ECred, boardInitJ1, 1);
-						couleurJ1 = ECred;		
+						couleurJ1 = ECred;
 					}
 					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
 				}
@@ -1021,10 +1020,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<6;i++){
 		do{
 			position = getPos();
-			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez 2");
 			}
-		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 		boardInit[9-position.line][9-position.col] = EPbomb;
 		box.piece = EPbomb;
 		box.content = color;
@@ -1035,10 +1034,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	printf("Pose ton espion\n");
 	do{
 		position = getPos();
-		if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 			printf("Erreur de placement, veuillez recommencez");
 		}
-	}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+	}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 	boardInit[9-position.line][9-position.col] = EPspy;
 	box.piece = EPspy;
 	box.content = color;
@@ -1049,10 +1048,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<8;i++){
 		do{
 			position = getPos();
-			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
-		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 		boardInit[9-position.line][9-position.col] = EPscout;
 		box.piece = EPscout;
 		box.content = color;
@@ -1064,10 +1063,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<5;i++){
 		do{
 			position = getPos();
-			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
-		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 		boardInit[9-position.line][9-position.col] = EPminer;
 		box.piece = EPminer;
 		box.content = color;
@@ -1079,10 +1078,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<4;i++){
 		do{
 			position = getPos();
-			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+				if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
-		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 		boardInit[9-position.line][9-position.col] = EPsergeant;
 		box.piece = EPsergeant;
 		box.content = color;
@@ -1094,10 +1093,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<4;i++){
 		do{
 			position = getPos();
-			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
-		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 		boardInit[9-position.line][9-position.col] = EPlieutenant;
 		box.piece = EPlieutenant;
 		box.content = color;
@@ -1109,10 +1108,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<4;i++){
 		do{
 			position = getPos();
-			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
-		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 		boardInit[9-position.line][9-position.col] = EPcaptain;
 		box.piece = EPcaptain;
 		box.content = color;
@@ -1124,10 +1123,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<3;i++){
 		do{
 			position = getPos();
-			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
-		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 		boardInit[9-position.line][9-position.col] = EPmajor;
 		box.piece = EPmajor;
 		box.content = color;
@@ -1139,10 +1138,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<2;i++){
 		do{
 			position = getPos();
-			if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
-		}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 		boardInit[9-position.line][9-position.col] = EPcolonel;
 		box.piece = EPcolonel;
 		box.content = color;
@@ -1153,10 +1152,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	printf("Pose ton général\n");
 	do{
 		position = getPos();
-		if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+		if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 			printf("Erreur de placement, veuillez recommencez");
 		}
-	}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+	}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 	boardInit[9-position.line][9-position.col] = EPgeneral;
 	box.piece = EPgeneral;
 	box.content = color;
@@ -1166,15 +1165,27 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	printf("Pose ton marshal\n");
 	do{
 		position = getPos();
-		if((position.line == -1 && position.col == -1) || 9-position.line < 6 || boardInit[9-position.line][9-position.col] != EPnone){
+		if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 			printf("Erreur de placement, veuillez recommencez");
 		}
-	}while((position.line == -1 || position.col == -1) && 9-position.line < 6 && boardInit[9-position.line][9-position.col] != EPnone);
+	}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
 	boardInit[9-position.line][9-position.col] = EPmarshal;
 	box.piece = EPmarshal;
 	box.content = color;
 	SGame.board[position.line][position.col] = box;
-	interfaceGraphique(SGame);			
+	interfaceGraphique(SGame);		
+		
+	EPiece rendu[4][10];
+	for(i = 0 ; i<4 ; i++){
+		for(j=0 ; j<10 ; j++){
+			rendu[i][9-j] = boardInit[i][j];
+		}
+	}
+	for(i = 0 ; i<4 ; i++){
+		for(j=0 ; j<10 ; j++){
+			boardInit[i][j] = rendu[i][j];
+		}
+	}
 }
 
 /*
