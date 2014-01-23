@@ -540,6 +540,13 @@ SMove renvoieCoordonnees(SGameState gameState){
 	while(continuer){
 		SDL_WaitEvent(&event);
 		switch(event.type){
+				case SDL_QUIT:
+				mouvementPion.start.line = -2;
+				mouvementPion.start.col = -2;
+				mouvementPion.end.line = -2;
+				mouvementPion.end.col = -2;
+				continuer = 0;
+				break;
 				case SDL_MOUSEBUTTONUP:
 					//il faut que ce soit un clic gauche et qu'il se situe dans la grille de jeu
 					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
@@ -552,8 +559,10 @@ SMove renvoieCoordonnees(SGameState gameState){
 					break;
 		}
 	}
-	selectionnerPion(ecran, positionDepart, gameState);
-	continuer = 1;
+	if((mouvementPion.start.line != -2) && (mouvementPion.start.col != -2) && (mouvementPion.end.col != -2) && (mouvementPion.end.line != -2)){
+		selectionnerPion(ecran, positionDepart, gameState); 
+		continuer = 1;
+	}
 	while(continuer){
 		SDL_WaitEvent(&event);
 		switch(event.type){
@@ -622,6 +631,10 @@ SPos getPos(){
 	while(continuer){
 		SDL_WaitEvent(&event);
 		switch(event.type){
+			case SDL_QUIT:
+				posClic.line = -2;
+				posClic.col = -2;
+				break;
 			case SDL_MOUSEBUTTONUP:
 				if(event.button.button == SDL_BUTTON_LEFT){
 					if(((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
