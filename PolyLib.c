@@ -8,6 +8,7 @@ void majContextePerso(const SGameState * const gameState);
 int vaEtViens(SMove move);
 int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy);
 int	mouvementAleatoire(int j,int * line,int * col, int startLine, int startCol);
+int mouvementSpyMiner(EPiece army,int i,int j);
 
 void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2);
 
@@ -212,7 +213,11 @@ SMove NextMove(const SGameState * const gameState)
 			}while( (contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag) || (line <0));
 	
 			//Position d'arrivée
-			mouvementAleatoire(j,&(move.end.line),&(move.end.col),line,col);
+			if (mouvementAleatoire(j,&(move.end.line),&(move.end.col),line,col)==0)
+			{
+				move.end.line = -1;
+				move.end.col = 0;
+			}
 
 		}
 
@@ -674,10 +679,15 @@ int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy)
 	EPiece enemy = contextPerso.board[lineEnemy][colEnemy].piece;
 	EPiece army = contextPerso.board[lineArmy][colArmy].piece;
 
-	if( (enemy==EPnone && (army!=EPminer || army!=EPspy)) || (enemy<army && (enemy!=EPbomb || army==EPminer)) || (army==EPspy && enemy==EPmarshal)  )
-	{
+	if (enemy==EPnone && army!=EPminer && army!=EPspy)
 		return 1;
-	}
+	else if (enemy<army && enemy!=EPbomb)
+		return 1;
+	else if (enemy==EPbomb && army==EPminer)
+		return 1;
+	else if (army==EPspy && enemy==EPmarshal)
+		return 1;
+
 
 	return 0;
 
@@ -685,29 +695,47 @@ int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy)
 
 int	mouvementAleatoire(int j, int * line, int * col, int startLine, int startCol)
 {
+	EPiece army = contextPerso.board[startLine][startCol].piece;
+	
 
 	if( (j>=0) && (j<15) )
 	{
 		*line = startLine+1;
 		*col = startCol;
+
+		if (mouvementSpyMiner(army,*line,*col)==1)
+			return 0;
+
 		return 1;
 	}		
 	else if(j < 17)
 	{
 		*line = startLine-1;
 		*col = startCol;
+
+		if (mouvementSpyMiner(army,*line,*col)==1)
+			return 0;
+
 		return 1;
 	}		
 	else if(j < 19)
 	{
 		*line = startLine;
 		*col = startCol+1;
+
+		if (mouvementSpyMiner(army,*line,*col)==1)
+			return 0;
+
 		return 1;
 	}		
 	else if(j == 20)
 	{
 		*line = startLine;
 		*col = startCol-1;
+
+		if (mouvementSpyMiner(army,*line,*col)==1)
+			return 0;
+
 		return 1;
 	}
 	else
@@ -736,6 +764,50 @@ int	mouvementAleatoire(int j, int * line, int * col, int startLine, int startCol
 			*col = startCol;
 			return 1;
 		}
+	}
+
+	return 0;
+}
+
+int mouvementSpyMiner(EPiece army,int i,int j)
+{
+	if (army == EPspy)
+	{
+		if ( i<9 && contextPerso.board[i+1][j].content == couleurAdverse)
+			if (contextPerso.board[i+1][j].piece != EPmarshal)
+				return 1;
+		
+
+		if ( i>0 && contextPerso.board[i-1][j].content == couleurAdverse)
+			if (contextPerso.board[i-1][j].piece != EPmarshal)
+				return 1;
+
+		if ( j<9 && contextPerso.board[i][j+1].content == couleurAdverse)
+			if (contextPerso.board[i][j+1].piece != EPmarshal)
+				return 1;
+
+		if ( j>0 && contextPerso.board[i][j-1].content == couleurAdverse)
+			if (contextPerso.board[i][j-1].piece != EPmarshal)
+				return 1;
+	}
+	else if (army == EPminer)
+	{
+		if ( i<9 && contextPerso.board[i+1][j].content == couleurAdverse)
+			if (contextPerso.board[i+1][j].piece != EPbomb)
+				return 1;
+		
+
+		if ( i>0 && contextPerso.board[i-1][j].content == couleurAdverse)
+			if (contextPerso.board[i-1][j].piece != EPbomb)
+				return 1;
+
+		if ( j<9 && contextPerso.board[i][j+1].content == couleurAdverse)
+			if (contextPerso.board[i][j+1].piece != EPbomb)
+				return 1;
+
+		if ( j>0 && contextPerso.board[i][j-1].content == couleurAdverse)
+			if (contextPerso.board[i][j-1].piece != EPbomb)
+				return 1;
 	}
 
 	return 0;
