@@ -7,6 +7,7 @@ void choixStrategieIA(int choix,EPiece boardInit[4][10]);
 void majContextePerso(const SGameState * const gameState);
 int vaEtViens(SMove move);
 int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy);
+int	mouvementAleatoire(int j,int * line,int * col, int startLine, int startCol);
 
 void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2);
 
@@ -63,6 +64,7 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 			box.content = couleur;
 			box.piece = boardInit[i][j];
 			contextPerso.board[i][j] = box;
+
 			//Mise en place des pions du joueur
 			positionPiece[k].line = i;
 			positionPiece[k].col = j;
@@ -133,73 +135,90 @@ SMove NextMove(const SGameState * const gameState)
 	majContextePerso(gameState);
 
 	SMove move; 
-	int line, col, i, j;
+	int line, col, i, j, label;
 	//SBox board[10][10];
 	
 	do
 	{
+		label = 0;
+
 		//On sélectionne la pièce a bouger
-		do
+		for(i=0;i<40;i++)
 		{
-			i = (int)rand()%40;
-			j = (int)rand()%10;
 			line = positionPiece[i].line;
 			col = positionPiece[i].col;
-		}while( (contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag) || (line <0));
+			
+
+			if ( (line >=0) && (contextPerso.board[line][col].piece != EPbomb) && (contextPerso.board[line][col].piece != EPflag) )
+			{ 
+				
+				//si notre pièce est à côté d'un adversaire
+				if( (line<9) && (contextPerso.board[line+1][col].content == couleurAdverse) )
+				{
+					if(doitAttaquer(line,col,line+1,col) == 1 || mouvementAleatoire(-1,&(move.end.line),&(move.end.col),line,col) == 0)
+					{
+						move.end.line = line+1;
+						move.end.col = col;
+				
+						label=1;
+						break;
+					}
+				}
+				else if( (line>0) && (contextPerso.board[line-1][col].content == couleurAdverse) )
+				{
+					if(doitAttaquer(line,col,line+1,col) == 1 || mouvementAleatoire(-1,&(move.end.line),&(move.end.col),line,col) == 0)
+					{
+						move.end.line = line-1;
+						move.end.col = col;
+
+						label=1;
+						break;
+					}
+				}
+				else if( (col<9) && (contextPerso.board[line][col+1].content == couleurAdverse) )
+				{
+					if(doitAttaquer(line,col,line+1,col) == 1 || mouvementAleatoire(-1,&(move.end.line),&(move.end.col),line,col) == 0)
+					{
+						move.end.line = line;
+						move.end.col = col+1;
+					
+						label=1;
+						break;
+					}
+				}
+				else if( (col>0) && (contextPerso.board[line][col-1].content == couleurAdverse) )
+				{
+					if(doitAttaquer(line,col,line+1,col) == 1 || mouvementAleatoire(-1,&(move.end.line),&(move.end.col),line,col) == 0)
+					{
+						move.end.line = line;
+						move.end.col = col-1;
+					
+						label=1;
+						break;
+					}
+				}
+			}
+		}
+
+		//sinon mouvement aléatoire
+		if(label == 0)
+		{
+			do
+			{
+				i = (int)rand()%40;
+				j = (int)rand()%20;
+				line = positionPiece[i].line;
+				col = positionPiece[i].col;
+			}while( (contextPerso.board[line][col].piece == EPbomb) || (contextPerso.board[line][col].piece == EPflag) || (line <0));
+	
+			//Position d'arrivée
+			mouvementAleatoire(j,&(move.end.line),&(move.end.col),line,col);
+
+		}
 
 		//Position de départ
 		move.start.line = line;
 		move.start.col = col;
-
-		//si notre pièce est à côté d'un adversaire
-		if(contextPerso.board[line+1][col].content == couleurAdverse)
-		{
-			if(doitAttaquer(line,col,line+1,col) == 1 )
-			{
-				move.end.line = line+1;
-				move.end.col = col;
-			}
-			else
-			{
-				move.end.line = line-1;
-				move.end.col = col;
-			}
-		}
-		else if(contextPerso.board[line-1][col].content == couleurAdverse)
-		{
-			move.end.line = line-1;
-			move.end.col = col;
-		}
-		else if(contextPerso.board[line][col+1].content == couleurAdverse)
-		{
-			move.end.line = line;
-			move.end.col = col+1;
-		}
-		else if(contextPerso.board[line-1][col].content == couleurAdverse)
-		{
-			move.end.line = line;
-			move.end.col = col-1;
-		}
-		//sinon mouvement aléatoire
-		else if( (j>=0) && (j<7) ){
-			move.end.line = line+1;
-			move.end.col = col;
-		}
-		
-		else if(j == 7){
-			move.end.line = line-1;
-			move.end.col = col;
-		}
-		
-		else if(j == 8){
-			move.end.line = line;
-			move.end.col = col+1;
-		}
-		
-		else if(j == 9){
-			move.end.line = line;
-			move.end.col = col-1;
-		}
 	}
 	while(verificationMouvement(move, *gameState, couleur)!=0);
 
@@ -652,9 +671,76 @@ void majContextePerso(const SGameState * const gameState)
 
 int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy)
 {
-	return 1;
+	EPiece enemy = contextPerso.board[lineEnemy][colEnemy].piece;
+	EPiece army = contextPerso.board[lineArmy][colArmy].piece;
+
+	if( (enemy==EPnone && (army!=EPminer || army!=EPspy)) || (enemy<army && (enemy!=EPbomb || army==EPminer)) || (army==EPspy && enemy==EPmarshal)  )
+	{
+		return 1;
+	}
+
+	return 0;
 
 }
+
+int	mouvementAleatoire(int j, int * line, int * col, int startLine, int startCol)
+{
+
+	if( (j>=0) && (j<15) )
+	{
+		*line = startLine+1;
+		*col = startCol;
+		return 1;
+	}		
+	else if(j < 17)
+	{
+		*line = startLine-1;
+		*col = startCol;
+		return 1;
+	}		
+	else if(j < 19)
+	{
+		*line = startLine;
+		*col = startCol+1;
+		return 1;
+	}		
+	else if(j == 20)
+	{
+		*line = startLine;
+		*col = startCol-1;
+		return 1;
+	}
+	else
+	{
+		if ( (startLine<9) && (contextPerso.board[startLine+1][startCol].content != couleurAdverse || contextPerso.board[startLine+1][startCol].piece == EPnone) )
+		{
+			*line = startLine+1;
+			*col = startCol;
+			return 1;
+		}
+		else if ( (startCol>0) && (contextPerso.board[startLine][startCol-1].content != couleurAdverse || contextPerso.board[startLine][startCol-1].piece == EPnone) )
+		{
+			*line = startLine;
+			*col = startCol-1;
+			return 1;
+		}
+		else if ( (startCol<9) && (contextPerso.board[startLine][startCol+1].content != couleurAdverse || contextPerso.board[startLine][startCol+1].piece == EPnone) )
+		{
+			*line = startLine;
+			*col = startCol+1;
+			return 1;
+		}
+		else if ( (startLine>0) && (contextPerso.board[startLine-1][startCol].content != couleurAdverse || contextPerso.board[startLine-1][startCol].piece == EPnone) )
+		{
+			*line = startLine-1;
+			*col = startCol;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 /*
  * FONCTION QUI AFFICHE DANS EN CONSOLE LE CONTEXTE DE JEU
  */
