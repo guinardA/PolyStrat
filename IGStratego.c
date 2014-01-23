@@ -581,6 +581,7 @@ int interfaceGraphique(SGameState gameState){
 	
 	initBoard(gameState, ecran);
 	
+	
 	SDL_Flip(ecran);
 	//Boucle pour tester la selection de pions
 	/*while (continuer)
