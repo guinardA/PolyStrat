@@ -29,6 +29,7 @@ void afficherMessageEcran(char *message, int delay){
 	position.y = ecran->h - MARGE_BAS + (texteTitre->h)/2 + 10;
     	position.x = ecran->w/2 - texteTitre->w/2;
 	//printf("VAL: %d\n", (ecran->h - MARGE_BAS/2 - (texteTitre->h)/2));
+	
 	SDL_BlitSurface(texteTitre, NULL, ecran, &position);
 
 	SDL_Flip(ecran);
@@ -709,6 +710,7 @@ SPos getPos(){
 	return posClic;
 }
 
+	
 void quitter_sdl(){
 	
 	int i;
@@ -722,14 +724,15 @@ void quitter_sdl(){
 	for(i=0; i<11; i++){
 		SDL_FreeSurface(texteBlue[i]);
 		SDL_FreeSurface(texteRed[i]);
-		SDL_FreeSurface(texteBlue[i]);
-		SDL_FreeSurface(texteRed[i]);
+		SDL_FreeSurface(pionsBlueLeft[i]);
+		SDL_FreeSurface(pionsRedLeft[i]);
 	}
 	
 	SDL_FreeSurface(imageFond);
 	SDL_Quit(); //on quitte la SDL
 	
 }
+
 
 
 void afficherPiecesRestantes(SGameState gameState,SDL_Surface *ecran){

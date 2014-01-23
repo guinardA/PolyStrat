@@ -1,11 +1,7 @@
 
-/* EU UN MOUVEMENT NON VALIDE QUI EST PASSÉ DE IA
- * ERREUR ON NE COMPTE PAS LE COUPS
- * règle dans IA
+/* (EU UN MOUVEMENT NON VALIDE QUI EST PASSÉ DE IA)
  * Méthode joueur a la main
- * 		Afficher ok au message erreur et grisé la croix
  * 		afficheErreur
- * 		Lors d'un combat affiché la piece attaqué avec un delay
  * */
 
 #include <stdio.h>
@@ -21,8 +17,9 @@
 void initialisationContexteJeu(SGameState *gameState);
 int verificationNombrePiece(EPiece boardInit[4][10]);
 int verifPionsBouger(SGameState gameState);
-int vaEtViensJ1(SMove move);
-int vaEtViensJ2(SMove move);
+int CompareMoves(SMove move1,SMove move2);
+int vaEtViensJ1(SMove move, SBox box);
+int vaEtViensJ2(SMove move, SBox box);
 void enregistrePion(EPiece boardInit[4][10], SGameState *gameState, EColor color, int joueur);
 SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int joueur);
 SGameState duplicationJoueur(SGameState gameState, EColor color, int joueur);
@@ -38,11 +35,15 @@ void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2);
 
 FILE *fichier;
 void *j1Lib, *j2Lib;
+SMove listMvtJ1[3], listMvtJ2[3];
+SBox listBoxJ1[3],listBoxJ2[3];
+int repetitionMvtJ1 = 0,repetitionMvtJ2 = 0;
 
 int main(int argc, const char * argv[]){
 
 int nbr_coup_permis = atoi(argv[1]);
 int nbr_IA = atoi(argv[2]);
+char message[200];
 
 if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 	//=========================Gestion ouverture de la librarie et des méthodes liés
@@ -222,10 +223,17 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 		
 		//INITIALISATION DU CONTEXTE DE JEU
 		initialisationContexteJeu(&gameState);
-
+		interfaceGraphique(gameState);
 		//DIFINISSION DE LA COULEUR DU JOUEUR ET PLACEMENT DES PIONS PAR LE JOUEURS
 		couleur = (int)rand()%2;
 		
+		
+		strcat(message, "Erreur pour le joueur : ");
+		strcat(message, nameJ1);
+		strcat(message, " et ");
+		strcat(message, nameJ2);
+		afficherMessageEcran(message, 3000);
+
 //ENREGISTREMENT ET VERIFICATION DES PIONS DES JOUEURS
 		do{
 			if(couleur == 0){ //Si c'est égal a 0 alors la librairie 1 sera rouge et la librarie 2 sera bleu sinon inverse
@@ -375,7 +383,6 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 			fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
 			fprintf(fichier, "Placement des pions sur le jeu\n");
 			ecrireFichier(gameState);
-			
 			do{
 				
 //DEPLACEMENT D'UN PION
@@ -425,6 +432,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							if(nbr_IA == 2){
 								fin = finPartie(1,0);
 								j1Penalty();
+								pion_erreur_j1 = 0;
 							}
 							
 							afficheMessage("Mouvement non valide");
@@ -507,10 +515,12 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								if(nbr_IA == 1){
 									fin = finPartie(2,0);
 									j1Penalty();
+									pion_erreur_j2 = 0;
 								}
 								else if(nbr_IA == 2){
 									fin = finPartie(2,0);
 									j2Penalty();
+									pion_erreur_j2 = 0;
 								}
 								
 								afficheMessage("Mouvement non valide");
@@ -605,11 +615,13 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							if(nbr_IA == 1){
 								fin = finPartie(2,0);
 								j1Penalty();
+								pion_erreur_j2 = 0;
 							}	
 							
 							else if(nbr_IA == 2){
 								fin = finPartie(2,0);
 								j2Penalty();
+								pion_erreur_j2 = 0;
 							}	
 							afficheMessage("Mouvement non valide");
 							if(fin == 1 ){
@@ -685,6 +697,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								if(nbr_IA == 2){
 									fin = finPartie(1,0);
 									j1Penalty();
+									pion_erreur_j1 = 0;
 								}
 								afficheMessage("Mouvement non valide");
 								if(fin == 1 ){
@@ -871,34 +884,69 @@ int verificationNombrePiece(EPiece boardInit[4][10]){
 	return 0;
 }
 
-int vaEtViensJ1(SMove move){
-	
-	static int nbr_mvt_J1;
-	int retour =0;
-	static SPos pos1[2];
-
-	if(pos1[0].line == move.start.line && pos1[0].col == move.start.col && pos1[1].line ==  move.end.line && pos1[1].col == move.end.col && nbr_mvt_J1%2 == 0){
-		nbr_mvt_J1 ++;
-		pos1[0] = move.start;
-		pos1[1] = move.end;
+int CompareMoves(SMove move1,SMove move2){
+    if( move1.start.line == move2.start.line){
+        if( move1.start.col == move2.start.col){
+            if( move1.end.line == move2.end.line){
+                if( move1.end.col == move2.end.col){
+                    return 1;
+                }
+            }
+        }
 	}
-	else if(pos1[0].line == move.end.line && pos1[0].col == move.end.col && pos1[1].line ==  move.start.line && pos1[1].col ==  move.start.col && nbr_mvt_J1%2 == 1){
-		nbr_mvt_J1 ++;
-		pos1[0] = move.end;
-		pos1[1] = move.start;
+	return 0;
+}
+
+int vaEtViensJ1(SMove move, SBox box){
+	
+	    switch (repetitionMvtJ1)
+    {
+        case 0: 
+				listMvtJ1[repetitionMvtJ1] = move;
+				listBoxJ1[repetitionMvtJ1] = box;
+                repetitionMvtJ1++;
+                break;
+        case 1:
+                if( box.piece == listBoxJ1[0].piece ){
+                    listMvtJ1[repetitionMvtJ1] = move;
+                    listBoxJ1[repetitionMvtJ1] = box;
+                    repetitionMvtJ1++;
+                }
+                else{ 
+					repetitionMvtJ1 = 1;
+					listMvtJ1[0] = move;
+                    listBoxJ1[0] = box; }
+                break;
+        case 2:
+            if( (box.piece == listBoxJ1[0].piece) && (CompareMoves(move,listMvtJ1[0])==1) ){
+                listMvtJ1[repetitionMvtJ1] = move;
+                listBoxJ1[repetitionMvtJ1] = box;
+                repetitionMvtJ1++;
+            }
+            else{ 
+					repetitionMvtJ1 = 1;
+					listMvtJ1[0] = move;
+                    listBoxJ1[0] = box; }
+            break;
+         case 3:
+            if( (box.piece == listBoxJ1[0].piece) && (CompareMoves(move,listMvtJ1[1])==1) ){
+                repetitionMvtJ1++;
+            }
+             else{ 
+					repetitionMvtJ1 = 1;
+					listMvtJ1[0] = move;
+                    listBoxJ1[0] = box; }
+            break;
+        default:
+            repetitionMvtJ1 = 0;
+            break;
+    }
+    if(repetitionMvtJ1 == 4){
+		return 1;
 	}
 	else{
-		nbr_mvt_J1 = 1;
-		pos1[0] = move.start;
-		pos1[1] = move.end;
+		return 0;
 	}
-	
-	if( nbr_mvt_J1 >= 4){
-		printf("Va et viens arbitre j1\n");
-		retour =1;
-	}
-	
-	return retour;
 }
 
 int verifPionsBouger(SGameState gameState){
@@ -922,34 +970,56 @@ if(gameState.blueOut[1] == 1 && gameState.blueOut[2] == 8 && gameState.blueOut[3
 return retour;
 }
 
-int vaEtViensJ2(SMove move){
+int vaEtViensJ2(SMove move, SBox box){
 	
-	static int nbr_mvt_J2;
-	int retour =0;
-	static SPos pos2[2];
-
-	if(pos2[0].line == move.start.line && pos2[0].col == move.start.col && pos2[1].line ==  move.end.line && pos2[1].col == move.end.col && nbr_mvt_J2%2 == 0){
-		nbr_mvt_J2 ++;
-		pos2[0] = move.start;
-		pos2[1] = move.end;
-	}
-	else if(pos2[0].line == move.end.line && pos2[0].col == move.end.col && pos2[1].line ==  move.start.line && pos2[1].col ==  move.start.col && nbr_mvt_J2%2 == 1){
-		nbr_mvt_J2 ++;
-		pos2[0] = move.end;
-		pos2[1] = move.start;
+	    switch (repetitionMvtJ2)
+    {
+        case 0: 
+				listMvtJ2[repetitionMvtJ2] = move;
+				listBoxJ2[repetitionMvtJ2] = box;
+                repetitionMvtJ2++;
+                break;
+        case 1:
+                if( box.piece == listBoxJ2[0].piece ){
+                    listMvtJ2[repetitionMvtJ2] = move;
+                    listBoxJ2[repetitionMvtJ2] = box;
+                    repetitionMvtJ2++;
+                }
+                else{ 
+					repetitionMvtJ2 = 1;
+					listMvtJ2[0] = move;
+                    listBoxJ2[0] = box; }
+                break;
+        case 2:
+            if( (box.piece == listBoxJ2[0].piece) && (CompareMoves(move,listMvtJ2[0])==1) ){
+                listMvtJ2[repetitionMvtJ2] = move;
+                listBoxJ2[repetitionMvtJ2] = box;
+                repetitionMvtJ2++;
+            }
+            else{ 
+					repetitionMvtJ2 = 1;
+					listMvtJ2[0] = move;
+                    listBoxJ2[0] = box; }
+            break;
+         case 3:
+            if( (box.piece == listBoxJ2[0].piece) && (CompareMoves(move,listMvtJ2[1])==1) ){
+                repetitionMvtJ2++;
+            }
+             else{ 
+					repetitionMvtJ2 = 1;
+					listMvtJ2[0] = move;
+                    listBoxJ2[0] = box; }
+            break;
+        default:
+            repetitionMvtJ2 = 0;
+            break;
+    }
+    if(repetitionMvtJ2 == 4){
+		return 1;
 	}
 	else{
-		nbr_mvt_J2 = 1;
-		pos2[0] = move.start;
-		pos2[1] = move.end;
+		return 0;
 	}
-	
-	if( nbr_mvt_J2 >= 4){
-		printf("Va et viens arbitre j2\n");
-		retour =1;
-	}
-	
-	return retour;
 }
 
 /*
@@ -1343,19 +1413,19 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 	
 		if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
 			
-			if((joueur == 1 && vaEtViensJ1(move) == 0) || (joueur == 2 && vaEtViensJ2(move) == 0)){
+			//On inverse le mouvement pour le joueur 2
+			if(joueur == 1){
+				move.start.line = 9-move.start.line;
+				move.end.line = 9-move.end.line;
+			}
+			if(joueur == 2){
+				move.start.col = 9-move.start.col;
+				move.end.col = 9-move.end.col;
+			}
+				
+			boxStart = gameState->board[move.start.line][move.start.col];
 			
-				//On inverse le mouvement pour le joueur 2
-				if(joueur == 1){
-					move.start.line = 9-move.start.line;
-					move.end.line = 9-move.end.line;
-				}
-				if(joueur == 2){
-					move.start.col = 9-move.start.col;
-					move.end.col = 9-move.end.col;
-				}
-
-				boxStart = gameState->board[move.start.line][move.start.col];
+			if((joueur == 1 && vaEtViensJ1(move, boxStart) == 0) || (joueur == 2 && vaEtViensJ2(move, boxStart) == 0)){
 				
 				//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
 				if(boxStart.content == color){
@@ -1547,7 +1617,6 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 			(*AttackResultJ2)(moveJ2.end, attaquer.piece, moveJ2.start, attaquant.piece);
 		}
 		if(nbr_IA == 1){
-			printf("tata\n");
 			(*AttackResultJ1)(moveJ2.end, attaquer.piece, moveJ2.start, attaquant.piece);
 		}
 		
@@ -1561,12 +1630,10 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 			(*AttackResultJ1)(moveJ1.end, attaquer.piece, moveJ1.start, attaquant.piece);
 		}
 		if(nbr_IA == 1){
-			printf("toto\n");
 			(*AttackResultJ1)(moveJ2.start, attaquant.piece, moveJ2.end, attaquer.piece);
 			
 		}
 	}
-		printf("Numéro : %i, numéro IA : %i\n", joueur, nbr_IA);
 	
 	if(nbr_IA == 1 && joueur == 1 || nbr_IA == 0){
 		afficheAttaque(color, *gameState, move, nbr_IA);
@@ -1649,7 +1716,7 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	}
 }
 
-afficheAttaque(int color, SGameState gameState, SMove move, int nbr_IA){
+void afficheAttaque(int color, SGameState gameState, SMove move, int nbr_IA){
 	int i,j;
 	SBox box;
 	SGameState gamesAttaque;
