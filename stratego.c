@@ -1,11 +1,9 @@
 
-/* COMPTER LE NOMBRE DE PARTIE GAGNER ET PERDUE
- * EU UN MOUVEMENT NON VALIDE QUI EST PASSÉ DE IA
+/* EU UN MOUVEMENT NON VALIDE QUI EST PASSÉ DE IA
  * ERREUR ON NE COMPTE PAS LE COUPS
  * règle dans IA
  * Méthode joueur a la main
  * 		Afficher ok au message erreur et grisé la croix
- *  	placePion // Problème lorsque erreur placement affiche pas message erreur et puis gamestate pas effacé
  * 		afficheErreur
  * 		Lors d'un combat affiché la piece attaqué avec un delay
  * */
@@ -30,6 +28,7 @@ SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int jo
 SGameState duplicationJoueur(SGameState gameState, EColor color, int joueur);
 int verificationMouvement(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece), int nb_IA);
 int placePion(EColor color, EPiece boardInit[4][10], int joueur);
+void afficheAttaque(int color, SGameState gameState, SMove move, int nbr_IA);
 int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResultJ1)(SPos, EPiece, SPos, EPiece), void(*AttackResultJ2)(SPos, EPiece, SPos, EPiece), int nbr_IA);
 int finPartie(int joueur, int flag);
 void ecrireFichier(SGameState gameState);
@@ -289,12 +288,8 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						couleurJ1 = ECblue;
 					}
 					else{
-						arret = placePion(ECred, boardInitJ1, 1);
+						arret = placePion(ECblue, boardInitJ1, 1);
 						if(arret == 1){
-							if(nbr_IA == 1){
-								j1EndMatch();
-								dlclose(j1Lib);
-							}
 							fclose(fichier);
 							quitter_sdl();
 							exit(EXIT_SUCCESS);
@@ -314,14 +309,17 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						couleurJ2 = ECred;
 					}
 					else{
-						placePion(ECred, boardInitJ2, 2);
-						arret = placePion(ECred, boardInitJ1, 1);
+						arret = placePion(ECred, boardInitJ2, 2);
 						if(arret == 1){
+							if(nbr_IA == 1){
+								j1EndMatch();
+								dlclose(j1Lib);
+							}
 							fclose(fichier);
 							quitter_sdl();
 							exit(EXIT_SUCCESS);
 						}
-						couleurJ2 = ECred;		
+						couleurJ2 = ECred;
 					}
 					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
 				}
@@ -392,7 +390,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
 							gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
 							move = j1NextMove(&gameStateJ1);
-							pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 2);
+							pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, nbr_IA);
 							interfaceGraphique(gameState); //On affiche le plateau de jeu après initialisation
 						}
 						else{
@@ -415,18 +413,10 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							move.start.line = 9-move.start.line;
 							move.end.line = 9-move.end.line;	
 							
-							pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 0);
+							pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, nbr_IA);
 							gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 							interfaceGraphique(gameStateJ1);
 						}
-						
-						/*
-						clock_t start,end;
-						printf("titi\n");
-						start=clock();
-						printf("toto\n");
-						while(((end=clock())-start)<=2*CLOCKS_PER_SEC);
-						printf("tata\n");*/
 						
 						//On vérifie qu'il y a encore un pion a bouger
 						fin = verifPionsBouger(gameState);
@@ -479,13 +469,13 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
 								gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);	
 								move = j1NextMove(&gameStateJ2);
-								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 1);
+								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 							}
 							else if(nbr_IA == 2){
 								interfaceGraphique(gameState);
 								gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
 								move = j2NextMove(&gameStateJ2);
-								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 2);
+								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 								interfaceGraphique(gameState);
 							}
 							
@@ -503,7 +493,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;						
-								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 0);
+								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
 							}
@@ -566,12 +556,12 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						
 						if(nbr_IA == 1){
 							
-							interfaceGraphique(gameState); 
+							//interfaceGraphique(gameState); 
 							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
 							gameStateJ2  = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
 							
 							move = j1NextMove(&gameStateJ2);
-							pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 1);
+							pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 						}
 						
 						else if(nbr_IA == 2){
@@ -580,7 +570,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
 							
 							move = j2NextMove(&gameStateJ2);
-							pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 2);
+							pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 							interfaceGraphique(gameState);
 						}
 						else{
@@ -601,7 +591,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							 
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;							
-								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 0);
+								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
 							}
@@ -662,7 +652,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
 							
 								move = j1NextMove(&gameStateJ1);
-								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 2);
+								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, nbr_IA);
 							}
 							else{
 								gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
@@ -682,7 +672,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;					
-								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 0);
+								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, nbr_IA);
 								gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 							}
 							
@@ -719,7 +709,6 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								}
 							}
 							
-							interfaceGraphique(gameState); //On affiche le plateau de jeu après le tour du joueur 1
 							
 						}while(pion_erreur_j1 == 1 && fin == 0);
 						
@@ -1558,10 +1547,12 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 			(*AttackResultJ2)(moveJ2.end, attaquer.piece, moveJ2.start, attaquant.piece);
 		}
 		if(nbr_IA == 1){
+			printf("tata\n");
 			(*AttackResultJ1)(moveJ2.end, attaquer.piece, moveJ2.start, attaquant.piece);
 		}
 		
 	} 
+	
 	//JOUEUR 2 QUI ATTAQUE
 	else
 	{
@@ -1570,11 +1561,17 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 			(*AttackResultJ1)(moveJ1.end, attaquer.piece, moveJ1.start, attaquant.piece);
 		}
 		if(nbr_IA == 1){
+			printf("toto\n");
 			(*AttackResultJ1)(moveJ2.start, attaquant.piece, moveJ2.end, attaquer.piece);
+			
 		}
 	}
+		printf("Numéro : %i, numéro IA : %i\n", joueur, nbr_IA);
 	
-	
+	if(nbr_IA == 1 && joueur == 1 || nbr_IA == 0){
+		afficheAttaque(color, *gameState, move, nbr_IA);
+	}
+						
 	//CAS OU LES 2 PIÈCES SONT DE FORCE ÉQUIVALENTE
 	if(attaquant.piece == attaquer.piece){
 		fprintf(fichier,"Attaque de 2 forces équivalente\n");
@@ -1649,6 +1646,65 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 		gameState->board[move.start.line][move.start.col] = newBox;
 		
 		return 0;
+	}
+}
+
+afficheAttaque(int color, SGameState gameState, SMove move, int nbr_IA){
+	int i,j;
+	SBox box;
+	SGameState gamesAttaque;
+	for(i =0; i<10;i++){
+		for(j=0;j<10;j++){
+			if(gameState.board[i][j].content == color){
+				gamesAttaque.board[i][j] = gameState.board[i][j];
+			}
+			else if(i == move.end.line && j == move.end.col){
+				gamesAttaque.board[i][j] = gameState.board[i][j];
+			}
+			else{
+				box.content = gameState.board[i][j].content;
+				box.piece = EPnone;
+				gamesAttaque.board[i][j] = box;
+			}
+		}
+	}
+	for(i = 0; i<11;i++){
+		gamesAttaque.blueOut[i] = gameState.blueOut[i];
+		gamesAttaque.redOut[i] = gameState.redOut[i];
+	}
+	clock_t start,end;
+	start=clock();
+	interfaceGraphique(gamesAttaque);
+	while(((end=clock())-start)<=3*CLOCKS_PER_SEC);
+	
+	if(nbr_IA == 0){
+
+		for(i =0; i<10;i++){
+			for(j=0;j<10;j++){
+				if(gameState.board[i][j].content != color){
+					gamesAttaque.board[i][j] = gameState.board[i][j];
+				}
+				else if(i == move.start.line && j == move.start.col){
+					gamesAttaque.board[i][j] = gameState.board[i][j];
+				}
+				else{
+					box.content = gameState.board[i][j].content;
+					box.piece = EPnone;
+					gamesAttaque.board[i][j] = box;
+				}
+			}
+		}
+		
+		for(i = 0; i<11;i++){
+			gamesAttaque.blueOut[i] = gameState.blueOut[i];
+			gamesAttaque.redOut[i] = gameState.redOut[i];
+		}
+	
+		clock_t start,end;
+		start=clock();
+		interfaceGraphique(gamesAttaque);
+		while(((end=clock())-start)<=3*CLOCKS_PER_SEC);
+		
 	}
 }
 
