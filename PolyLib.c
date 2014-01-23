@@ -674,7 +674,7 @@ int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy)
 	EPiece enemy = contextPerso.board[lineEnemy][colEnemy].piece;
 	EPiece army = contextPerso.board[lineArmy][colArmy].piece;
 
-	if( enemy==EPnone || (enemy<army && (enemy!=EPbomb || army==EPminer) ) )
+	if( (enemy==EPnone && (army!=EPminer || army!=EPspy)) || (enemy<army && (enemy!=EPbomb || army==EPminer)) || (army==EPspy && enemy==EPmarshal)  )
 	{
 		return 1;
 	}
