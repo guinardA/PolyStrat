@@ -3,7 +3,6 @@
  * EU UN MOUVEMENT NON VALIDE QUI EST PASSÉ DE IA
  * ERREUR ON NE COMPTE PAS LE COUPS
  * FAIRE TXT AFFICHE TOUS LES COUPS
- * THREAD 2 IA OU PAS
  * règle dans IA
  * Méthode joueur a la main
  * 		Afficher ok au message erreur et grisé la croix
@@ -31,7 +30,7 @@ void enregistrePion(EPiece boardInit[4][10], SGameState *gameState, EColor color
 SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int joueur);
 SGameState duplicationJoueur(SGameState gameState, EColor color, int joueur);
 int verificationMouvement(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece), int nb_IA);
-void placePion(EColor color, EPiece boardInit[4][10], int joueur);
+int placePion(EColor color, EPiece boardInit[4][10], int joueur);
 int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResultJ1)(SPos, EPiece, SPos, EPiece), void(*AttackResultJ2)(SPos, EPiece, SPos, EPiece), int nbr_IA);
 int finPartie(int joueur, int flag);
 static void * quitter(void * p_data);
@@ -165,7 +164,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 	SGameState gameStateJ1,gameStateJ2;//Plateau du jeu pour le joueur 1 et 2
 	SMove move;
 	char nameJ1[50],  nameJ2[50];
-	int game, fin ,couleur, pion_erreur_j1, pion_erreur_j2, nbr_coup_j1, nbr_coup_j2, nbr_pion_rouge=0, nbr_pion_bleu=0;
+	int game, fin ,couleur, pion_erreur_j1, pion_erreur_j2, nbr_coup_j1, nbr_coup_j2, nbr_pion_rouge=0, nbr_pion_bleu=0, arret;
 	EColor couleurJ1, couleurJ2;
 	EPiece boardInitJ1[4][10], boardInitJ2[4][10];
 	pthread_t thread_quitter;
@@ -184,9 +183,12 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 		j2StartMatch();
 	}
 	
-	XInitThreads();
-	pthread_create (&thread_quitter, NULL, quitter, NULL);
-
+	//On ouvrir le thread que quand on a 2 IA
+	if(nbr_IA == 2){
+		XInitThreads();
+		pthread_create (&thread_quitter, NULL, quitter, NULL);
+	}
+	
 	do {
 		
 		fin =0;
@@ -216,7 +218,15 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						couleurJ1 = ECred;
 					}
 					else{
-						placePion(ECred, boardInitJ1, 1);
+						arret = placePion(ECred, boardInitJ1, 1);
+						if(arret == 1){
+							if(nbr_IA == 1){
+								j1EndMatch();
+								dlclose(j1Lib);
+							}
+							quitter_sdl();
+							exit(EXIT_SUCCESS);
+						}
 						couleurJ1 = ECred;
 					}
 					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
@@ -233,7 +243,11 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						couleurJ2 = ECblue;
 					}
 					else{
-						placePion(ECblue, boardInitJ2, 2);
+						arret = placePion(ECblue, boardInitJ2, 2);
+						if(arret == 1){
+							quitter_sdl();
+							exit(EXIT_SUCCESS);
+						}
 						couleurJ2 = ECblue;		
 					}
 					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
@@ -248,7 +262,15 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						couleurJ1 = ECblue;
 					}
 					else{
-						placePion(ECblue, boardInitJ1, 1);
+						arret = placePion(ECred, boardInitJ1, 1);
+						if(arret == 1){
+							if(nbr_IA == 1){
+								j1EndMatch();
+								dlclose(j1Lib);
+							}
+							quitter_sdl();
+							exit(EXIT_SUCCESS);
+						}
 						couleurJ1 = ECblue;		
 					}
 					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
@@ -265,6 +287,11 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 					}
 					else{
 						placePion(ECred, boardInitJ2, 2);
+						arret = placePion(ECred, boardInitJ1, 1);
+						if(arret == 1){
+							quitter_sdl();
+							exit(EXIT_SUCCESS);
+						}
 						couleurJ2 = ECred;		
 					}
 					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
@@ -333,6 +360,18 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 							interfaceGraphique(gameStateJ1);
 							move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+							
+							//Appuie sur la croix
+							if(move.start.line == -2 && move.start.col == -2){
+
+								if(nbr_IA == 1){
+									j1EndMatch();
+									dlclose(j1Lib);
+								}
+								quitter_sdl();
+								exit(EXIT_SUCCESS);
+							}
+							
 							move.start.line = 9-move.start.line;
 							move.end.line = 9-move.end.line;	
 							
@@ -407,6 +446,13 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
 								move = renvoieCoordonnees(gameState);
+								
+								//Appuie sur la croix
+								if(move.start.line == -2 && move.start.col == -2){
+									quitter_sdl();
+									exit(EXIT_SUCCESS);
+								}
+							
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;						
 								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 0);
@@ -485,7 +531,18 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						else{
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
-								move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+								move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN
+								
+								//Appuie sur la croix
+								if(move.start.line == -2 && move.start.col == -2){
+									if(nbr_IA == 1){
+										j1EndMatch();
+										dlclose(j1Lib);
+									}
+									quitter_sdl();
+									exit(EXIT_SUCCESS);
+								}
+							 
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;							
 								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, 0);
@@ -548,6 +605,17 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 								interfaceGraphique(gameStateJ1);
 								move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+								
+								//Appuie sur la croix
+								if(move.start.line == -2 && move.start.col == -2){
+									if(nbr_IA == 1){
+										j1EndMatch();
+										dlclose(j1Lib);
+									}
+									quitter_sdl();
+									exit(EXIT_SUCCESS);
+								}
+								
 								move.start.line = 9-move.start.line;
 								move.end.line = 9-move.end.line;					
 								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, 0);
@@ -640,7 +708,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 	dlclose(j1Lib);
 	dlclose(j2Lib);
 
-	exit(EXIT_SUCCESS);	
+
 
 	return(1);
 }
@@ -980,7 +1048,7 @@ SGameState duplicationJoueur(SGameState gameState, EColor color, int joueur){
 	return gameStatePerso;
 }
 
-void placePion(EColor color, EPiece boardInit[4][10], int joueur){
+int placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	
 	int i, j;
 	SPos position;
@@ -1002,10 +1070,14 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	}
 	
 	interfaceGraphique(SGame);
-
+	 afficherMessageEcran("Pose ton drapeau", 10);
 	printf("Pose ton drapeau\n");
+	
 	do{
 		position = getPos();
+		if(position.line == -2 && position.col == -2) {
+			return 1;
+		}
 		if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 			printf("Erreur de placement, veuillez recommencez 1\n");
 		}
@@ -1020,6 +1092,9 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<6;i++){
 		do{
 			position = getPos();
+			if(position.line == -2 && position.col == -2) {
+				return 1;
+			}
 			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez 2");
 			}
@@ -1034,7 +1109,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	printf("Pose ton espion\n");
 	do{
 		position = getPos();
-			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
+		if(position.line == -2 && position.col == -2) {
+				return 1;
+		}
+		if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 			printf("Erreur de placement, veuillez recommencez");
 		}
 	}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
@@ -1048,7 +1126,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<8;i++){
 		do{
 			position = getPos();
-				if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			if(position.line == -2 && position.col == -2) {
+				return 1;
+			}
+			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
 		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
@@ -1063,7 +1144,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<5;i++){
 		do{
 			position = getPos();
-				if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			if(position.line == -2 && position.col == -2) {
+				return 1;
+			}
+			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
 		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
@@ -1078,7 +1162,10 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<4;i++){
 		do{
 			position = getPos();
-				if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
+			if(position.line == -2 && position.col == -2) {
+				return 1;
+			}
+			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
 		}while((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone);
@@ -1093,6 +1180,9 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<4;i++){
 		do{
 			position = getPos();
+			if(position.line == -2 && position.col == -2) {
+				return 1;
+			}
 			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
@@ -1108,6 +1198,9 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<4;i++){
 		do{
 			position = getPos();
+			if(position.line == -2 && position.col == -2) {
+				return 1;
+			}
 			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
@@ -1123,6 +1216,9 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<3;i++){
 		do{
 			position = getPos();
+			if(position.line == -2 && position.col == -2) {
+				return 1;
+			}
 			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
@@ -1138,6 +1234,9 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	for(i=0;i<2;i++){
 		do{
 			position = getPos();
+			if(position.line == -2 && position.col == -2) {
+				return 1;
+			}
 			if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 				printf("Erreur de placement, veuillez recommencez");
 			}
@@ -1152,6 +1251,9 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	printf("Pose ton général\n");
 	do{
 		position = getPos();
+		if(position.line == -2 && position.col == -2) {
+				return 1;
+			}
 		if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 			printf("Erreur de placement, veuillez recommencez");
 		}
@@ -1165,6 +1267,9 @@ void placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	printf("Pose ton marshal\n");
 	do{
 		position = getPos();
+		if(position.line == -2 && position.col == -2) {
+				return 1;
+			}
 		if((position.line == -1 && position.col == -1) || 9-position.line > 6 || boardInit[9-position.line][9-position.col] != EPnone){
 			printf("Erreur de placement, veuillez recommencez");
 		}
