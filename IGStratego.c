@@ -11,6 +11,10 @@ SDL_Surface *imageFond = NULL;	//création des variables
 SDL_Surface *pionsRouges[13] = {NULL};
 SDL_Surface *pionsBleus[13] = {NULL};
 SDL_Surface *ecran = NULL;
+SDL_Surface *pionsRedLeft[11] = {NULL};
+SDL_Surface *pionsBlueLeft[11] = {NULL};
+SDL_Surface *texteBlue[11] = {NULL};
+SDL_Surface *texteRed[11] = {NULL};
 
 void afficherMessageEcran(char *message, int delay){
 	SDL_Surface *texteTitre = NULL, *ecrantmp = ecran;
@@ -541,12 +545,12 @@ SMove renvoieCoordonnees(SGameState gameState){
 		SDL_WaitEvent(&event);
 		switch(event.type){
 				case SDL_QUIT:
-				mouvementPion.start.line = -2;
-				mouvementPion.start.col = -2;
-				mouvementPion.end.line = -2;
-				mouvementPion.end.col = -2;
-				continuer = 0;
-				break;
+					mouvementPion.start.line = -2;
+					mouvementPion.start.col = -2;
+					mouvementPion.end.line = -2;
+					mouvementPion.end.col = -2;
+					continuer = 0;
+					break;
 				case SDL_MOUSEBUTTONUP:
 					//il faut que ce soit un clic gauche et qu'il se situe dans la grille de jeu
 					if((event.button.button == SDL_BUTTON_LEFT) && ((event.button.y)>MARGE_HAUT) && ((event.button.y)<(MARGE_HAUT+10*TAILLE_CASE)) && ((event.button.x)>MARGE_GAUCHE) && ((event.button.x)<(MARGE_GAUCHE+10*TAILLE_CASE))){
@@ -597,7 +601,8 @@ int interfaceGraphique(SGameState gameState){
 	SDL_WM_SetCaption("Stratego", NULL);
 	
 	initBoard(gameState, ecran);
-	
+
+	afficherPiecesRestantes(gameState, ecran);
 	SDL_Flip(ecran);
 	//Boucle pour tester la selection de pions
 	/*while (continuer)
@@ -672,3 +677,90 @@ void quitter_sdl(){
 	SDL_Quit(); //on quitte la SDL
 	
 }
+
+
+void afficherPiecesRestantes(SGameState gameState,SDL_Surface *ecran){
+    SDL_Rect positionJ1, positionJ2, positionCptRed, positionCptBlue;
+    int i = 0;
+    TTF_Font *police = NULL;
+    SDL_Color couleurPolice = {255, 255, 255};
+    int nbPiecesInitial[11];
+
+    TTF_Init();
+
+    positionJ1.x = MARGE_GAUCHE-TAILLE_CASE - 24;
+    positionJ1.y = MARGE_HAUT;
+    
+    positionJ2.x = ecran->w - (MARGE_DROITE) + 30;
+    positionJ2.y = MARGE_HAUT;
+
+    police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 20);
+ 
+    //Initialisation du nb initial de pieces
+    nbPiecesInitial[0] = 6;	//bomb
+    nbPiecesInitial[1] = 1;	//spy
+    nbPiecesInitial[2] = 8;	//scout
+    nbPiecesInitial[3] = 5;	//miner
+    nbPiecesInitial[4] = 4;	//sergeant
+    nbPiecesInitial[5] = 4;	//lieutenant
+    nbPiecesInitial[6] = 4;	//captain
+    nbPiecesInitial[7] = 3;	//major
+    nbPiecesInitial[8] = 2;	//colonel
+    nbPiecesInitial[9] = 1;	//general
+    nbPiecesInitial[10] = 1;//marshal  
+
+    //Chargement des icones des pieces restantes rouges
+    pionsRedLeft[0] = IMG_Load("iconsLeft/bomb0r.png");
+    pionsRedLeft[1] = IMG_Load("iconsLeft/spy1r.png");
+    pionsRedLeft[2] = IMG_Load("iconsLeft/scout2r.png");
+    pionsRedLeft[3] = IMG_Load("iconsLeft/miner3r.png");
+    pionsRedLeft[4] = IMG_Load("iconsLeft/sergeant4r.png");
+    pionsRedLeft[5] = IMG_Load("iconsLeft/lieutenant5r.png");
+    pionsRedLeft[6] = IMG_Load("iconsLeft/captain6r.png");
+    pionsRedLeft[7] = IMG_Load("iconsLeft/major7r.png");
+    pionsRedLeft[8] = IMG_Load("iconsLeft/colonel8r.png");
+    pionsRedLeft[9] = IMG_Load("iconsLeft/general9r.png");
+    pionsRedLeft[10] = IMG_Load("iconsLeft/marshal10r.png");
+
+    //Chargement des icones des pieces restantes bleues
+    pionsBlueLeft[0] = IMG_Load("iconsLeft/bomb0b.png");
+    pionsBlueLeft[1] = IMG_Load("iconsLeft/spy1b.png");
+    pionsBlueLeft[2] = IMG_Load("iconsLeft/scout2b.png");
+    pionsBlueLeft[3] = IMG_Load("iconsLeft/miner3b.png");
+    pionsBlueLeft[4] = IMG_Load("iconsLeft/sergeant4b.png");
+    pionsBlueLeft[5] = IMG_Load("iconsLeft/lieutenant5b.png");
+    pionsBlueLeft[6] = IMG_Load("iconsLeft/captain6b.png");
+    pionsBlueLeft[7] = IMG_Load("iconsLeft/major7b.png");
+    pionsBlueLeft[8] = IMG_Load("iconsLeft/colonel8b.png");
+    pionsBlueLeft[9] = IMG_Load("iconsLeft/general9b.png");
+    pionsBlueLeft[10] = IMG_Load("iconsLeft/marshal10b.png");
+    
+
+
+    i = 0;
+    for(i = 0; i<11; i++){
+	char cptRed[10], cptBlue[10];
+
+	positionJ1.y = MARGE_HAUT + i*TAILLE_CASE;
+	positionJ2.y = MARGE_HAUT + i*TAILLE_CASE;
+	
+	SDL_BlitSurface(pionsRedLeft[i], NULL, ecran, &positionJ1);
+	SDL_BlitSurface(pionsBlueLeft[i], NULL, ecran, &positionJ2);
+
+	sprintf(cptBlue, "%d", (nbPiecesInitial[i]-gameState.blueOut[i]));
+	sprintf(cptRed, "%d", (nbPiecesInitial[i]-gameState.redOut[i]));
+
+	texteRed[i] = TTF_RenderText_Blended(police, cptRed, couleurPolice);
+	texteBlue[i] = TTF_RenderText_Blended(police, cptBlue, couleurPolice);
+
+	positionCptRed.x = positionJ1.x + (TAILLE_CASE-5);
+        positionCptBlue.x = positionJ2.x - 5;
+
+	positionCptRed.y = positionJ1.y + 5;
+        positionCptBlue.y = positionJ2.y + 5;
+	
+	SDL_BlitSurface(texteRed[i], NULL, ecran, &positionCptRed);
+	SDL_BlitSurface(texteBlue[i], NULL, ecran, &positionCptBlue);
+    }
+
+}	
