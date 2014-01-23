@@ -2,7 +2,6 @@
 /* COMPTER LE NOMBRE DE PARTIE GAGNER ET PERDUE
  * EU UN MOUVEMENT NON VALIDE QUI EST PASSÉ DE IA
  * ERREUR ON NE COMPTE PAS LE COUPS
- * FAIRE TXT AFFICHE TOUS LES COUPS
  * règle dans IA
  * Méthode joueur a la main
  * 		Afficher ok au message erreur et grisé la croix
@@ -33,11 +32,12 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 int placePion(EColor color, EPiece boardInit[4][10], int joueur);
 int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResultJ1)(SPos, EPiece, SPos, EPiece), void(*AttackResultJ2)(SPos, EPiece, SPos, EPiece), int nbr_IA);
 int finPartie(int joueur, int flag);
+void ecrireFichier(SGameState gameState);
 static void * quitter(void * p_data);
 
 void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2);
 
-char * message;
+FILE *fichier;
 void *j1Lib, *j2Lib;
 
 int main(int argc, const char * argv[]){
@@ -163,14 +163,15 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 	SGameState gameState;//Plateau du jeu a dupliquer afin éviter qu'une libraire modifie original
 	SGameState gameStateJ1,gameStateJ2;//Plateau du jeu pour le joueur 1 et 2
 	SMove move;
-	char nameJ1[50],  nameJ2[50];
-	int game, fin ,couleur, pion_erreur_j1, pion_erreur_j2, nbr_coup_j1, nbr_coup_j2, nbr_pion_rouge=0, nbr_pion_bleu=0, arret;
+	char nameJ1[50],  nameJ2[50], texte[200];
+	int game, fin ,couleur, pion_erreur_j1, pion_erreur_j2, nbr_coup_j1, nbr_coup_j2, nbr_pion_rouge=0, nbr_pion_bleu=0, arret,i,j, partie=1;
 	EColor couleurJ1, couleurJ2;
 	EPiece boardInitJ1[4][10], boardInitJ2[4][10];
 	pthread_t thread_quitter;
 	srand(time(NULL));
-
-	//==========ATTENTION : CODE 1 JOUEUR, MODIF EN 2 JOUEUR
+	
+	//Log qui contient
+	fichier = fopen("log.txt", "w");
 
 	//Initialisation des librarie
 	//Début du match avec possibilité de plusieurs parties
@@ -182,14 +183,32 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 		j2InitLibrary(nameJ2);
 		j2StartMatch();
 	}
+
+	if(nbr_IA == 2){
+		fprintf (fichier, "Début de match entre deux IA\n");
+		fprintf (fichier, "%s VS %s\n", nameJ1,  nameJ2);
+		fprintf (fichier, "joueur 1 : %s\n", nameJ1);
+		fprintf (fichier, "joueur 2 : %s\n", nameJ2);
+	}
+	else if(nbr_IA == 1){
+		fprintf (fichier, "Début de match entre une IA et un humain\n");
+		fprintf (fichier, "joueur 1 : Humain\n");
+		fprintf (fichier, "joueur 2 : %s\n", nameJ1);
+	}
+	else if(nbr_IA == 0){
+		fprintf (fichier, "Début de match entre deux humain\n");
+	}
+	
 	
 	//On ouvrir le thread que quand on a 2 IA
 	if(nbr_IA == 2){
 		XInitThreads();
 		pthread_create (&thread_quitter, NULL, quitter, NULL);
 	}
-	
+		
 	do {
+		
+		fprintf(fichier,"\n\nDébut de la partie N°%i\n", partie);
 		
 		fin =0;
 		nbr_coup_j1 = 1;
@@ -211,6 +230,9 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 //ENREGISTREMENT ET VERIFICATION DES PIONS DES JOUEURS
 		do{
 			if(couleur == 0){ //Si c'est égal a 0 alors la librairie 1 sera rouge et la librarie 2 sera bleu sinon inverse
+				
+				fprintf (fichier, "joueur 1 couleur rouge et joueur 2 couleur bleu\n");
+				
 				//Joueur 1 = rouge
 				if(pion_erreur_j1 !=0){
 					if(nbr_IA == 2){
@@ -224,6 +246,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								j1EndMatch();
 								dlclose(j1Lib);
 							}
+							fclose(fichier);
 							quitter_sdl();
 							exit(EXIT_SUCCESS);
 						}
@@ -231,7 +254,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 					}
 					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
 				}
-				
+
 				//Joueur 2 = Bleu
 				if(pion_erreur_j2 !=0){
 					if(nbr_IA == 1){
@@ -245,6 +268,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 					else{
 						arret = placePion(ECblue, boardInitJ2, 2);
 						if(arret == 1){
+							fclose(fichier);
 							quitter_sdl();
 							exit(EXIT_SUCCESS);
 						}
@@ -256,6 +280,9 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 			
 			else{
 				//Joueur 1 = Bleu
+				
+				fprintf(fichier, "joueur 1 couleur bleu et joueur 2 couleur rouge\n");
+				
 				if(pion_erreur_j1 !=0){
 					if(nbr_IA == 2){
 						j1StartGame(ECblue,boardInitJ1);
@@ -268,6 +295,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								j1EndMatch();
 								dlclose(j1Lib);
 							}
+							fclose(fichier);
 							quitter_sdl();
 							exit(EXIT_SUCCESS);
 						}
@@ -289,6 +317,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						placePion(ECred, boardInitJ2, 2);
 						arret = placePion(ECred, boardInitJ1, 1);
 						if(arret == 1){
+							fclose(fichier);
 							quitter_sdl();
 							exit(EXIT_SUCCESS);
 						}
@@ -299,6 +328,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 			}
 			
 			if(pion_erreur_j1 == 1){
+				fprintf (fichier, "Erreur placement des pions de départ pour le joueur 1\n");
 				if(nbr_IA == 2){
 					fin = finPartie(1,0);
 					j1Penalty();
@@ -314,6 +344,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 				}
 			}
 			if(pion_erreur_j2 == 1){
+				fprintf (fichier, "Erreur placement des pions de départ pour le joueur 2\n");
 				if(nbr_IA == 1){
 					fin = finPartie(2,0);
 					j1Penalty();
@@ -342,12 +373,20 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 			//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
 			enregistrePion(boardInitJ2, &gameState, couleurJ2, 2);
 			
+			//Affichage des pions placé par les joueurs
+			fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
+			fprintf(fichier, "Placement des pions sur le jeu\n");
+			ecrireFichier(gameState);
+			
 			do{
 				
 //DEPLACEMENT D'UN PION
 				//Si joueur 1 est rouge alors il commence
 				if(couleurJ1 == ECred){
 					do{
+						
+						fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
+						fprintf(fichier, "Déplacement du joueur 1\n");
 						
 						if(nbr_IA == 2){
 							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
@@ -368,6 +407,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 									j1EndMatch();
 									dlclose(j1Lib);
 								}
+								fclose(fichier);
 								quitter_sdl();
 								exit(EXIT_SUCCESS);
 							}
@@ -424,10 +464,17 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						
 					}while(pion_erreur_j1 == 1 && fin == 0);
 					
+					//Ecrire gameState
+					ecrireFichier(gameState);
+					
 					nbr_coup_j1 ++; //Un coup de réaliser
 					
 					if(fin == 0 && nbr_coup_j1<=nbr_coup_permis && nbr_coup_j2<=nbr_coup_permis){
 						do{
+							
+							fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
+							fprintf(fichier, "Déplacement du joueur 2\n");
+							
 							if(nbr_IA == 1){
 								//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
 								gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);	
@@ -449,6 +496,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								
 								//Appuie sur la croix
 								if(move.start.line == -2 && move.start.col == -2){
+									fclose(fichier);
 									quitter_sdl();
 									exit(EXIT_SUCCESS);
 								}
@@ -501,6 +549,9 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							
 						}while(pion_erreur_j2 == 1 && fin == 0);
 						
+							//Ecrire gameState
+							ecrireFichier(gameState);
+						
 							nbr_coup_j2 ++; //Un coup de réaliser
 					}
 				}
@@ -509,6 +560,10 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 				else{
 							
 					do{
+						
+						fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
+						fprintf(fichier, "Déplacement du joueur 2\n");
+						
 						if(nbr_IA == 1){
 							
 							interfaceGraphique(gameState); 
@@ -539,6 +594,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 										j1EndMatch();
 										dlclose(j1Lib);
 									}
+									fclose(fichier);
 									quitter_sdl();
 									exit(EXIT_SUCCESS);
 								}
@@ -591,8 +647,15 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 					
 					nbr_coup_j2 ++; //Un coup de réaliser
 					
+					//Ecrire gameState
+					ecrireFichier(gameState);
+					
 					if(fin == 0){
 						do{
+							
+							fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
+							fprintf(fichier, "Déplacement du joueur 1\n");
+							
 							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
 							if(nbr_IA == 2){
 								interfaceGraphique(gameState);
@@ -612,6 +675,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 										j1EndMatch();
 										dlclose(j1Lib);
 									}
+									fclose(fichier);
 									quitter_sdl();
 									exit(EXIT_SUCCESS);
 								}
@@ -659,12 +723,16 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							
 						}while(pion_erreur_j1 == 1 && fin == 0);
 						
+						//Ecrire gameState
+						ecrireFichier(gameState);
+						
 						nbr_coup_j1 ++; //Un coup de réaliser
 					}
 				}
 			}while(fin == 0  && nbr_coup_j1<=nbr_coup_permis  && nbr_coup_j2<=nbr_coup_permis);
 		}
 
+		fprintf(fichier,"\n\nFIN PARTIE\n");
 		
 		if(nbr_coup_j1==nbr_coup_permis+1  || nbr_coup_j2==nbr_coup_permis+1){
 			int i;
@@ -677,12 +745,15 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 			}
 			
 			if(nbr_pion_rouge > nbr_pion_bleu){
+				fprintf(fichier,"Joueur rouge a gagné la partie avec un plus grand nombre de pions restant\n");
 				printf("Joueur rouge a gagné la partie avec un plus grand nombre de pions restant\n");
 			}
 			else if(nbr_pion_bleu> nbr_pion_rouge){
+				fprintf(fichier,"Joueur bleu a gagné la partie avec un plus grand nombre de pions restant\n");
 				printf("Joueur bleu a gagné la partie avec un plus grand nombre de pions restant\n");
 			}
 			else{
+				fprintf(fichier,"Match exaequo\n");
 				printf("Match exaequo\n");
 			}
 			
@@ -691,15 +762,12 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 		//Demande de nouvelle partie				
 		game = afficheMessageDemande("Voulez vous refaire une partie ?");	
 		
-		
-		/*printf("\n=========================================================\nPLATEAU DE JEU\n");
-		afficheConsole(gameState, couleurJ1, couleurJ2);
-		printf("\n=========================================================\n");
-		*/
+		partie ++;
 		
 	}while(game==1);
 		
 	//AJOUTER LES FREE ET LES CLOSES
+	fclose(fichier);
 	quitter_sdl();
 		
 	j1EndMatch();
@@ -850,12 +918,14 @@ int retour = 0;
 
 if(gameState.redOut[1] == 1 && gameState.redOut[2] == 8 && gameState.redOut[3] == 5 && gameState.redOut[4] == 4 && gameState.redOut[5] == 4
 && gameState.redOut[6] == 4 && gameState.redOut[7] == 3 && gameState.redOut[8] == 2 && gameState.redOut[9] == 1 && gameState.redOut[10] == 1){
+	fprintf(fichier, "\n\nFin de la partie pour le joueur rouge car plus de pion a déplacer\n");
 	printf("Fin de la partie pour le joueur rouge car plus de pion a déplacer");
 	retour = 1;
 }
 
 if(gameState.blueOut[1] == 1 && gameState.blueOut[2] == 8 && gameState.blueOut[3] == 5 && gameState.blueOut[4] == 4 && gameState.blueOut[5] == 4
 && gameState.blueOut[6] == 4 && gameState.blueOut[7] == 3 && gameState.blueOut[8] == 2 && gameState.blueOut[9] == 1 && gameState.blueOut[10] == 1){
+	fprintf(fichier, "\n\nFin de la partie pour le joueur bleu car plus de pion a déplacer\n");
 	printf("Fin de la partie pour le joueur bleu car plus de pion a déplacer");
 	retour = 1;
 }
@@ -966,33 +1036,6 @@ SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int jo
 			}
 		}
 	}
-	/*
-	//Placement des pions adverse avec juste la couleur et ces pions avec toute la couleur
-	for(i=0;i<10;i++){
-		for(j=0;j<10;j++){
-			if(gameState.board[i][j].content == color){
-				box.content = color;
-				box.piece = EPnone;
-				if(joueur == 1){
-					gameStatePerso.board[i][j] = box;
-				}
-				else{
-					gameStatePerso.board[m][j] = box;
-				}
-			}
-			else{
-				if(joueur == 1){
-					gameStatePerso.board[i][j] = gameState.board[i][j];
-				}
-				else {
-					gameStatePerso.board[m][j] = gameState.board[i][j];
-				}
-			}
-		}
-		if(joueur == 2){
-			m --;
-		}
-	}*/
 	
 	//On copies les pions sortie
 	for(i=0;i<11;i++){
@@ -1365,6 +1408,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 												   
 												   //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
 													else if(startCol == endCol && startLine != endLine && gameState->board[startLine+1][endCol].content !=ECnone){
+														fprintf(fichier,"\n\nERREUR DEPLACEMENT\nJoueur couleur : %i\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n", color, startLine,startCol, endLine, endCol);
 														return 1;
 													}
 													
@@ -1380,6 +1424,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 													 
 													 //Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
 													else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol+1].content !=ECnone){
+														 fprintf(fichier,"\n\nERREUR DEPLACEMENT\nJoueur couleur : %i\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n", color, startLine,startCol, endLine, endCol);
 														 return 1;
 													}
 													
@@ -1398,6 +1443,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 													
 													 //Cas si le prochain mouvement n'est pas une case vide (mouvement ligne)
 													else if(startCol == endCol && startLine != endLine && gameState->board[startLine-1][endCol].content !=ECnone){
+														fprintf(fichier,"\n\nERREUR DEPLACEMENT\nJoueur couleur : %i\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n", color, startLine,startCol, endLine, endCol);
 														return 1;
 													}
 													
@@ -1412,6 +1458,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 													}
 													  //Cas si le prochain mouvement n'est pas une case vide (mouvement colonne)
 													else if (startLine == endLine && startCol != endCol && gameState->board[move.start.line][startCol-1].content !=ECnone){
+														 fprintf(fichier,"\n\nERREUR DEPLACEMENT\nJoueur couleur : %i\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n", color, startLine,startCol, endLine, endCol);
 														 return 1;
 													}
 													
@@ -1425,6 +1472,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 										
 										//ON VÉRIFIE SI LE DÉPLACEMENT ENTRAINE UNE ATTAQUE OU PAS
 										if(boxEnd.content==colorAdverse){
+											fprintf(fichier,"\n\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i",startLine,startCol, endLine, endCol);
 											return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2, nb_IA);
 										}
 										else{
@@ -1434,6 +1482,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 											newBox.piece = EPnone;
 											gameState->board[move.start.line][move.start.col] = newBox;
 										}
+										fprintf(fichier,"\n\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n",startLine,startCol, endLine, endCol);
 										return 0;
 									}   
 								}
@@ -1448,6 +1497,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 										printf("Déplacement réalisé\n");
 										//ON VÉRIFIE SI LE DÉPLACEMENT ENTRAIN UNE ATTAQUE OU PAS
 										if(boxEnd.content==colorAdverse){
+											fprintf(fichier,"\n\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i",move.start.line,move.start.col, move.end.line, move.end.col);
 											return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2, nb_IA);
 										}
 										else{
@@ -1456,16 +1506,23 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 											newBox.piece = EPnone;
 											gameState->board[move.start.line][move.start.col] = newBox;
 										}
+										fprintf(fichier,"\n\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n",move.start.line,move.start.col, move.end.line, move.end.col);
 										return 0;
 									}
 								}
 							
 							}
-						}			
+							fprintf(fichier,"\n\nERREUR DEPLACEMENT\nJoueur couleur : %i\nMouvement arrivé lac ou même couleur\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n", color, move.start.line,move.start.col, move.end.line, move.end.col);
+						}
+						fprintf(fichier,"\n\nERREUR DEPLACEMENT\nJoueur couleur : %i\nMouvement arrivé hors plateau\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n", color, move.start.line,move.start.col, move.end.line, move.end.col);			
 					}
+					fprintf(fichier,"\n\nERREUR DEPLACEMENT\nJoueur couleur : %i\nPion qui ne bouge pas\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n", color, move.start.line,move.start.col, move.end.line, move.end.col);
 				}
+				fprintf(fichier,"\n\nERREUR DEPLACEMENT\nJoueur couleur : %i\nCase départ mauvaise couleur\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n", color, move.start.line,move.start.col, move.end.line, move.end.col);
 			}
+			fprintf(fichier,"\n\nERREUR DEPLACEMENT\nJoueur couleur : %i\nMouvement va et viens\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n", color, move.start.line,move.start.col, move.end.line, move.end.col);
 		}
+		fprintf(fichier,"\n\nERREUR DEPLACEMENT\nJoueur couleur : %i\nMouvement depart hors plateau\nPosition origine : ligne = %i et colonne = %i\nPosition arrivée : ligne = %i et colonne = %i\n\n", color, move.start.line,move.start.col, move.end.line, move.end.col);
 	return 1;
 }
 
@@ -1492,6 +1549,7 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	moveJ2.start.line = move.start.line;
 	moveJ2.start.col = 9 - move.start.col;
 	
+	fprintf(fichier,"\n\nATTAQUE DU JOUEUR %i\n", joueur);
 	//JOUEUR 1 QUI ATTAQUE
 	if(joueur == 1){
 		
@@ -1519,7 +1577,7 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	
 	//CAS OU LES 2 PIÈCES SONT DE FORCE ÉQUIVALENTE
 	if(attaquant.piece == attaquer.piece){
-		
+		fprintf(fichier,"Attaque de 2 forces équivalente\n");
 		//On incrémente les tableaux de perte
 		if(attaquant.content == ECred){
 			gameState->redOut[attaquant.piece]++;
@@ -1545,6 +1603,7 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	else if((attaquant.piece > attaquer.piece && attaquer.piece !=EPbomb) || 
 	(attaquant.piece == EPminer && attaquer.piece == EPbomb) ||
 	(attaquant.piece == EPspy && attaquer.piece == EPmarshal)){
+		fprintf(fichier,"Attaquant plus fort que la pièce attaqué\n");
 		
 		//Cas ou c'est le joueur bleu qui perd une pièce
 		if(attaquant.content == ECred){
@@ -1568,11 +1627,13 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	
 	//CAS OU LE DRAPEAU EST ATTAQUÉ PAR L'ENNEMIE
 	if(attaquer.piece == EPflag){
+		fprintf(fichier,"Attaque du drapeau\n");
 		return 2;
 	}
 	
 	//CAS OU L'ATTAQUANT A PERDU
 	else{
+		fprintf(fichier,"Attaquant moins fort que la pièce attaqué\n");
 		//Cas ou c'est le joueur rouge qui perd une pièce
 		if(attaquant.content == ECred){
 			gameState->redOut[attaquant.piece]++;
@@ -1618,11 +1679,23 @@ int finPartie(int joueur, int flag){
 	
 	//Cas ou le joueur vient de perdre son drapeau fin partie
 	if(flag == 1){
+		if(joueur == 1){
+			fprintf(fichier,"\n\nFIN PARTIE\nJoueur 1 a perdu son drapeau\nVictoire du joueur 2");
+		}
+		else{
+			fprintf(fichier,"\n\nFIN PARTIE\nJoueur 2 a perdu son drapeau\nVictoire du joueur 1");
+		}
 		return 1;
 	}
 	
 	//Cas ou le joueur a fait 3 fautes fin partie
 	if(erreur_j1 == 3 || erreur_j2 == 3){
+		if(erreur_j1 == 3){
+			fprintf(fichier,"\n\nFIN PARTIE\nJoueur 1 a fait 3 erreurs\nVictoire du joueur 2");
+		}
+		else{
+			fprintf(fichier,"\n\nFIN PARTIE\nJoueur 2 a fait 3 erreurs\nVictoire du joueur 1");
+		}
 		return 1;
 	}
 	return 0;
@@ -1760,6 +1833,54 @@ void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2){
 
 }
 
+void ecrireFichier(SGameState gameState){
+	
+	int i,j;
+	fprintf(fichier,"     |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |\n");
+	for(i=0;i<10;i++){
+		fprintf(fichier,"  %i  |",i);
+		for(j=0;j<10;j++){
+			if(gameState.board[i][j].content == ECred){
+				if(gameState.board[i][j].piece <10){
+					fprintf(fichier,"[ %iR]|", gameState.board[i][j].piece);
+				}
+				else fprintf(fichier,"[%iR]|", gameState.board[i][j].piece);
+				
+			}
+			else if(gameState.board[i][j].content == ECblue){
+				if(gameState.board[i][j].piece <10){
+					fprintf(fichier,"[ %iB]|", gameState.board[i][j].piece);
+				}
+				else fprintf(fichier,"[%iB]|", gameState.board[i][j].piece);
+			}
+			else if(gameState.board[i][j].content == EClake){
+				fprintf(fichier," [O] |");
+			}
+			else{
+				fprintf(fichier," [X] |");
+			}
+		}
+		fprintf(fichier,"\n",i);
+	}
+	
+	fprintf (fichier, "\nListe des pions rouge dehors :\n");
+	for(i = 0; i<11;i++){
+		fprintf (fichier, "| %i |",i);
+	}
+	fprintf (fichier, "\n");
+	for(i = 0; i<11;i++){
+		fprintf (fichier, "| %i |",gameState.redOut[i]);
+	}
+	fprintf (fichier, "\n\nListe des pions bleu dehors :\n");
+	for(i = 0; i<11;i++){
+		fprintf (fichier, "| %i |",i);
+	}
+	fprintf (fichier, "\n");
+	for(i = 0; i<11;i++){
+		fprintf (fichier, "| %i |",gameState.blueOut[i]);
+	}
+}
+
 static void * quitter(void * p_data){
 	
 	int continuer = 1;
@@ -1793,7 +1914,7 @@ static void * quitter(void * p_data){
 
 	/*dlclose(j1Lib);
 	dlclose(j2Lib);*/
-
+	fclose(fichier);
 	quitter_sdl();
 	exit(EXIT_SUCCESS);
 	
