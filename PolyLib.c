@@ -777,6 +777,7 @@ int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy)
 	EPiece enemy = contextPerso.board[lineEnemy][colEnemy].piece;
 	EPiece army = contextPerso.board[lineArmy][colArmy].piece;
 
+
 	if (enemy==EPnone && army!=EPminer && army!=EPspy && army!=EPmarshal)
 		return 1;
 	else if (enemy<army && enemy!=EPbomb)
@@ -786,6 +787,14 @@ int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy)
 	else if (army==EPspy && enemy==EPmarshal)
 		return 1;
 
+	int l,k=0;
+	for(l=0;l<33;l++)
+	{
+		if(positionPiece[l].line < 0)
+			k++;
+	}
+	if(k>22)
+		return 1;
 
 	return 0;
 
@@ -838,6 +847,7 @@ int	mouvementAleatoire(int j, int * line, int * col, int startLine, int startCol
 	}
 	else
 	{
+
 		if ( (startLine<9) && (contextPerso.board[startLine+1][startCol].content != couleurAdverse || contextPerso.board[startLine+1][startCol].piece == EPnone) )
 		{
 			*line = startLine+1;
@@ -869,6 +879,15 @@ int	mouvementAleatoire(int j, int * line, int * col, int startLine, int startCol
 
 int mouvementSpyMiner(EPiece army,int i,int j)
 {
+	int l,k=0;
+	for(l=0;l<33;l++)
+	{
+		if(positionPiece[l].line < 0)
+			k++;
+	}
+	if(k>22)
+		return 0;
+
 	if (army == EPspy)
 	{
 		if ( i<9 && contextPerso.board[i+1][j].content == couleurAdverse)
