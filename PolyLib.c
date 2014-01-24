@@ -42,7 +42,7 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 	srand(time(NULL));	
 		
 	//FAIRE ATTENTION AVEC LA POSITION DE LA COULEUR	
-	int i,j,k = 0;
+	int i,j;
 	SBox box;
 	
 	//Définition de la couleur
@@ -65,11 +65,6 @@ void StartGame(const EColor color,EPiece boardInit[4][10])
 			box.content = couleur;
 			box.piece = boardInit[i][j];
 			contextPerso.board[i][j] = box;
-
-			//Mise en place des pions du joueur
-			positionPiece[k].line = i;
-			positionPiece[k].col = j;
-			k++;
 		}
 	}
 	
@@ -144,7 +139,7 @@ SMove NextMove(const SGameState * const gameState)
 		label = 0;
 
 		//On sélectionne la pièce a bouger
-		for(i=0;i<40;i++)
+		for(i=0;i<33;i++)
 		{
 			line = positionPiece[i].line;
 			col = positionPiece[i].col;
@@ -206,7 +201,7 @@ SMove NextMove(const SGameState * const gameState)
 		{
 			do
 			{
-				i = (int)rand()%40;
+				i = (int)rand()%33;
 				j = (int)rand()%20;
 				line = positionPiece[i].line;
 				col = positionPiece[i].col;
@@ -651,6 +646,91 @@ void choixStrategieIA(int choix,EPiece boardInit[4][10])
 		boardInit[3][7] = EPminer;//3
 		boardInit[3][8] = EPcaptain;//6
 		boardInit[3][9] = EPscout;//2
+
+		// on enregistre les pièces dans l'ordre d'importance pour la fonction nextMove
+		positionPiece[0].line = 1;
+		positionPiece[0].col = 2;
+		positionPiece[1].line = 3;
+		positionPiece[1].col = 7;
+		positionPiece[2].line = 2;
+		positionPiece[2].col = 0;
+		positionPiece[3].line = 0;
+		positionPiece[3].col = 6;
+		positionPiece[4].line = 0;
+		positionPiece[4].col = 5;
+		positionPiece[5].line = 0;
+		positionPiece[5].col = 2;
+		positionPiece[6].line = 2;
+		positionPiece[6].col = 6;
+		positionPiece[7].line = 2;
+		positionPiece[7].col = 7;
+		positionPiece[8].line = 2;
+		positionPiece[8].col = 3;
+		positionPiece[9].line = 1;
+		positionPiece[9].col = 3;
+		positionPiece[10].line = 3;
+		positionPiece[10].col = 8;
+		positionPiece[11].line = 3;
+		positionPiece[11].col = 1;
+		positionPiece[12].line = 1;
+		positionPiece[12].col = 6;
+		positionPiece[13].line = 1;
+		positionPiece[13].col = 1;
+		positionPiece[14].line = 2;
+		positionPiece[14].col = 9;
+		positionPiece[15].line = 2;
+		positionPiece[15].col = 2;
+		positionPiece[16].line = 3;
+		positionPiece[16].col = 0;
+		positionPiece[17].line = 3;
+		positionPiece[17].col = 9;
+		positionPiece[18].line = 3;
+		positionPiece[18].col = 6;
+		positionPiece[19].line = 3;
+		positionPiece[19].col = 5;
+		positionPiece[20].line = 3;
+		positionPiece[20].col = 4;
+		positionPiece[21].line = 3;
+		positionPiece[21].col = 2;
+		positionPiece[22].line = 2;
+		positionPiece[22].col = 1;
+		positionPiece[23].line = 1;
+		positionPiece[23].col = 5;
+		positionPiece[24].line = 0;
+		positionPiece[24].col = 1;
+		positionPiece[25].line = 3;
+		positionPiece[25].col = 3;
+		positionPiece[26].line = 1;
+		positionPiece[26].col = 9;
+		positionPiece[27].line = 0;
+		positionPiece[27].col = 4;
+		positionPiece[28].line = 0;
+		positionPiece[28].col = 0;
+		positionPiece[29].line = 2;
+		positionPiece[29].col = 8;
+		positionPiece[30].line = 2;
+		positionPiece[30].col = 5;
+		positionPiece[31].line = 1;
+		positionPiece[31].col = 7;
+		positionPiece[32].line = 1;
+		positionPiece[32].col = 4;
+
+		positionPiece[33].line = 2;
+		positionPiece[33].col = 4;
+		positionPiece[34].line = 1;
+		positionPiece[34].col = 8;
+		positionPiece[35].line = 1;
+		positionPiece[35].col = 0;
+		positionPiece[36].line = 0;
+		positionPiece[36].col = 9;
+		positionPiece[37].line = 0;
+		positionPiece[37].col = 7;
+		positionPiece[38].line = 0;
+		positionPiece[38].col = 3;
+		positionPiece[39].line = 0;
+		positionPiece[39].col = 8;
+
+			
 	}
 }
 
@@ -664,10 +744,28 @@ void majContextePerso(const SGameState * const gameState)
 
 	for(i=0;i<10;i++)
 	{
-		for(j=0;i<10;i++)
+		for(j=0;j<10;j++)
 		{
-			if(contextPerso.board[i][j].content != gameState->board[i][j].content && contextPerso.board[i][j].piece == 12)
-				contextPerso.board[i][j] = gameState->board[i][j];
+			if(contextPerso.board[i][j].content != gameState->board[i][j].content)
+			{
+				 if(contextPerso.board[i][j].piece!=EPnone && contextPerso.board[i][j].piece!=EPscout && contextPerso.board[i][j].content==couleurAdverse)
+				 {
+				 	if (i<9 && contextPerso.board[i+1][j].content != gameState->board[i+1][j].content)
+				 	{
+				 		contextPerso.board[i+1][j] = contextPerso.board[i][j];
+				 		contextPerso.board[i][j] = gameState->board[i][j];
+				 	}
+				 	if (j<9 && contextPerso.board[i][j+1].content != gameState->board[i][j+1].content)
+				 	{
+				 		contextPerso.board[i][j+1] = contextPerso.board[i][j];
+				 		contextPerso.board[i][j] = gameState->board[i][j];
+				 	}
+				 }
+				 else
+				 {
+				 	contextPerso.board[i][j] = gameState->board[i][j];
+				 }
+			}
 		}
 	}
 }
@@ -679,7 +777,7 @@ int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy)
 	EPiece enemy = contextPerso.board[lineEnemy][colEnemy].piece;
 	EPiece army = contextPerso.board[lineArmy][colArmy].piece;
 
-	if (enemy==EPnone && army!=EPminer && army!=EPspy)
+	if (enemy==EPnone && army!=EPminer && army!=EPspy && army!=EPmarshal)
 		return 1;
 	else if (enemy<army && enemy!=EPbomb)
 		return 1;
