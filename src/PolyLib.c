@@ -1,18 +1,21 @@
+/**
+ * Projet Stratego, 3ème année de polytech
+ * Réalisé par : -Guinard Arnaud
+ * 				 -Mouden Benjamin
+ * 				 -Evo Brieuc
+ * 				 -Chotard François
+ */
+
 #include "PolyLib.h"
-#include <stdio.h>
-#include <string.h>
+#include "IA.h"
 
-int verificationMouvement(SMove move, SGameState gameState,EColor color);
-void choixStrategieIA(int choix,EPiece boardInit[4][10]);
-void majContextePerso(const SGameState * const gameState);
-int vaEtViens(SMove move);
-int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy);
-int	mouvementAleatoire(int j,int * line,int * col, int startLine, int startCol);
-int mouvementSpyMiner(EPiece army,int i,int j);
 
-void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2);
 
 EColor couleur,couleurAdverse;
+
+SMove listMvt[3];
+SBox listBox[3];
+int repetitionMvt;
 
 //attaque à 0 quand le mouvement réalisé précédement n'est pas une attaque, sinon 1
 int penalite=0,attaque=0;
@@ -430,35 +433,87 @@ void Penalty()
 	printf("Nombre de pénalité : %i\n",penalite);
 }
 
-int vaEtViens(SMove move){
-	
-	static int nbr_mvt;
-	int retour =0;
-	static SPos pos[2];
-	
-	if(pos[0].line == move.start.line && pos[0].col == move.start.col && pos[1].line ==  move.end.line && pos[1].col == move.end.col && nbr_mvt%2 == 0){
-		nbr_mvt ++;
-		pos[0] = move.start;
-		pos[1] = move.end;
-	}
-	else if(pos[0].line == move.end.line && pos[0].col == move.end.col && pos[1].line ==  move.start.line && pos[1].col ==  move.start.col && nbr_mvt%2 == 1){
-		nbr_mvt ++;
-		pos[0] = move.end;
-		pos[1] = move.start;
+/*
+ * Fonction qui verifie que les pions place par le joueur est correcte,
+ * pour cela on verifie que tous les types de pions sont presents et qu'il y a le bon nombre de chaque type
+ */
+int vaEtViens(SMove move, SBox box){
+ switch (repetitionMvt)
+    {
+		//Cas ou on aucune répétition
+        case 0: 
+				listMvt[repetitionMvt] = move;
+				listBox[repetitionMvt] = box;
+                repetitionMvt++;
+                break;
+                
+		//Cas ou on 1 répétition, on vérifie que la pièce bougé n'est pas déjà enregistré
+        case 1:
+                if( box.piece == listBox[0].piece ){
+                    listMvt[repetitionMvt] = move;
+                    listBox[repetitionMvt] = box;
+                    repetitionMvt++;
+                }
+                else{ 
+					repetitionMvt = 1;
+					listMvt[0] = move;
+                    listBox[0] = box; }
+                break;
+          
+        //Cas ou on 2 répétitions, on vérifie que la pièce bougé n'est pas déjà enregistré et qu'elle pas deja réalisé ce mouvement
+        case 2:
+            if( (box.piece == listBox[0].piece) && (CompareMoves(move,listMvt[0])==1) ){
+                listMvt[repetitionMvt] = move;
+                listBox[repetitionMvt] = box;
+                repetitionMvt++;
+            }
+            else{ 
+					repetitionMvt = 1;
+					listMvt[0] = move;
+                    listBox[0] = box; }
+            break;
+         
+         //Cas ou on 3 répétitions, on vérifie que la pièce bougé n'est pas déjà enregistré et qu'elle pas deja réalisé ce mouvement
+         case 3:
+            if( (box.piece == listBox[0].piece) && (CompareMoves(move,listMvt[1])==1) ){
+                repetitionMvt++;
+            }
+             else{ 
+					repetitionMvt = 1;
+					listMvt[0] = move;
+                    listBox[0] = box; }
+            break;
+        default:
+            repetitionMvt = 0;
+            break;
+    }
+    
+    //Si on a 4 répétitions alors on renvoie 1
+    if(repetitionMvt == 4){
+		return 1;
 	}
 	else{
-		nbr_mvt = 1;
-		pos[0] = move.start;
-		pos[1] = move.end;
+		return 0;
 	}
-	
-	if( nbr_mvt >= 4){
-		printf("Va et viens IA\n");
-		retour =1;
-	}
-	
-	return retour;
 }
+
+/*
+ * Fonction qui va comparer 2 move donné en paramètre
+ * Renvoie 1 quand ils sont identique sinon 0
+ */
+int CompareMoves(SMove move1,SMove move2){
+    if( move1.start.line == move2.start.line){
+        if( move1.start.col == move2.start.col){
+            if( move1.end.line == move2.end.line){
+                if( move1.end.col == move2.end.col){
+                    return 1;
+                }
+            }
+        }
+	}
+	return 0;
+}
+
 
 //Ensemble des fonctions liées a IA
 
@@ -473,9 +528,10 @@ int verificationMouvement(SMove move, SGameState gameState,EColor color){
 	
 	if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
 		
-		if(vaEtViens(move) == 0){
-		
 			boxStart = gameState.board[move.start.line][move.start.col];
+			
+			if(vaEtViens(move, boxStart) == 0){
+				
 			int t;
 			//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
 			if(boxStart.content == color){

@@ -1,3 +1,11 @@
+/**
+ * Projet Stratego, 3ème année de polytech
+ * Réalisé par : -Guinard Arnaud
+ * 				 -Mouden Benjamin
+ * 				 -Evo Brieuc
+ * 				 -Chotard François
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <SDL/SDL.h>

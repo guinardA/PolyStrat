@@ -2,20 +2,20 @@
 .PHONY: clean, mrproper
 
 #création de l'exécutable "stratego"
-all: stratego.c clean	
-		gcc -g IGStratego.c stratego.c -o stratego -ldl -lSDL -lSDLmain -lSDL_image -lSDL_ttf -lpthread -D_REENTRANT -lX11
+all: ./src/stratego.c clean	
+		gcc -g ./src/IGStratego.c ./src/dupplicationArbitre.c ./src/verificationArbitre.c ./src/affichageArbitre.c ./src/stratego.c -o stratego -ldl -lSDL -lSDLmain -lSDL_image -lSDL_ttf -lpthread -D_REENTRANT -lX11
 
 install: polylib.so polylib2.so
 		
 
 polylib.so: polylib.o
-		gcc -shared -o polylib.so *.o	
+		gcc -shared -o ./lib/polylib.so *.o	
 
 polylib2.so: polylib.o
-		gcc -shared -o polylib2.so *.o	
+		gcc -shared -o ./lib/polylib2.so *.o	
 
-polylib.o: PolyLib.c	
-		gcc -fPIC -c PolyLib.c
+polylib.o: ./src/PolyLib.c	
+		gcc -fPIC -c ./src/PolyLib.c
 
 # suppression des fichiers temporaires
 clean:

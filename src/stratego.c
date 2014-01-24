@@ -1,33 +1,29 @@
+/**
+ * Projet Stratego, 3ème année de polytech
+ * Réalisé par : -Guinard Arnaud
+ * 				 -Mouden Benjamin
+ * 				 -Evo Brieuc
+ * 				 -Chotard François
+ */
 
-/* (EU UN MOUVEMENT NON VALIDE QUI EST PASSe DE IA)
- * */
-
-#include <stdio.h>
-#include <dlfcn.h>
-#include <stdlib.h>
-#include <time.h>
-#include <pthread.h>
-#include <X11/Xlib.h>
-#include <time.h>
 #include "PolyLib.h"
-#include "Arbitre.h";
+#include "Arbitre.h"
 #include "IGStratego.h"
 
+//Liste des variales globales
 FILE *fichier;
 void *j1Lib, *j2Lib;
-SMove listMvtJ1[3], listMvtJ2[3];
-SBox listBoxJ1[3],listBoxJ2[3];
-int repetitionMvtJ1 = 0,repetitionMvtJ2 = 0;
+
 
 int main(int argc, const char * argv[]){
 
 int nbr_coup_permis = atoi(argv[1]);
 int nbr_IA = atoi(argv[2]);
-char message[200];
 
 if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
-	//=========================Gestion ouverture de la librarie et des methodes lies
 
+
+	//Ensemble des fonction communes a toutes les librairies
 	typedef void (*pfInitLibrary)(char[50]);
 	typedef void (*pfStartMatch)();
 	typedef void (*pfStartGame)(const EColor,EPiece[4][10]);
@@ -145,16 +141,15 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 	SMove move;
 	char nameJ1[50],  nameJ2[50], texte[200];
 	int game, fin ,couleur, pion_erreur_j1, pion_erreur_j2, nbr_coup_j1, nbr_coup_j2, nbr_pion_rouge=0, nbr_pion_bleu=0, arret,i,j, partie=1;
-	EColor couleurJ1, couleurJ2;
+	EColor couleurJ1, couleurJ2; //Différents couleurs des joueurs
 	EPiece boardInitJ1[4][10], boardInitJ2[4][10];
-	pthread_t thread_quitter;
-	srand(time(NULL));
+	pthread_t thread_quitter; //Thread qui permet de quitter la fenetre lorsque 2 IA se combattent
+	srand(time(NULL));//Pour la fonction aléatoire qui va définir les couleurs
 	
 	//Log qui contient
 	fichier = fopen("log.txt", "w");
 
 	//Initialisation des librarie
-	//Debut du match avec possibilite de plusieurs parties
 	if(nbr_IA >0){
 		j1InitLibrary(nameJ1);
 		j1StartMatch();
@@ -164,6 +159,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 		j2StartMatch();
 	}
 
+	//Ecriture de le log.txt
 	if(nbr_IA == 2){
 		fprintf (fichier, "Debut de match entre deux IA\n");
 		fprintf (fichier, "%s VS %s\n", nameJ1,  nameJ2);
@@ -180,7 +176,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 	}
 	
 	
-	//On ouvrir le thread que quand on a 2 IA
+	//Ouverture du thread lorsqu'on a 2 IA
 	if(nbr_IA == 2){
 		XInitThreads();
 		pthread_create (&thread_quitter, NULL, quitter, NULL);
@@ -190,7 +186,8 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 		
 		fprintf(fichier,"\n\nDebut de la partie N°%i\n", partie);
 		
-		fin =0;
+		fin =0;	//Lorsque fin = 1 alors la partie est finie
+		//Nombre de coups joué
 		nbr_coup_j1 = 1;
 		nbr_coup_j2 = 1;
 		
@@ -201,28 +198,34 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 		//On initialise le nombre de faute a 0
 		finPartie(0,0);
 		
-		//INITIALISATION DU CONTEXTE DE JEU
+//INITIALISATION DU CONTEXTE DE JEU
 		initialisationContexteJeu(&gameState);
+		//Initialise l'interface graphique
 		initInterface();
 		interfaceGraphique(gameState);
 		
-		//DIFINISSION DE LA COULEUR DU JOUEUR ET PLACEMENT DES PIONS PAR LE JOUEURS
+		//Diffinission de la couleurs des joueurs
 		couleur = (int)rand()%2;
 
 //ENREGISTREMENT ET VERIFICATION DES PIONS DES JOUEURS
 		do{
-			if(couleur == 0){ //Si c'est egal a 0 alors la librairie 1 sera rouge et la librarie 2 sera bleu sinon inverse
+			if(couleur == 0){ //Si c'est egal a 0 alors le joueur 1 sera rouge et joueur 2 sera bleu sinon inverse
 				
 				fprintf (fichier, "joueur 1 couleur rouge et joueur 2 couleur bleu\n");
 				
 				//Joueur 1 = rouge
 				if(pion_erreur_j1 !=0){
+					
+					//Placement pion pour IA
 					if(nbr_IA == 2){
 						j1StartGame(ECred,boardInitJ1);
 						couleurJ1 = ECred;
 					}
+					
+					//Placement pion pour l'humain
 					else{
 						arret = placePion(ECred, boardInitJ1, 1);
+						//Cas ou il quitte la fenetre
 						if(arret == 1){
 							if(nbr_IA == 1){
 								j1EndMatch();
@@ -234,21 +237,28 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						}
 						couleurJ1 = ECred;
 					}
-					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
+					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);//Vérification du placement des différents pions
 				}
 
 				//Joueur 2 = Bleu
 				if(pion_erreur_j2 !=0){
+					
+					//Placement pion pour IA
 					if(nbr_IA == 1){
 						j1StartGame(ECblue,boardInitJ2);
 						couleurJ2 = ECblue;
 					}
+					
+					//Placement pion pour IA
 					else if(nbr_IA == 2){
 						j2StartGame(ECblue,boardInitJ2);
 						couleurJ2 = ECblue;
 					}
+					
+					//Placement pion pour l'humain
 					else{
 						arret = placePion(ECblue, boardInitJ2, 2);
+						//Cas ou il quitte la fenetre
 						if(arret == 1){
 							fclose(fichier);
 							quitter_sdl();
@@ -256,22 +266,25 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						}
 						couleurJ2 = ECblue;		
 					}
-					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
+					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);//Vérification du placement des différents pions
 				}
 			} 
-			
+			//Joueur 1 = Bleu
 			else{
-				//Joueur 1 = Bleu
 				
 				fprintf(fichier, "joueur 1 couleur bleu et joueur 2 couleur rouge\n");
 				
+				//Placement pion pour IA
 				if(pion_erreur_j1 !=0){
 					if(nbr_IA == 2){
 						j1StartGame(ECblue,boardInitJ1);
 						couleurJ1 = ECblue;
 					}
+					
+					//Placement pion pour l'humain
 					else{
 						arret = placePion(ECblue, boardInitJ1, 1);
+						//Cas ou il quitte la fenetre
 						if(arret == 1){
 							fclose(fichier);
 							quitter_sdl();
@@ -279,20 +292,26 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						}
 						couleurJ1 = ECblue;		
 					}
-					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);
+					pion_erreur_j1 =  verificationNombrePiece(boardInitJ1);//Vérification du placement des différents pions
 				}
 				//Joueur 2 = rouge
 				if(pion_erreur_j2 == 1){
+					
+					//Placement pion pour IA
 					if(nbr_IA == 1){
 						j1StartGame(ECred,boardInitJ2);
 						couleurJ2 = ECred;
 					}
+					//Placement pion pour IA
 					else if(nbr_IA == 2){
 						j2StartGame(ECred,boardInitJ2);
 						couleurJ2 = ECred;
 					}
+					
+					//Placement pion pour l'humain
 					else{
 						arret = placePion(ECred, boardInitJ2, 2);
+						//Cas ou il quitte la fenetre
 						if(arret == 1){
 							if(nbr_IA == 1){
 								j1EndMatch();
@@ -304,16 +323,21 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						}
 						couleurJ2 = ECred;
 					}
-					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);
+					pion_erreur_j2 =  verificationNombrePiece(boardInitJ2);//Vérification du placement des différents pions
 				}
 			}
 			
+			//Cas ou le joueur 1 a réaliser une erreur de placement
 			if(pion_erreur_j1 == 1){
+				
 				fprintf (fichier, "Erreur placement des pions de depart pour le joueur 1\n");
+				
 				if(nbr_IA == 2){
 					fin = finPartie(1,0);
 					j1Penalty();
 				}
+				
+				//3 erreurs réaliser par le joueur 1
 				if(fin == 1 ){
 					afficherMessageEcran("Victoire joueur 2, joueur 1 a fait 3 erreures", 3000);
 					if(nbr_IA == 1){
@@ -324,8 +348,12 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 					}
 				}
 			}
+			
+			//Cas ou le joueur 2 a réaliser une erreur de placement
 			if(pion_erreur_j2 == 1){
+				
 				fprintf (fichier, "Erreur placement des pions de depart pour le joueur 2\n");
+				
 				if(nbr_IA == 1){
 					fin = finPartie(2,0);
 					j1Penalty();
@@ -334,6 +362,8 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 					fin = finPartie(2,0);
 					j2Penalty();
 				}
+				
+				//3 erreurs réaliser par le joueur 2
 				if(fin == 1 ){
 					afficherMessageEcran("Victoire joueur 1, joueur 2 a fait 3 erreure", 3000);
 					if(nbr_IA == 1){
@@ -346,21 +376,23 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 			}
 			
 		}while((pion_erreur_j1 == 1 || pion_erreur_j2 == 1) && fin == 0 );
-		//On continue la partie si il n'y a pas eu 3 erreurs lors du placement des pions
+		
 		if(fin == 0){
-			//ENREGISTRE LES PIONS DU JOUEUR 1 SUR LE CONTEXTE DE JEU
+			
+	//ENREGISTRE LES PIONS DU JOUEUR 1 SUR LE CONTEXTE DE JEU
 			enregistrePion(boardInitJ1, &gameState, couleurJ1, 1);
 			
-			//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
+	//ENREGISTRE LES PIONS DU JOUEUR 2 SUR LE CONTEXTE DE JEU
 			enregistrePion(boardInitJ2, &gameState, couleurJ2, 2);
 			
-			//Affichage des pions place par les joueurs
+			//Affichage des pions place par les joueurs dans le log.txt
 			fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
 			fprintf(fichier, "Placement des pions sur le jeu\n");
 			ecrireFichier(gameState);
 			do{
 				
-//DEPLACEMENT D'UN PION
+	//DEPLACEMENT D'UN PION
+	
 				//Si joueur 1 est rouge alors il commence
 				if(couleurJ1 == ECred){
 					do{
@@ -368,19 +400,21 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
 						fprintf(fichier, "Deplacement du joueur 1\n");
 						
+						//Deplacement par IA
 						if(nbr_IA == 2){
-							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
-							gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
-							move = j1NextMove(&gameStateJ1);
-							pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, nbr_IA);
-							interfaceGraphique(gameState); //On affiche le plateau de jeu apres initialisation
+							gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);//Dupplication de l'etat de jeu pour IA
+							move = j1NextMove(&gameStateJ1);//Mouvement de IA
+							pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, nbr_IA);//Verification du mouvement
+							interfaceGraphique(gameState);
 						}
+						
+						//Deplacement par l'humain
 						else{
 							gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 							interfaceGraphique(gameStateJ1);
-							move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+							move = renvoieCoordonnees(gameState);
 							
-							//Appuie sur la croix
+							//Cas ou il quitte la fenetre
 							if(move.start.line == -2 && move.start.col == -2){
 
 								if(nbr_IA == 1){
@@ -392,6 +426,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								exit(EXIT_SUCCESS);
 							}
 							
+							//On modifie les position du mouvement pour correspondre a l'état de jeu général
 							move.start.line = 9-move.start.line;
 							move.end.line = 9-move.end.line;	
 							
@@ -402,7 +437,8 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						
 						//On verifie qu'il y a encore un pion a bouger
 						fin = verifPionsBouger(gameState);
-							
+						
+						//Cas ou le joueur 1 a réaliser une erreur de mouvement
 						if(pion_erreur_j1 == 1){
 							if(nbr_IA == 2){
 								fin = finPartie(1,0);
@@ -412,6 +448,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							
 							afficherMessageEcran("Mouvement non valide", 3000);
 							
+							//3 erreurs réaliser par le joueur 1
 							if(fin == 1 ){
 								afficherMessageEcran("Victoire joueur 2, joueur 1 a fait 3 erreure", 3000);
 								if(nbr_IA == 2){
@@ -422,7 +459,8 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								}
 							}
 						}
-						//Cas ou le drapeau a ete detruie
+						
+						//Drapeau détruit par le joueur 1
 						if(pion_erreur_j1 == 2){
 							fin = 1;
 							afficherMessageEcran("Victoire joueur 1, joueur 2 perdu son drapeau", 3000);
@@ -436,7 +474,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						
 					}while(pion_erreur_j1 == 1 && fin == 0);
 					
-					//Ecrire gameState
+					//Ecrire le gameState dans log.txt
 					ecrireFichier(gameState);
 					
 					nbr_coup_j1 ++; //Un coup de realiser
@@ -447,12 +485,14 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
 							fprintf(fichier, "Deplacement du joueur 2\n");
 							
+							//Deplacement par IA
 							if(nbr_IA == 1){
-								//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
 								gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);	
 								move = j1NextMove(&gameStateJ2);
 								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 							}
+							
+							//Deplacement par IA
 							else if(nbr_IA == 2){
 								interfaceGraphique(gameState);
 								gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
@@ -461,29 +501,33 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								interfaceGraphique(gameState);
 							}
 							
+							//Deplacement par l'humain
 							else{
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
 								move = renvoieCoordonnees(gameState);
 								
-								//Appuie sur la croix
+								//Cas ou il quitte la fenetre
 								if(move.start.line == -2 && move.start.col == -2){
 									fclose(fichier);
 									quitter_sdl();
 									exit(EXIT_SUCCESS);
 								}
-							
+								
+								//On modifie les position du mouvement pour correspondre a l'état de jeu général
 								move.start.line = 9-move.start.line;
-								move.end.line = 9-move.end.line;						
+								move.end.line = 9-move.end.line;	
+													
 								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
+								
 								interfaceGraphique(gameStateJ2);
 							}
 							
 							//On verifie qu'il y a encore un pion a bouger
 							fin = verifPionsBouger(gameState);
 							
-							//Cas ou on a realise une erreure
+							//Cas ou le joueur 2 a réaliser une erreur de mouvement
 							if(pion_erreur_j2 == 1){
 								
 								if(nbr_IA == 1){
@@ -496,7 +540,10 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 									j2Penalty();
 									pion_erreur_j2 = 0;
 								}
+								
 								afficherMessageEcran("Mouvement non valide", 3000);
+								
+								//3 erreurs réaliser par le joueur 2
 								if(fin == 1 ){
 									afficherMessageEcran("Victoire joueur 1, joueur 2 a fait 3 erreure", 3000);
 									if(nbr_IA == 1){
@@ -507,8 +554,9 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 									}
 								}
 							}
-							//Cas ou le drapeau a ete detruie
-							if(pion_erreur_j1 == 2){
+							
+							//Drapeau détruit par le joueur 2
+							if(pion_erreur_j2 == 2){
 								fin = 1;
 								afficherMessageEcran("Victoire joueur 2, joueur 1 perdu son drapeau", 3000);
 								if(nbr_IA == 1){
@@ -522,7 +570,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							
 						}while(pion_erreur_j2 == 1 && fin == 0);
 						
-							//Ecrire gameState
+							//Ecrire gameState dans le log.txt
 							ecrireFichier(gameState);
 						
 							nbr_coup_j2 ++; //Un coup de realiser
@@ -537,31 +585,29 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
 						fprintf(fichier, "Deplacement du joueur 2\n");
 						
+						//Deplacement par IA
 						if(nbr_IA == 1){
-							
-							//interfaceGraphique(gameState); 
-							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
 							gameStateJ2  = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
-							
 							move = j1NextMove(&gameStateJ2);
 							pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 						}
 						
+						//Deplacement par IA
 						else if(nbr_IA == 2){
 							interfaceGraphique(gameState);
-							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR2
 							gameStateJ2 = duplicationDuContexteDeJeu(gameState, couleurJ1, 2);
-							
 							move = j2NextMove(&gameStateJ2);
 							pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 							interfaceGraphique(gameState);
 						}
+						
+						//Deplacement par l'humain
 						else{
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
-								move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN
+								move = renvoieCoordonnees(gameState);
 								
-								//Appuie sur la croix
+								//Cas ou il quitte la fenetre
 								if(move.start.line == -2 && move.start.col == -2){
 									if(nbr_IA == 1){
 										j1EndMatch();
@@ -571,9 +617,11 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 									quitter_sdl();
 									exit(EXIT_SUCCESS);
 								}
-							 
+								
+								//On modifie les position du mouvement pour correspondre a l'état de jeu général
 								move.start.line = 9-move.start.line;
-								move.end.line = 9-move.end.line;							
+								move.end.line = 9-move.end.line;	
+														
 								pion_erreur_j2 = verificationMouvement(move, &gameState, couleurJ2, 2, j1AttackResult, j2AttackResult, nbr_IA);
 								gameStateJ2 = duplicationJoueur(gameState, couleurJ1, 2);
 								interfaceGraphique(gameStateJ2);
@@ -583,8 +631,9 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 						//On verifie qu'il y a encore un pion a bouger
 						fin = verifPionsBouger(gameState);
 						
-						//Cas ou on a realise une erreure
+						//Cas ou le joueur 2 a réaliser une erreur de mouvement
 						if(pion_erreur_j2 == 1){
+							
 							if(nbr_IA == 1){
 								fin = finPartie(2,0);
 								j1Penalty();
@@ -596,7 +645,10 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								j2Penalty();
 								pion_erreur_j2 = 0;
 							}	
+							
 							afficherMessageEcran("Mouvement non valide", 3000);
+							
+							//3 erreurs réaliser par le joueur 2
 							if(fin == 1 ){
 								afficherMessageEcran("Victoire joueur 1, joueur 2 a fait 3 erreure", 3000);
 								if(nbr_IA == 1){
@@ -607,7 +659,8 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								}
 							}
 						}
-						//Cas ou le drapeau a ete detruie
+						
+						//Drapeau détruit par le joueur 2
 						if(pion_erreur_j1 == 2){
 							fin = 1;
 							afficherMessageEcran("Victoire joueur 2, joueur 1 perdu son drapeau", 3000);
@@ -622,7 +675,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 					
 					nbr_coup_j2 ++; //Un coup de realiser
 					
-					//Ecrire gameState
+					//Ecrire gameState dans le log.txt
 					ecrireFichier(gameState);
 					
 					if(fin == 0){
@@ -631,20 +684,21 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							fprintf(fichier, "\n------------------------------------------------------------------------------\n\n");
 							fprintf(fichier, "Deplacement du joueur 1\n");
 							
-							//COPIE DU CONTEXTE DE JEU QU'AVEC LES PIONS DU JOUEUR1
+							//Deplacement par IA
 							if(nbr_IA == 2){
 								interfaceGraphique(gameState);
 								gameStateJ1 = duplicationDuContexteDeJeu(gameState, couleurJ2, 1);
-							
 								move = j1NextMove(&gameStateJ1);
 								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, nbr_IA);
 							}
+							
+							//Deplacement par l'humain
 							else{
 								gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 								interfaceGraphique(gameStateJ1);
-								move = renvoieCoordonnees(gameState); //A METTRE QUE LORSQUE C'EST UN JOUEUR HUMAIN 
+								move = renvoieCoordonnees(gameState); 
 								
-								//Appuie sur la croix
+								//Cas ou il quitte la fenetre
 								if(move.start.line == -2 && move.start.col == -2){
 									if(nbr_IA == 1){
 										j1EndMatch();
@@ -655,8 +709,10 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 									exit(EXIT_SUCCESS);
 								}
 								
+								//On modifie les position du mouvement pour correspondre a l'état de jeu général
 								move.start.line = 9-move.start.line;
-								move.end.line = 9-move.end.line;					
+								move.end.line = 9-move.end.line;	
+												
 								pion_erreur_j1 = verificationMouvement(move, &gameState, couleurJ1, 1, j1AttackResult, j2AttackResult, nbr_IA);
 								gameStateJ1 = duplicationJoueur(gameState, couleurJ2, 1);
 							}
@@ -665,14 +721,18 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							//On verifie qu'il y a encore un pion a bouger
 							fin = verifPionsBouger(gameState);
 							
-							//Cas ou on a realise une erreure
+							//Cas ou le joueur 1 a réaliser une erreur de mouvement
 							if(pion_erreur_j1 == 1){
+								
 								if(nbr_IA == 2){
 									fin = finPartie(1,0);
 									j1Penalty();
 									pion_erreur_j1 = 0;
 								}
+								
 								afficherMessageEcran("Mouvement non valide", 3000);
+								
+								//3 erreurs réaliser par le joueur 1
 								if(fin == 1 ){
 									afficherMessageEcran("Victoire joueur 2, joueur 1 a fait 3 erreure", 3000);
 									if(nbr_IA == 1){
@@ -683,7 +743,8 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 									}
 								}
 							}
-							//Cas ou le drapeau a ete detruie
+							
+							//Drapeau détruit par le joueur 1
 							if(pion_erreur_j1 == 2){
 								fin = 1;
 								afficherMessageEcran("Victoire joueur 1, joueur 2 perdu son drapeau", 3000);
@@ -698,18 +759,21 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 							
 						}while(pion_erreur_j1 == 1 && fin == 0);
 						
-						//Ecrire gameState
+						//Ecrire gameState dans le log.txt
 						ecrireFichier(gameState);
 						
 						nbr_coup_j1 ++; //Un coup de realiser
 					}
 				}
-			}while(fin == 0  && nbr_coup_j1<=nbr_coup_permis  && nbr_coup_j2<=nbr_coup_permis);
+			}while(fin == 0  && nbr_coup_j1<=nbr_coup_permis  && nbr_coup_j2<=nbr_coup_permis);//Tant qu'il y a encore des coups a jouer
 		}
 		
+//FIN DE LA PARTIE
 		afficherMessageEcran("FIN DE LA PARTIE", 3000);
+		
 		fprintf(fichier,"\n\nFIN PARTIE\n");
 		
+		//Cas ou on a atteint le nombre de coup limite
 		if(nbr_coup_j1==nbr_coup_permis+1  || nbr_coup_j2==nbr_coup_permis+1){
 			int i;
 			
@@ -720,14 +784,19 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 				nbr_pion_bleu = nbr_pion_bleu + gameState.blueOut[i];
 			}
 			
+			//Cas ou le joueur rouge a gagné car il a plus de pions
 			if(nbr_pion_rouge > nbr_pion_bleu){
 				fprintf(fichier,"Joueur rouge a gagne la partie avec un plus grand nombre de pions restant\n");
 				afficherMessageEcran("Joueur rouge a gagne la partie avec un plus grand nombre de pions restant", 3000);
 			}
+			
+			//Cas ou le joueur bleu a gagné car il a plus de pions
 			else if(nbr_pion_bleu> nbr_pion_rouge){
 				fprintf(fichier,"Joueur bleu a gagne la partie avec un plus grand nombre de pions restant\n");
 				afficherMessageEcran("Joueur bleu a gagne la partie avec un plus grand nombre de pions restant", 3000);
 			}
+			
+			//Cas ou il y a un match exaequo
 			else{
 				fprintf(fichier,"Match exaequo\n");
 				afficherMessageEcran("Match exaequo", 3000);
@@ -742,7 +811,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 		
 	}while(game==1);
 		
-	//AJOUTER LES FREE ET LES CLOSES
+	//On ferme tous les fonctions nécissantant une fermeture
 	fclose(fichier);
 	quitter_sdl();
 		
@@ -751,8 +820,6 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 
 	dlclose(j1Lib);
 	dlclose(j2Lib);
-
-
 
 	return(1);
 }
@@ -792,137 +859,13 @@ void initialisationContexteJeu(SGameState *gameState){
 	}
 }
 
+
+
+
 /*
- * Fonction qui verifie que les pions place par le joueur est correcte,
- * pour cela on verifie que tous les types de pions sont presents et qu'il y a le bon nombre de chaque type
+ * Fonction qui vérifie si il reste des pions a bouger ou pas
+ * Renvoie 1 quand on peut plus bouger de pions sinon 0
  */
-int verificationNombrePiece(EPiece boardInit[4][10]){
-	
-	int Bomb=0, Spy=0, Scout=0, Miner=0, Sergeant=0, Lieutenant=0, Captain=0, Major=0, Colonel=0, General=0, Marshal=0, Flag=0, i, j;
-		
-	//VERIFICATION DU NOMBRE DE JETONS
-	for(i=0;i<4;i++){
-		for(j=0;j<10;j++){
-			if(boardInit[i][j] == EPbomb) Bomb++;
-			if(boardInit[i][j] == EPspy) Spy++;
-			if(boardInit[i][j] == EPscout) Scout++;
-			if(boardInit[i][j] == EPminer) Miner++;
-			if(boardInit[i][j] == EPsergeant) Sergeant++;
-			if(boardInit[i][j] == EPlieutenant) Lieutenant++;
-			if(boardInit[i][j] == EPcaptain) Captain++;
-			if(boardInit[i][j] == EPmajor) Major++;
-			if(boardInit[i][j] == EPcolonel) Colonel++;
-			if(boardInit[i][j] == EPgeneral) General++;
-			if(boardInit[i][j] == EPmarshal) Marshal++;
-			if(boardInit[i][j] == EPflag) Flag++;
-		}
-	}
-
-	if(Bomb != 6){
-		afficherMessageEcran("ERREUR Bomb", 3000);
-		return 1;
-	} else if(Spy != 1){
-		afficherMessageEcran("ERREUR Spy", 3000);
-		return 1;
-	} else if(Scout != 8){
-		afficherMessageEcran("ERREUR Scout", 3000);
-		return 1;
-	} else if(Miner != 5){
-		afficherMessageEcran("ERREUR Miner", 3000);
-		return 1;
-	} else if(Sergeant != 4){
-		afficherMessageEcran("ERREUR Sergeant", 3000);
-		return 1;
-	} else if(Lieutenant != 4){
-		afficherMessageEcran("ERREUR Lieutenant", 3000);
-		return 1;
-	} else if(Captain != 4){
-		afficherMessageEcran("ERREUR Captain", 3000);
-		return 1;
-	} else if(Major != 3){
-		afficherMessageEcran("ERREUR Major", 3000);
-		return 1;
-	} else if(Colonel != 2){
-		afficherMessageEcran("ERREUR Colonel", 3000);
-		return 1;
-	} else if(General != 1){
-		afficherMessageEcran("ERREUR General", 3000);
-		return 1;
-	} else if(Marshal != 1){
-		afficherMessageEcran("ERREUR Marshal", 3000);
-		return 1;
-	}else if(Flag != 1){
-		afficherMessageEcran("ERREUR Flag", 3000);
-		return 1;
-	}
-	return 0;
-}
-
-int CompareMoves(SMove move1,SMove move2){
-    if( move1.start.line == move2.start.line){
-        if( move1.start.col == move2.start.col){
-            if( move1.end.line == move2.end.line){
-                if( move1.end.col == move2.end.col){
-                    return 1;
-                }
-            }
-        }
-	}
-	return 0;
-}
-
-int vaEtViensJ1(SMove move, SBox box){
-	
-	    switch (repetitionMvtJ1)
-    {
-        case 0: 
-				listMvtJ1[repetitionMvtJ1] = move;
-				listBoxJ1[repetitionMvtJ1] = box;
-                repetitionMvtJ1++;
-                break;
-        case 1:
-                if( box.piece == listBoxJ1[0].piece ){
-                    listMvtJ1[repetitionMvtJ1] = move;
-                    listBoxJ1[repetitionMvtJ1] = box;
-                    repetitionMvtJ1++;
-                }
-                else{ 
-					repetitionMvtJ1 = 1;
-					listMvtJ1[0] = move;
-                    listBoxJ1[0] = box; }
-                break;
-        case 2:
-            if( (box.piece == listBoxJ1[0].piece) && (CompareMoves(move,listMvtJ1[0])==1) ){
-                listMvtJ1[repetitionMvtJ1] = move;
-                listBoxJ1[repetitionMvtJ1] = box;
-                repetitionMvtJ1++;
-            }
-            else{ 
-					repetitionMvtJ1 = 1;
-					listMvtJ1[0] = move;
-                    listBoxJ1[0] = box; }
-            break;
-         case 3:
-            if( (box.piece == listBoxJ1[0].piece) && (CompareMoves(move,listMvtJ1[1])==1) ){
-                repetitionMvtJ1++;
-            }
-             else{ 
-					repetitionMvtJ1 = 1;
-					listMvtJ1[0] = move;
-                    listBoxJ1[0] = box; }
-            break;
-        default:
-            repetitionMvtJ1 = 0;
-            break;
-    }
-    if(repetitionMvtJ1 == 4){
-		return 1;
-	}
-	else{
-		return 0;
-	}
-}
-
 int verifPionsBouger(SGameState gameState){
 	
 int retour = 0; 
@@ -944,57 +887,7 @@ if(gameState.blueOut[1] == 1 && gameState.blueOut[2] == 8 && gameState.blueOut[3
 return retour;
 }
 
-int vaEtViensJ2(SMove move, SBox box){
-	
-	    switch (repetitionMvtJ2)
-    {
-        case 0: 
-				listMvtJ2[repetitionMvtJ2] = move;
-				listBoxJ2[repetitionMvtJ2] = box;
-                repetitionMvtJ2++;
-                break;
-        case 1:
-                if( box.piece == listBoxJ2[0].piece ){
-                    listMvtJ2[repetitionMvtJ2] = move;
-                    listBoxJ2[repetitionMvtJ2] = box;
-                    repetitionMvtJ2++;
-                }
-                else{ 
-					repetitionMvtJ2 = 1;
-					listMvtJ2[0] = move;
-                    listBoxJ2[0] = box; }
-                break;
-        case 2:
-            if( (box.piece == listBoxJ2[0].piece) && (CompareMoves(move,listMvtJ2[0])==1) ){
-                listMvtJ2[repetitionMvtJ2] = move;
-                listBoxJ2[repetitionMvtJ2] = box;
-                repetitionMvtJ2++;
-            }
-            else{ 
-					repetitionMvtJ2 = 1;
-					listMvtJ2[0] = move;
-                    listBoxJ2[0] = box; }
-            break;
-         case 3:
-            if( (box.piece == listBoxJ2[0].piece) && (CompareMoves(move,listMvtJ2[1])==1) ){
-                repetitionMvtJ2++;
-            }
-             else{ 
-					repetitionMvtJ2 = 1;
-					listMvtJ2[0] = move;
-                    listBoxJ2[0] = box; }
-            break;
-        default:
-            repetitionMvtJ2 = 0;
-            break;
-    }
-    if(repetitionMvtJ2 == 4){
-		return 1;
-	}
-	else{
-		return 0;
-	}
-}
+
 
 /*
  * Fonction qui enregistre les pions place par le joueur dans le contexte general du jeu
@@ -1030,100 +923,8 @@ void enregistrePion(EPiece boardInit[4][10], SGameState *gameState, EColor color
 }
 
 /*
- * FONCTION QUI RECOPIE LE CONTEXTE DU JEU COMPLET EN MONTRANT LES POSITIONS DE TOUS LES PIONS MAIS NE MONTRE PAS LES NIVEAUX DE PIONS ADVERSE
+ * Fonction qui va demander aux joueur humain de placer ces pions sur le plateau de jeu
  */
-SGameState duplicationDuContexteDeJeu(SGameState gameState, EColor color, int joueur){
-	
-	SGameState gameStatePerso;
-	SBox box;
-	int i,j, m = 9;
-	
-	if(joueur == 1){
-		for(i=0;i<10;i++){
-			for(j=0;j<10;j++){
-				if(gameState.board[i][j].content == color){
-					box.content = color;
-					box.piece = EPnone;
-					gameStatePerso.board[9-i][j] = box;
-				
-				}
-				else{
-					gameStatePerso.board[9-i][j] = gameState.board[i][j];
-				}
-			}
-		}
-	}
-	
-	if(joueur == 2){
-		for(i=0;i<10;i++){
-			for(j=0;j<10;j++){
-				if(gameState.board[i][j].content == color){
-					box.content = color;
-					box.piece = EPnone;
-					gameStatePerso.board[i][9-j] = box;
-				
-				}
-				else{
-					gameStatePerso.board[i][9-j] = gameState.board[i][j];
-				}
-			}
-		}
-	}
-	
-	//On copies les pions sortie
-	for(i=0;i<11;i++){
-		gameStatePerso.redOut[i] = gameState.redOut[i];
-		gameStatePerso.blueOut[i] = gameState.blueOut[i];
-	}
-	
-	return gameStatePerso;
-}
-
-SGameState duplicationJoueur(SGameState gameState, EColor color, int joueur){
-	SGameState gameStatePerso;
-	SBox box;
-	int i,j, m = 9;
-	
-	if(joueur == 1){
-		for(i=0;i<10;i++){
-			for(j=0;j<10;j++){
-				if(gameState.board[i][j].content == color){
-					box.content = color;
-					box.piece = EPnone;
-					gameStatePerso.board[i][j] = box;
-				}
-				else{
-					gameStatePerso.board[i][j] = gameState.board[i][j];
-				}
-			}
-		}
-	}
-	
-	if(joueur == 2){
-		for(i=0;i<10;i++){
-			for(j=0;j<10;j++){
-				if(gameState.board[i][j].content == color){
-					box.content = color;
-					box.piece = EPnone;
-					gameStatePerso.board[9-i][9-j] = box;
-				
-				}
-				else{
-					gameStatePerso.board[9-i][9-j] = gameState.board[i][j];
-				}
-			}
-		}
-	}
-	
-	//On copies les pions sortie
-	for(i=0;i<11;i++){
-		gameStatePerso.redOut[i] = gameState.redOut[i];
-		gameStatePerso.blueOut[i] = gameState.blueOut[i];
-	}
-	
-	return gameStatePerso;
-}
-
 int placePion(EColor color, EPiece boardInit[4][10], int joueur){
 	
 	int i, j;
@@ -1333,9 +1134,9 @@ int placePion(EColor color, EPiece boardInit[4][10], int joueur){
 }
 
 /*
- * FONCTION QUI VERIFIE QUE LE MOUVEMENT DU JOUEUR EST ReALISABLE
- * SI OUI ON VeRIFIE ENSUITE SI IL Y A UN CONFLITS OU PAS
- * SI NON ON ENVOIE UNE ERREUR AU JOUEUR
+ * Fonction qui verifie que le mouvement du joueru est possible
+ * Si oui on vérifie ensuite si il y a un conflits ou pas
+ * Si non on envoie une erreur au joueur
  */
 int verificationMouvement(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResult1)(SPos, EPiece, SPos, EPiece), void(*AttackResult2)(SPos, EPiece, SPos, EPiece), int nb_IA){
 	
@@ -1348,6 +1149,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 	}
 	else colorAdverse = ECred;
 	
+		//VERIFICATION QUE LE PION SELECTIONNER EST DANS LE PLATEAU DE JEU
 		if(move.start.line>=0 && move.start.line<=9 && move.start.col>=0 && move.start.col<=9){	
 			
 			//On inverse le mouvement pour le joueur 2
@@ -1362,6 +1164,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 				
 			boxStart = gameState->board[move.start.line][move.start.col];
 			
+			//VERIFICATION QU'ON A PAS DE VA ET VIENS
 			if((joueur == 1 && vaEtViensJ1(move, boxStart) == 0) || (joueur == 2 && vaEtViensJ2(move, boxStart) == 0)){
 				
 				//VERIFICATION QUE LE PION SELECTIONNER CORRESPOND A UN PION DE LA BONNE COULEUR
@@ -1370,7 +1173,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 					//VERIFICATION QUE LE PION SELECTIONNER PEUT ETRE BOUGER
 					if(boxStart.piece!=EPnone && boxStart.piece!=EPbomb && boxStart.piece!=EPflag){
 					
-						//ON VeRIFIE QUE ARRIVe EST BIEN DANS LE JEU
+						//ON VeRIFIE QUE ARRIVE EST BIEN DANS LE JEU
 						if(move.end.line>=0 && move.end.line<=9 && move.end.col>=0 && move.end.col<=9){
 				
 							boxEnd = gameState->board[move.end.line][move.end.col];
@@ -1390,7 +1193,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 										   int startCol = move.start.col;
 										   int endCol= move.end.col;
 										
-										   //ON VERIFIE DANS LE CAS D'UN eCLAIREUR SI IL NE SAUTE PAS PAR DESSUS UN LAC OU UN JOUEUR DURANT SONT DePLACEMENT
+										   //ON VERIFIE DANS LE CAS D'UN ECLAIREUR SI IL NE SAUTE PAS PAR DESSUS UN LAC OU UN JOUEUR DURANT SONT DEPLACEMENT
 										   while((startLine == endLine && startCol != endCol) ||
 													(startLine != endLine && startCol == endCol)){
 														
@@ -1472,7 +1275,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 											return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2, nb_IA);
 										}
 										else{
-											//ON MODIFIE LE CONTEXTE DE JEU AVEC LE DePLACEMENT
+											//ON MODIFIE LE CONTEXTE DE JEU AVEC LE DEPLACEMENT
 											gameState->board[move.end.line][move.end.col] = gameState->board[move.start.line][move.start.col];
 											newBox.content = ECnone;
 											newBox.piece = EPnone;
@@ -1482,7 +1285,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 										return 0;
 									}   
 								}
-								//CAS D'UNE PIeCE QUI BOUGE ET QUI N'EST PAS UN eCLAIREUR
+								//CAS D'UNE PIeCE QUI BOUGE ET QUI N'EST PAS UN ECLAIREUR
 								else{
 								
 									if((move.start.line == move.end.line && move.start.col == move.end.col+1) ||
@@ -1491,7 +1294,7 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 									   (move.start.line == move.end.line-1 && move.start.col == move.end.col)){
 										   
 										printf("Deplacement realise\n");
-										//ON VeRIFIE SI LE DePLACEMENT ENTRAIN UNE ATTAQUE OU PAS
+										//ON VERIFIE SI LE DEPLACEMENT ENTRAIN UNE ATTAQUE OU PAS
 										if(boxEnd.content==colorAdverse){
 											fprintf(fichier,"\n\nPosition origine : ligne = %i et colonne = %i\nPosition arrivee : ligne = %i et colonne = %i",move.start.line,move.start.col, move.end.line, move.end.col);
 											return attaque(move, gameState,color, joueur, AttackResult1, AttackResult2, nb_IA);
@@ -1523,15 +1326,15 @@ int verificationMouvement(SMove move, SGameState *gameState,EColor color, int jo
 }
 
 /*
- * FONCTION QUI ENVOIE AU JOUEUR QU'IL Y A UN COMBAT
- * VeRIFIE QU'ELLE EST LE ReSULTAT DE L'ATTAQUE ET MODIFIE LE CONTEXTE DE JEU SELON LE TYPE DE COMBAT
- * RENVOIE 2 LORSQUE LE DRAPEAU eNNEMIE A eTe CAPTURe LORS DU ATTAQUE
+ * Fonction qui envoie au joueur qu'il se passe un combat
+ * Verifie le resultatt de l'attaque et modifie le contexte selon le resultat obtenue
+ * Renvoie 2 lorsque le drapeau ennemie a ete detruit
  */
 int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*AttackResultJ1)(SPos, EPiece, SPos, EPiece), void(*AttackResultJ2)(SPos, EPiece, SPos, EPiece), int nbr_IA){
 	SBox attaquant, attaquer, newBox;
 	SMove moveJ2, moveJ1;
 	
-	//ON DEFINIE QUI ATTAQUE ET QUI EST ATTAQUe
+	//ON DEFINIE QUI ATTAQUE ET QUI EST ATTAQUE
 	attaquant = gameState->board[move.start.line][move.start.col];
 	attaquer = gameState->board[move.end.line][move.end.col];
 	
@@ -1546,6 +1349,7 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	moveJ2.start.col = 9 - move.start.col;
 	
 	fprintf(fichier,"\n\nATTAQUE DU JOUEUR %i\n", joueur);
+	
 	//JOUEUR 1 QUI ATTAQUE
 	if(joueur == 1){
 		
@@ -1572,14 +1376,17 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 		}
 	}
 	
+	//On affiche dans le cas de joueur humain les pions qui s'attaque
 	if(nbr_IA == 1 && joueur == 1 || nbr_IA == 0){
 		afficheAttaque(color, *gameState, move, nbr_IA);
 	}
 						
-	//CAS OU LES 2 PIeCES SONT DE FORCE eQUIVALENTE
+	//CAS OU LES 2 PIECES SONT DE FORCE EQUIVALENTE
 	if(attaquant.piece == attaquer.piece){
+		
 		fprintf(fichier,"Attaque de 2 forces equivalente\n");
 		afficherMessageEcran("Attaque de 2 forces equivalente", 1500);
+		
 		//On incremente les tableaux de perte
 		if(attaquant.content == ECred){
 			gameState->redOut[attaquant.piece]++;
@@ -1605,18 +1412,21 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	else if((attaquant.piece > attaquer.piece && attaquer.piece !=EPbomb) || 
 	(attaquant.piece == EPminer && attaquer.piece == EPbomb) ||
 	(attaquant.piece == EPspy && attaquer.piece == EPmarshal)){
+		
 		fprintf(fichier,"Attaquant plus fort que la piece attaque\n");
 		afficherMessageEcran("Attaquant plus fort que la piece attaque", 1500);
+		
 		//Cas ou c'est le joueur bleu qui perd une piece
 		if(attaquant.content == ECred){
 			gameState->blueOut[attaquer.piece]++;
 		} 
+		
 		//Cas ou c'est le joueur rouge qui perd une piece
 		else {
 			gameState->redOut[attaquer.piece]++;
 		}
 		
-		//ON MODIFIE LE CONTEXTE DE JEU
+		//On met a jour l'état de jeu
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 		
@@ -1638,16 +1448,18 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	else{
 		fprintf(fichier,"Attaquant moins fort que la piece attaque\n");
 		afficherMessageEcran("Attaquant moins fort que la piece attaque", 1500);
+		
 		//Cas ou c'est le joueur rouge qui perd une piece
 		if(attaquant.content == ECred){
 			gameState->redOut[attaquant.piece]++;
 		} 
+		
 		//Cas ou c'est le joueur bleu qui perd une piece
 		else {
 			gameState->blueOut[attaquant.piece]++;
 		}
 		
-		//ON MODIFIE LE CONTEXTE DE JEU
+		//On met a jour l'état de jeu
 		newBox.content = ECnone;
 		newBox.piece = EPnone;
 		gameState->board[move.start.line][move.start.col] = newBox;
@@ -1655,11 +1467,17 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 		return 0;
 	}
 }
-
+/*
+ * Fonction qui va afficher un gameState durant une duré x
+ * Sur ceux gameState on ne voit que c'est propre pion et le pion attaqué ou attaquant
+ */
 void afficheAttaque(int color, SGameState gameState, SMove move, int nbr_IA){
+	
 	int i,j;
 	SBox box;
 	SGameState gamesAttaque;
+	
+	//Cas ou on affiche quand on est l'attaquant
 	for(i =0; i<10;i++){
 		for(j=0;j<10;j++){
 			if(gameState.board[i][j].content == color){
@@ -1679,11 +1497,14 @@ void afficheAttaque(int color, SGameState gameState, SMove move, int nbr_IA){
 		gamesAttaque.blueOut[i] = gameState.blueOut[i];
 		gamesAttaque.redOut[i] = gameState.redOut[i];
 	}
+	
+	//Attente d'une periode de temps x
 	clock_t start,end;
 	start=clock();
 	interfaceGraphique(gamesAttaque);
 	while(((end=clock())-start)<=3*CLOCKS_PER_SEC);
 	
+	//Cas ou on affiche quand on est l'attaqué
 	if(nbr_IA == 0){
 
 		for(i =0; i<10;i++){
@@ -1707,6 +1528,7 @@ void afficheAttaque(int color, SGameState gameState, SMove move, int nbr_IA){
 			gamesAttaque.redOut[i] = gameState.redOut[i];
 		}
 	
+		//Attente d'une periode de temps x
 		clock_t start,end;
 		start=clock();
 		interfaceGraphique(gamesAttaque);
@@ -1716,8 +1538,8 @@ void afficheAttaque(int color, SGameState gameState, SMove move, int nbr_IA){
 }
 
 /*
- * FONCTION QUI ENREGISTRE LES ERREURS ReALISeES PAR LES JOUEURS ET VeRIFIE QUE LA PARTIE EST FINIE OU PAS
- * RENVOIE 1 LORSQUE LA PARTIE EST FINIE
+ * Fonction qui enregistre les erreurs realise par les différent
+ * Renvoie 1 lorsque la partie est finie
  */
 int finPartie(int joueur, int flag){
 	
@@ -1764,142 +1586,16 @@ int finPartie(int joueur, int flag){
 	return 0;
 }
 
+
 /*
- * FONCTION QUI AFFICHE DANS EN CONSOLE LE CONTEXTE DE JEU
+ * Fonction qui va écrire l'état de jeu dans le log.txt
  */
-void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2){
-	int i, j;
-	
-	printf("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\nCouleur\n");
-	
-	//AFFICHAGE QUE DES COULEURS
-	
-	if(joueur1 == ECred){
-		printf("Joueur 1 : rouge\nJoueur 2 : bleu\n\n");
-	}
-	else{
-		printf("Joueur 1 : bleu\nJoueur 2 : rouge\n\n");
-	}
-	
-	printf("R : Joueur rouge\n");
-	printf("B : Joueur bleu\n");
-	printf("L : Lac\n");
-	printf("0 : Vide\n\n");
-
-	printf("  |");
-	for(i=0;i<10;i++){
-		printf(" %i |",i);
-	}
-	printf("\n");
-	
-	for(i=0;i<10;i++){
-		printf("%i |",i);
-		for(j=0;j<10;j++){
-			if(gameState.board[i][j].content == ECred){
-				printf(" R |");
-			}
-			else if(gameState.board[i][j].content == ECblue){
-				printf(" B |");
-			}
-			else if(gameState.board[i][j].content == EClake){
-				printf(" L |");
-			}
-			else{
-				printf(" O |");
-			}
-		}
-		printf("\n");
-	}
-	
-	//AFFICHAGE QUE DES PERSONNAGE
-	printf("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\nPersonnages\n");
-	
-	if(joueur1 == ECred){
-		printf("Joueur 1 : rouge\nJoueur 2 : bleu\n\n");
-	}
-	else{
-		printf("Joueur 1 : bleu\nJoueur 2 : rouge\n\n");
-	}
-	
-	printf("Lettre en majuscule : Joueur rouge\n");
-	printf("Lettre en miniscule : Joueur bleu\n\n");
-	
-	printf("bo : Bomb\n");
-	printf("sp : Spy\n");
-	printf("sc : Scout\n");
-	printf("mi : Miner\n");
-	printf("se : Sergeant\n");
-	printf("li : Lieutenant\n");
-	printf("ca : Captain\n");
-	printf("ma : Major\n");
-	printf("co : Colonel\n");
-	printf("ge : General\n");
-	printf("ms : Marshal\n");
-	printf("fl : Flag\n");
-	printf("no : None\n\n");
-	
-	printf("L : Lac\n\n");
-	printf("0 : Vide\n\n");
-
-	printf("  |");
-	for(i=0;i<10;i++){
-		printf(" %i |",i);
-	}
-	printf("\n");
-	
-	for(i=0;i<10;i++){
-		printf("%i |",i);
-		for(j=0;j<10;j++){
-			
-			if(gameState.board[i][j].content == ECblue){
-				if(gameState.board[i][j].piece == EPbomb) printf(" bo|");
-				if(gameState.board[i][j].piece == EPspy) printf(" sp|");
-				if(gameState.board[i][j].piece == EPscout) printf(" sc|");
-				if(gameState.board[i][j].piece == EPminer) printf(" mi|");
-				if(gameState.board[i][j].piece == EPsergeant) printf(" se|");
-				if(gameState.board[i][j].piece == EPlieutenant) printf(" li|");;
-				if(gameState.board[i][j].piece == EPcaptain) printf(" ca|");
-				if(gameState.board[i][j].piece == EPmajor) printf(" ma|");
-				if(gameState.board[i][j].piece == EPcolonel) printf(" co|");
-				if(gameState.board[i][j].piece == EPgeneral) printf(" ge|");
-				if(gameState.board[i][j].piece == EPmarshal) printf(" ms|");
-				if(gameState.board[i][j].piece == EPflag) printf(" fl|");
-				if(gameState.board[i][j].piece == EPnone) printf(" no|");
-			}
-			
-			else if(gameState.board[i][j].content == ECred){
-				if(gameState.board[i][j].piece == EPbomb) printf(" BO|");
-				if(gameState.board[i][j].piece == EPspy) printf(" SP|");
-				if(gameState.board[i][j].piece == EPscout) printf(" SC|");
-				if(gameState.board[i][j].piece == EPminer) printf(" MI|");
-				if(gameState.board[i][j].piece == EPsergeant) printf(" SE|");
-				if(gameState.board[i][j].piece == EPlieutenant) printf(" LI|");;
-				if(gameState.board[i][j].piece == EPcaptain) printf(" CA|");
-				if(gameState.board[i][j].piece == EPmajor) printf(" MA|");
-				if(gameState.board[i][j].piece == EPcolonel) printf(" CO|");
-				if(gameState.board[i][j].piece == EPgeneral) printf(" GE|");
-				if(gameState.board[i][j].piece == EPmarshal) printf(" MS|");
-				if(gameState.board[i][j].piece == EPflag) printf(" FL|");
-				if(gameState.board[i][j].piece == EPnone) printf(" NO|");
-			}
-			
-			else if(gameState.board[i][j].content == EClake){
-				printf(" L |");
-			}
-			else{
-				printf(" O |");
-			}
-		}
-		printf("\n");
-	}
-
-
-}
-
 void ecrireFichier(SGameState gameState){
 	
 	int i,j;
+	
 	fprintf(fichier,"     |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |\n");
+	
 	for(i=0;i<10;i++){
 		fprintf(fichier,"  %i  |",i);
 		for(j=0;j<10;j++){
@@ -1926,6 +1622,7 @@ void ecrireFichier(SGameState gameState){
 		fprintf(fichier,"\n",i);
 	}
 	
+	//Nombre de pions restants
 	fprintf (fichier, "\nListe des pions rouge dehors :\n");
 	for(i = 0; i<11;i++){
 		fprintf (fichier, "| %i |",i);
@@ -1944,13 +1641,16 @@ void ecrireFichier(SGameState gameState){
 	}
 }
 
+/*
+ * Thread qui tourne lorsque 2 IA joues, permet de fermer la fenetre
+ */
 static void * quitter(void * p_data){
 	
 	int continuer = 1;
 	SDL_Event event;
 	
 	while (continuer){
-		SDL_Delay(100);
+		SDL_Delay(10);
 		SDL_WaitEvent(&event);
 		
 		switch(event.type){
@@ -1971,15 +1671,11 @@ static void * quitter(void * p_data){
 				break;
 		}
 	}
-	//AJOUTER TOUS LES FREE ET CLOSE A ReALISER
-	/*j1EndMatch();
-	j2EndMatch();*/
 
-	/*dlclose(j1Lib);
-	dlclose(j2Lib);*/
+	dlclose(j1Lib);
+	dlclose(j2Lib);
 	fclose(fichier);
 	quitter_sdl();
 	exit(EXIT_SUCCESS);
 	
 }
-

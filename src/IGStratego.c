@@ -1,3 +1,11 @@
+/**
+ * Projet Stratego, 3ème année de polytech
+ * Réalisé par : -Guinard Arnaud
+ * 				 -Mouden Benjamin
+ * 				 -Evo Brieuc
+ * 				 -Chotard François
+ */
+
 #include "PolyLib.h"
 #include "IGStratego.h"
 #define TAILLE_CASE 60	//Taille d'une case en pixels
@@ -26,21 +34,11 @@ void afficherMessageEcran(char *message, int delay){
 
 	TTF_Init();	//Initialisation de SDL_TTF
 	
-
-<<<<<<< HEAD
 	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15);	//Chargement de la police
 	texteTitre = TTF_RenderText_Blended(police, message, couleurNoire);	//Ecriture du texte dans la SDL_Surface texteTitre
 	position.y = ecran->h - MARGE_BAS + (texteTitre->h)/2 + 22;
     	position.x = ecran->w/2 - texteTitre->w/2;
 	SDL_BlitSurface(texteTitre, NULL, ecran, &position);	//On Blit le texteTitre à l'écran
-=======
-	police = TTF_OpenFont("fonts/FreeMonoBold.ttf", 15); //Chargement de la police 
-	texteTitre = TTF_RenderText_Blended(police, message, couleurNoire); //Ecriture du texte dans la SDL_Surface texteTitre 
-	position.y = ecran->h - MARGE_BAS + (texteTitre->h)/2 + 22; 
-	position.x = ecran->w/2 - texteTitre->w/2; 
-	SDL_BlitSurface(texteTitre, NULL, ecran, &position); //On Blit le texteTitre à l'écran
->>>>>>> 765396fcaa2b83c504adcf4ff7a2c335cb2a870d
-
 
 	SDL_Flip(ecran);	//On rafraichit l'écran
 	SDL_Delay(delay);	//Délai d'affichage du message
@@ -736,11 +734,7 @@ SPos getPos(){
 	return posClic;
 }
 
-<<<<<<< HEAD
-	
-=======
 //Méthode qui permet de libérer la mémoire des différentes variables utilisées et de quitter la SDL
->>>>>>> 765396fcaa2b83c504adcf4ff7a2c335cb2a870d
 void quitter_sdl(){
 	
 	int i;
@@ -763,12 +757,7 @@ void quitter_sdl(){
 	
 }
 
-<<<<<<< HEAD
-
-
-=======
 //Méthode qui permet d'afficher les piéces restantes sur les côtés en fonction du gamestate passé en paramètre
->>>>>>> 765396fcaa2b83c504adcf4ff7a2c335cb2a870d
 void afficherPiecesRestantes(SGameState gameState,SDL_Surface *ecran){
 
     //Déclaration des variables
