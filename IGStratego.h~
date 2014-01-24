@@ -4,6 +4,7 @@
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_ttf.h>
 
+int afficherMenu();
 SMove renvoieCoordonnees();
 void initBoard(SGameState gameState, SDL_Surface *ecran);
 int interfaceGraphique(SGameState gameState);
