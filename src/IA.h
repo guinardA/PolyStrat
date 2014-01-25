@@ -17,5 +17,6 @@ int CompareMoves(SMove move1,SMove move2);
 int vaEtViens(SMove move, SBox box);
 int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy);
 int	mouvementAleatoire(int j,int * line,int * col, int startLine, int startCol);
+int fuite(int line, int col, int * endLine, int * endCol);
 int mouvementSpyMiner(EPiece army,int i,int j);
 void afficheConsole(SGameState gameState, EColor joueur1, EColor joueur2);
