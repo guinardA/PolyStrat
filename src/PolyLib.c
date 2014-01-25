@@ -169,7 +169,7 @@ SMove NextMove(const SGameState * const gameState)
 					{
 						move.end.line = line+1;
 						move.end.col = col;
-						
+
 						numPiece= i+1;// si le mouvement n'est pas validé, on commencera le choix de pièce en danger à la pièce suivante
 						break;// sort de la boucle de choix de pièce
 					}
@@ -268,13 +268,14 @@ SMove NextMove(const SGameState * const gameState)
 	else
 	{
 		attaque = 0;
+
 		//On met a jour le contexte perso
 		contextPerso.board[move.end.line][move.end.col].content = contextPerso.board[line][col].content;
 		contextPerso.board[move.end.line][move.end.col].piece = contextPerso.board[line][col].piece;
 		contextPerso.board[line][col].content = ECnone;
 		contextPerso.board[line][col].piece = EPnone;
 			
-		//On a mis a jour la position du pion déplacer
+		//On a mis a jour la position du pion déplacé
 		positionPiece[i].line = move.end.line;
 		positionPiece[i].col = move.end.col;
 	}
@@ -383,7 +384,6 @@ void AttackResult(SPos armyPos,EPiece armyPiece,SPos enemyPos,EPiece enemyPiece)
 
 			//l'adversaire prend la place de notre pièce, on a maintenant sa valeur
 			contextPerso.board[armyPos.line][armyPos.col] = newBox;	
-
 		}
 		
 		
@@ -437,7 +437,7 @@ void Penalty()
 	printf("Nombre de pénalité : %i\n",penalite);
 }
 
-/*Ensemble des fonctions liées a IA
+/*Ensemble des fonctions liées à l'IA
 ---------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------------------------------
 */
