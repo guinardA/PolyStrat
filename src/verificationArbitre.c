@@ -39,40 +39,40 @@ int verificationNombrePiece(EPiece boardInit[4][10]){
 	}
 
 	if(Bomb != 6){
-		afficherMessageEcran("ERREUR Bomb", 3000);
+		afficherMessageEcran("ERREUR Bomb", 1000);
 		return 1;
 	} else if(Spy != 1){
-		afficherMessageEcran("ERREUR Spy", 3000);
+		afficherMessageEcran("ERREUR Spy", 1000);
 		return 1;
 	} else if(Scout != 8){
-		afficherMessageEcran("ERREUR Scout", 3000);
+		afficherMessageEcran("ERREUR Scout", 1000);
 		return 1;
 	} else if(Miner != 5){
-		afficherMessageEcran("ERREUR Miner", 3000);
+		afficherMessageEcran("ERREUR Miner", 1000);
 		return 1;
 	} else if(Sergeant != 4){
-		afficherMessageEcran("ERREUR Sergeant", 3000);
+		afficherMessageEcran("ERREUR Sergeant", 1000);
 		return 1;
 	} else if(Lieutenant != 4){
-		afficherMessageEcran("ERREUR Lieutenant", 3000);
+		afficherMessageEcran("ERREUR Lieutenant", 1000);
 		return 1;
 	} else if(Captain != 4){
-		afficherMessageEcran("ERREUR Captain", 3000);
+		afficherMessageEcran("ERREUR Captain", 1000);
 		return 1;
 	} else if(Major != 3){
-		afficherMessageEcran("ERREUR Major", 3000);
+		afficherMessageEcran("ERREUR Major", 1000);
 		return 1;
 	} else if(Colonel != 2){
-		afficherMessageEcran("ERREUR Colonel", 3000);
+		afficherMessageEcran("ERREUR Colonel", 1000);
 		return 1;
 	} else if(General != 1){
-		afficherMessageEcran("ERREUR General", 3000);
+		afficherMessageEcran("ERREUR General", 1000);
 		return 1;
 	} else if(Marshal != 1){
-		afficherMessageEcran("ERREUR Marshal", 3000);
+		afficherMessageEcran("ERREUR Marshal", 1000);
 		return 1;
 	}else if(Flag != 1){
-		afficherMessageEcran("ERREUR Flag", 3000);
+		afficherMessageEcran("ERREUR Flag", 1000);
 		return 1;
 	}
 	return 0;

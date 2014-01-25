@@ -446,7 +446,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								pion_erreur_j1 = 0;
 							}
 							
-							afficherMessageEcran("Mouvement non valide", 3000);
+							afficherMessageEcran("Mouvement non valide", 1000);
 							
 							//3 erreurs réaliser par le joueur 1
 							if(fin == 1 ){
@@ -541,7 +541,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 									pion_erreur_j2 = 0;
 								}
 								
-								afficherMessageEcran("Mouvement non valide", 3000);
+								afficherMessageEcran("Mouvement non valide", 1000);
 								
 								//3 erreurs réaliser par le joueur 2
 								if(fin == 1 ){
@@ -646,7 +646,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								pion_erreur_j2 = 0;
 							}	
 							
-							afficherMessageEcran("Mouvement non valide", 3000);
+							afficherMessageEcran("Mouvement non valide", 1000);
 							
 							//3 erreurs réaliser par le joueur 2
 							if(fin == 1 ){
@@ -730,7 +730,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 									pion_erreur_j1 = 0;
 								}
 								
-								afficherMessageEcran("Mouvement non valide", 3000);
+								afficherMessageEcran("Mouvement non valide", 1000);
 								
 								//3 erreurs réaliser par le joueur 1
 								if(fin == 1 ){
@@ -1385,7 +1385,7 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	if(attaquant.piece == attaquer.piece){
 		
 		fprintf(fichier,"Attaque de 2 forces equivalente\n");
-		afficherMessageEcran("Attaque de 2 forces equivalente", 1500);
+		afficherMessageEcran("Attaque de 2 forces equivalente", 1000);
 		
 		//On incremente les tableaux de perte
 		if(attaquant.content == ECred){
@@ -1414,7 +1414,7 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	(attaquant.piece == EPspy && attaquer.piece == EPmarshal)){
 		
 		fprintf(fichier,"Attaquant plus fort que la piece attaque\n");
-		afficherMessageEcran("Attaquant plus fort que la piece attaque", 1500);
+		afficherMessageEcran("Attaquant plus fort que la piece attaque", 1000);
 		
 		//Cas ou c'est le joueur bleu qui perd une piece
 		if(attaquant.content == ECred){
@@ -1440,14 +1440,14 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	//CAS OU LE DRAPEAU EST ATTAQUe PAR L'ENNEMIE
 	if(attaquer.piece == EPflag){
 		fprintf(fichier,"Attaque du drapeau\n");
-		afficherMessageEcran("Attaque du drapeau", 1500);
+		afficherMessageEcran("Attaque du drapeau", 1000);
 		return 2;
 	}
 	
 	//CAS OU L'ATTAQUANT A PERDU
 	else{
 		fprintf(fichier,"Attaquant moins fort que la piece attaque\n");
-		afficherMessageEcran("Attaquant moins fort que la piece attaque", 1500);
+		afficherMessageEcran("Attaquant moins fort que la piece attaque", 1000);
 		
 		//Cas ou c'est le joueur rouge qui perd une piece
 		if(attaquant.content == ECred){
