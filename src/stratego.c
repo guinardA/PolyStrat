@@ -446,7 +446,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								pion_erreur_j1 = 0;
 							}
 							
-							afficherMessageEcran("Mouvement non valide", 1000);
+							afficherMessageEcran("Mouvement non valide", 700);
 							
 							//3 erreurs réaliser par le joueur 1
 							if(fin == 1 ){
@@ -541,7 +541,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 									pion_erreur_j2 = 0;
 								}
 								
-								afficherMessageEcran("Mouvement non valide", 1000);
+								afficherMessageEcran("Mouvement non valide", 700);
 								
 								//3 erreurs réaliser par le joueur 2
 								if(fin == 1 ){
@@ -646,7 +646,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 								pion_erreur_j2 = 0;
 							}	
 							
-							afficherMessageEcran("Mouvement non valide", 1000);
+							afficherMessageEcran("Mouvement non valide", 700);
 							
 							//3 erreurs réaliser par le joueur 2
 							if(fin == 1 ){
@@ -730,7 +730,7 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 									pion_erreur_j1 = 0;
 								}
 								
-								afficherMessageEcran("Mouvement non valide", 1000);
+								afficherMessageEcran("Mouvement non valide", 700);
 								
 								//3 erreurs réaliser par le joueur 1
 								if(fin == 1 ){
@@ -786,18 +786,21 @@ if(nbr_coup_permis != 0 && nbr_IA > -1 && nbr_IA < 3){
 			
 			//Cas ou le joueur rouge a gagné car il a plus de pions
 			if(nbr_pion_rouge > nbr_pion_bleu){
+				interfaceGraphique(gameState);
 				fprintf(fichier,"Joueur rouge a gagne la partie avec un plus grand nombre de pions restant\n");
 				afficherMessageEcran("Joueur rouge a gagne la partie avec un plus grand nombre de pions restant", 3000);
 			}
 			
 			//Cas ou le joueur bleu a gagné car il a plus de pions
 			else if(nbr_pion_bleu> nbr_pion_rouge){
+				interfaceGraphique(gameState);
 				fprintf(fichier,"Joueur bleu a gagne la partie avec un plus grand nombre de pions restant\n");
 				afficherMessageEcran("Joueur bleu a gagne la partie avec un plus grand nombre de pions restant", 3000);
 			}
 			
 			//Cas ou il y a un match exaequo
 			else{
+				interfaceGraphique(gameState);
 				fprintf(fichier,"Match exaequo\n");
 				afficherMessageEcran("Match exaequo", 3000);
 			}
@@ -872,6 +875,7 @@ int retour = 0;
 
 if(gameState.redOut[1] == 1 && gameState.redOut[2] == 8 && gameState.redOut[3] == 5 && gameState.redOut[4] == 4 && gameState.redOut[5] == 4
 && gameState.redOut[6] == 4 && gameState.redOut[7] == 3 && gameState.redOut[8] == 2 && gameState.redOut[9] == 1 && gameState.redOut[10] == 1){
+	interfaceGraphique(gameState);
 	fprintf(fichier, "\n\nFin de la partie pour le joueur rouge car plus de pion a deplacer\n");
 	afficherMessageEcran("Fin de la partie pour le joueur rouge car plus de pion a deplacer", 3000);
 	retour = 1;
@@ -879,6 +883,7 @@ if(gameState.redOut[1] == 1 && gameState.redOut[2] == 8 && gameState.redOut[3] =
 
 if(gameState.blueOut[1] == 1 && gameState.blueOut[2] == 8 && gameState.blueOut[3] == 5 && gameState.blueOut[4] == 4 && gameState.blueOut[5] == 4
 && gameState.blueOut[6] == 4 && gameState.blueOut[7] == 3 && gameState.blueOut[8] == 2 && gameState.blueOut[9] == 1 && gameState.blueOut[10] == 1){
+	interfaceGraphique(gameState);
 	fprintf(fichier, "\n\nFin de la partie pour le joueur bleu car plus de pion a deplacer\n");
 	afficherMessageEcran("Fin de la partie pour le joueur bleu car plus de pion a deplacer", 3000);
 	retour = 1;
@@ -1385,7 +1390,7 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	if(attaquant.piece == attaquer.piece){
 		
 		fprintf(fichier,"Attaque de 2 forces equivalente\n");
-		afficherMessageEcran("Attaque de 2 forces equivalente", 1000);
+		afficherMessageEcran("Attaque de 2 forces equivalente", 700);
 		
 		//On incremente les tableaux de perte
 		if(attaquant.content == ECred){
@@ -1414,7 +1419,7 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	(attaquant.piece == EPspy && attaquer.piece == EPmarshal)){
 		
 		fprintf(fichier,"Attaquant plus fort que la piece attaque\n");
-		afficherMessageEcran("Attaquant plus fort que la piece attaque", 1000);
+		afficherMessageEcran("Attaquant plus fort que la piece attaque", 700);
 		
 		//Cas ou c'est le joueur bleu qui perd une piece
 		if(attaquant.content == ECred){
@@ -1440,14 +1445,14 @@ int attaque(SMove move, SGameState *gameState,EColor color, int joueur, void(*At
 	//CAS OU LE DRAPEAU EST ATTAQUe PAR L'ENNEMIE
 	if(attaquer.piece == EPflag){
 		fprintf(fichier,"Attaque du drapeau\n");
-		afficherMessageEcran("Attaque du drapeau", 1000);
+		afficherMessageEcran("Attaque du drapeau", 700);
 		return 2;
 	}
 	
 	//CAS OU L'ATTAQUANT A PERDU
 	else{
 		fprintf(fichier,"Attaquant moins fort que la piece attaque\n");
-		afficherMessageEcran("Attaquant moins fort que la piece attaque", 1000);
+		afficherMessageEcran("Attaquant moins fort que la piece attaque", 700);
 		
 		//Cas ou c'est le joueur rouge qui perd une piece
 		if(attaquant.content == ECred){
