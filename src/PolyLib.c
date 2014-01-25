@@ -147,14 +147,14 @@ SMove NextMove(const SGameState * const gameState)
 			line = positionPiece[i].line;
 			col = positionPiece[i].col;
 			
-
-			if ( (line >=0) && (contextPerso.board[line][col].piece != EPbomb) && (contextPerso.board[line][col].piece != EPflag) )
+			//si line == -1 : piece tuée
+			if ( (line >=0))
 			{ 
 				
 				//si notre pièce est à côté d'un adversaire
 				if( (line<9) && (contextPerso.board[line+1][col].content == couleurAdverse) )
 				{
-					if(doitAttaquer(line,col,line+1,col) == 1 || mouvementAleatoire(-1,&(move.end.line),&(move.end.col),line,col) == 0)
+					if(doitAttaquer(line,col,line+1,col) == 1 /* || mouvementAleatoire(-1,&(move.end.line),&(move.end.col),line,col) == 0*/)
 					{
 						move.end.line = line+1;
 						move.end.col = col;
@@ -165,7 +165,7 @@ SMove NextMove(const SGameState * const gameState)
 				}
 				else if( (line>0) && (contextPerso.board[line-1][col].content == couleurAdverse) )
 				{
-					if(doitAttaquer(line,col,line+1,col) == 1 || mouvementAleatoire(-1,&(move.end.line),&(move.end.col),line,col) == 0)
+					if(doitAttaquer(line,col,line-1,col) == 1 )
 					{
 						move.end.line = line-1;
 						move.end.col = col;
@@ -176,7 +176,7 @@ SMove NextMove(const SGameState * const gameState)
 				}
 				else if( (col<9) && (contextPerso.board[line][col+1].content == couleurAdverse) )
 				{
-					if(doitAttaquer(line,col,line+1,col) == 1 || mouvementAleatoire(-1,&(move.end.line),&(move.end.col),line,col) == 0)
+					if(doitAttaquer(line,col,line,col+1) == 1 )
 					{
 						move.end.line = line;
 						move.end.col = col+1;
@@ -187,7 +187,7 @@ SMove NextMove(const SGameState * const gameState)
 				}
 				else if( (col>0) && (contextPerso.board[line][col-1].content == couleurAdverse) )
 				{
-					if(doitAttaquer(line,col,line+1,col) == 1 || mouvementAleatoire(-1,&(move.end.line),&(move.end.col),line,col) == 0)
+					if(doitAttaquer(line,col,line,col-1) == 1)
 					{
 						move.end.line = line;
 						move.end.col = col-1;
@@ -817,6 +817,19 @@ void majContextePerso(const SGameState * const gameState)
 				 		contextPerso.board[i][j] = gameState->board[i][j];
 				 	}
 				 }
+				 else if (gameState->board[i][j].content == couleurAdverse)
+				 {
+				 	if (i<9 && contextPerso.board[i+1][j].content != gameState->board[i+1][j].content)
+				 	{
+				 		contextPerso.board[i][j] = contextPerso.board[i+1][j];
+				 		contextPerso.board[i+1][j] = gameState->board[i+1][j];
+				 	}
+				 	if (j<9 && contextPerso.board[i][j+1].content != gameState->board[i][j+1].content)
+				 	{
+				 		contextPerso.board[i][j] = contextPerso.board[i][j+1];
+				 		contextPerso.board[i][j+1] = gameState->board[i][j+1];
+				 	}
+				 }
 				 else
 				 {
 				 	contextPerso.board[i][j] = gameState->board[i][j];
@@ -832,30 +845,34 @@ int doitAttaquer(int lineArmy,int colArmy,int lineEnemy,int colEnemy)
 {
 	EPiece enemy = contextPerso.board[lineEnemy][colEnemy].piece;
 	EPiece army = contextPerso.board[lineArmy][colArmy].piece;
-
+	int i;
 
 	if (enemy==EPnone && army!=EPminer && army!=EPspy && army!=EPmarshal)
 		return 1;
 	else if (enemy<army && enemy!=EPbomb)
+	{
+		i=0;
 		return 1;
+	}
 	else if (enemy==EPbomb && army==EPminer)
 		return 1;
 	else if (army==EPspy && enemy==EPmarshal)
 		return 1;
 
 	int l,k=0;
-	for(l=0;l<33;l++)
+	for(l=0;l<40;l++)
 	{
 		if(positionPiece[l].line < 0)
 			k++;
 	}
-	if(k>22)
+	if(k>25 && i!=0)
 		return 1;
 
 	return 0;
 
 }
 
+// renvoi 1 si mouvement enregistré dans end.line et end.col du SMove de NextMove, si le retour est 0: on ne souhaite pas bouger
 int	mouvementAleatoire(int j, int * line, int * col, int startLine, int startCol)
 {
 	EPiece army = contextPerso.board[startLine][startCol].piece;
@@ -901,7 +918,7 @@ int	mouvementAleatoire(int j, int * line, int * col, int startLine, int startCol
 
 		return 1;
 	}
-	else
+	/*else
 	{
 
 		if ( (startLine<9) && (contextPerso.board[startLine+1][startCol].content != couleurAdverse || contextPerso.board[startLine+1][startCol].piece == EPnone) )
@@ -928,7 +945,7 @@ int	mouvementAleatoire(int j, int * line, int * col, int startLine, int startCol
 			*col = startCol;
 			return 1;
 		}
-	}
+	}*/
 
 	return 0;
 }
